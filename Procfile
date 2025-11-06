@@ -1,1 +1,1 @@
-web: gunicorn book_arena.wsgi --log-file -
+web: gunicorn scriptify_backend.wsgi --log-file -

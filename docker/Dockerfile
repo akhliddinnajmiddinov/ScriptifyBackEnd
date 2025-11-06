@@ -15,8 +15,8 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Ensure migrations directories exist
-RUN mkdir -p /app/apps/book/migrations /app/apps/user/migrations
-RUN touch /app/apps/book/migrations/__init__.py /app/apps/user/migrations/__init__.py
+RUN mkdir -p  /app/apps/user/migrations
+RUN touch /app/apps/user/migrations/__init__.py
 
 COPY . /app/
 RUN python manage.py collectstatic --noinput
@@ -28,4 +28,4 @@ RUN apt-get remove -y gcc && \
     rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8000
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "book_arena.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "scriptify_backend.wsgi:application"]

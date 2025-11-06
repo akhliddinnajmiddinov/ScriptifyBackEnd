@@ -11,22 +11,21 @@ class CustomUserAdmin(UserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
     model = MyUser
-    list_display = ('phone_number', 'first_name', 'last_name', 'is_staff')
+    list_display = ('email', 'first_name', 'last_name', 'is_staff')
     list_filter = ('is_staff', 'is_superuser', 'is_active')
     fieldsets = (
-        (None, {'fields': ('phone_number', 'password')}),
-        ('Personal info', {'fields': ('first_name', 'last_name')}),
+        (None, {'fields': ('email', 'password')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'photo')}),
         ('Permissions', {'fields': ('is_staff', 'is_superuser',)}),
         ('Important dates', {'fields': ('date_joined',)}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('phone_number', 'first_name', 'last_name', 'password1', 'password2', 'is_staff', 'is_superuser'),
+            'fields': ('email', 'first_name', 'last_name', 'password1', 'password2', 'is_staff', 'is_superuser'),
         }),
     )
-    search_fields = ('phone_number',)
-    ordering = ('phone_number',)
+    search_fields = ('email',)
+    ordering = ('email',)
 
 admin.site.register(MyUser, CustomUserAdmin)
-

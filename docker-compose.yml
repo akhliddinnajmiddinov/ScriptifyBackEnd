@@ -1,6 +1,6 @@
 services:
   backend:
-    image: ${DOCKER_USERNAME}/book-arena:${IMAGE_TAG}
+    image: ${DOCKER_USERNAME}/scriptify_backend:${IMAGE_TAG}
     env_file:
       - .env
     command:
@@ -11,7 +11,6 @@ services:
         echo "Running database migrations..."
         python manage.py migrate --noinput --verbosity=2
 
-        python manage.py migrate book
         python manage.py migrate user
         echo "Checking for any issues..."
         python manage.py check
@@ -26,7 +25,7 @@ services:
       db:
         condition: service_healthy
     networks:
-      - backend_book_arena_network
+      - scriptify_backend_network
     ports:
       - "8000:8000"
     deploy:
@@ -47,10 +46,10 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - scriptify_backend_data:/var/lib/postgresql/data
     restart: always
     networks:
-      - backend_book_arena_network
+      - scriptify_backend_network
     deploy:
       resources:
         limits:
@@ -58,8 +57,8 @@ services:
           memory: 256M
 
 networks:
-  backend_book_arena_network:
+  scriptify_backend_network:
     driver: bridge
 
 volumes:
-  postgres_data:
+  scriptify_backend_data:

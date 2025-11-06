@@ -132,7 +132,7 @@ jobs:
           context: .
           file: docker/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/book-arena:${{ github.sha }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/scriptify_backend:${{ github.sha }}
           no-cache: true  # Disable cache to ensure latest code
 
       - name: Copy docker-compose.yml and .env to server
@@ -142,7 +142,7 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "docker-compose.yml,.env"
-          target: "/home/bookarena/"
+          target: "/home/scriptify_backend/"
 
       - name: SSH into production server and deploy
         uses: appleboy/ssh-action@master
@@ -151,7 +151,7 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/bookarena || { echo "Directory /home/bookarena not found"; exit 1; }
+            cd /home/scriptify_backend || { echo "Directory /home/scriptify_backend not found"; exit 1; }
             
             docker compose down
             docker compose up -d --build --pull always

@@ -25,8 +25,8 @@ from django.utils import timezone
 
 from django.contrib.auth import authenticate, login
 import random
-from .models import MyUser, PhoneVerificationCode
-from .serializers import SendCodeSerializer, VerifyCodeSerializer, RegisterUserSerializer
+from .models import MyUser
+from .serializers import RegisterUserSerializer, ChangePasswordSerializer
 
 class TokenObtainAPIView(TokenView, APIView):
     @method_decorator(csrf_exempt)
@@ -80,92 +80,6 @@ class RevokeTokenAPIView(RevokeTokenView, APIView):
         return super().post(request, *args, **kwargs)
 
 
-class SendCodeView(APIView):
-    @extend_schema(
-        summary="Send phone verification code",
-        description="Sends a verification code to the specified phone number via SMS.",
-        request=SendCodeSerializer,
-        responses={
-            200: {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string",
-                        "example": "Verification code sent"
-                    }
-                }
-            },
-            400: {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string",
-                        "example": "Invalid phone number"
-                    }
-                }
-            }
-        },
-        tags=["Authentication"],
-    )
-    def post(self, request):
-        serializer = SendCodeSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        phone = serializer.validated_data['phone_number']
-        code = 12345  # For development, use fixed code
-
-        PhoneVerificationCode.objects.update_or_create(
-            phone_number=phone,
-            defaults={'code': code, 'created_at': timezone.now()}
-        )
-
-        # Here you'd send the SMS using your SMS gateway
-        print(f"Fake SMS to {phone}: {code}")
-
-        return Response({"message": "Verification code sent"}, status=status.HTTP_200_OK)
-
-
-class VerifyCodeView(APIView):
-    @extend_schema(
-        summary="Verify phone verification code",
-        description="Verifies the code sent to the specified phone number.",
-        request=VerifyCodeSerializer,
-        responses={
-            200: {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string",
-                        "example": "Code verified"
-                    }
-                }
-            },
-            400: {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string",
-                        "example": "Invalid code"
-                    }
-                }
-            }
-        },
-        tags=["Authentication"],
-    )
-    def post(self, request):
-        serializer = VerifyCodeSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        phone = serializer.validated_data['phone_number']
-        code = serializer.validated_data['code']
-
-        try:
-            record = PhoneVerificationCode.objects.get(phone_number=phone, code=code)
-            if record.is_expired():
-                return Response({"message": "Code expired"}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({"message": "Code verified"}, status=status.HTTP_200_OK)
-        except PhoneVerificationCode.DoesNotExist:
-            return Response({"message": "Invalid code"}, status=status.HTTP_400_BAD_REQUEST)
-
-
 class UserRegisterView(CsrfExemptMixin, OAuthLibMixin, APIView):
     permission_classes = (permissions.AllowAny,)
 
@@ -203,7 +117,7 @@ class UserRegisterView(CsrfExemptMixin, OAuthLibMixin, APIView):
                         
                         token_request_data = {
                             "grant_type": "password",
-                            "username": serializer.validated_data["phone_number"],
+                            "username": serializer.validated_data["email"],
                             "password": serializer.validated_data["password"],
                             "client_id": request.data["client_id"],
                             "client_secret": request.data["client_secret"]
@@ -218,9 +132,9 @@ class UserRegisterView(CsrfExemptMixin, OAuthLibMixin, APIView):
 
                         # Generate token
                         url, headers, body, token_status = self.create_token_response(token_request)
-
+                        print(json.loads(body))
                         if token_status != 200:
-                            error_msg = json.loads(body).get("error_description", "Token generation failed")
+                            error_msg = json.loads(body).get("error", "Token generation failed")
                             raise Exception(error_msg)
 
                         return Response({"message": "User registered successfully", "data": json.loads(body)}, status=token_status)
@@ -245,15 +159,10 @@ class UserProfileAPIView(APIView):
                         "type": "object",
                         "properties": {
                             "id": {"type": "integer"},
-                            "phone_number": {"type": "string"},
+                            "email": {"type": "string"},
                             "first_name": {"type": "string"},
                             "last_name": {"type": "string"},
-                            "email": {"type": "string"},
-                            "age": {"type": "integer"},
-                            "bio": {"type": "string"},
                             "photo": {"type": "string"},
-                            "reading_goal": {"type": "integer"},
-                            "current_reading_streak": {"type": "integer"},
                             "date_joined": {"type": "string"}
                         }
                     }
@@ -299,3 +208,44 @@ class UserProfileAPIView(APIView):
             "error": "Validation failed",
             "message": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+# apps/user/views.py
+
+class ChangePasswordAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @extend_schema(
+        summary="Change user password",
+        request=ChangePasswordSerializer,
+        responses={
+            200: inline_serializer(
+                name="ChangePasswordSuccess",
+                fields={"success": serializers.BooleanField(), "message": serializers.CharField()},
+            ),
+            400: inline_serializer(
+                name="ChangePasswordError",
+                fields={"error": serializers.CharField()},
+            ),
+        },
+        tags=["User Profile"],
+    )
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data, context={"request": request})
+        if not serializer.is_valid():
+            return Response(
+                {"success": False, "error": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = request.user
+        user.set_password(serializer.validated_data["new_password"])
+        user.save()
+
+        return Response(
+            {
+                "success": True,
+                "message": "Password changed successfully. Please log in again to get new tokens.",
+            },
+            status=status.HTTP_200_OK,
+        )

@@ -153,6 +153,12 @@ jobs:
           script: |
             cd /home/scriptify_backend || { echo "Directory /home/scriptify_backend not found"; exit 1; }
             
+            export DB_NAME=${{ secrets.DB_NAME }}
+            export DB_USER=${{ secrets.DB_USER }}
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            export IMAGE_TAG=${{ github.sha }}
+
             docker compose down
             docker compose up -d --build --pull always
             docker image prune -f

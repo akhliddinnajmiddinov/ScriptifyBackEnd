@@ -1,8 +1,6 @@
 services:
   backend:
     image: ${DOCKER_USERNAME}/scriptify_backend:${IMAGE_TAG}
-    env_file:
-      - .env
     command:
       - /bin/bash
       - -c

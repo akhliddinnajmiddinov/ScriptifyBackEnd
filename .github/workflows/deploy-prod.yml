@@ -8,6 +8,7 @@ on:
 env:
   APP_ENV: ${{ secrets.APP_ENV }}
   DB_ENGINE: ${{ secrets.DB_ENGINE }}
+  SECRET_KEY: ${{ secrets.SECRET_KEY }}
   DB_HOST: ${{ secrets.DB_HOST }}
   DB_PORT: ${{ secrets.DB_PORT }}
   DB_NAME: ${{ secrets.DB_NAME }}
@@ -60,6 +61,7 @@ jobs:
         with:
           envkey_APP_ENV: ${{ env.APP_ENV }}
           envkey_DB_ENGINE: ${{ env.DB_ENGINE }}
+          envkey_SECRET_KEY: ${{ env.SECRET_KEY }}
           envkey_DB_HOST: ${{ env.DB_HOST }}
           envkey_DB_PORT: ${{ env.DB_PORT }}
           envkey_DB_NAME: ${{ env.DB_NAME }}

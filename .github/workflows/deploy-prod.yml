@@ -1,0 +1,163 @@
+name: Deploy Django Backend
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  APP_ENV: ${{ secrets.APP_ENV }}
+  DB_ENGINE: ${{ secrets.DB_ENGINE }}
+  DB_HOST: ${{ secrets.DB_HOST }}
+  DB_PORT: ${{ secrets.DB_PORT }}
+  DB_NAME: ${{ secrets.DB_NAME }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  REDIS_PASS: ${{ secrets.REDIS_PASS }}
+  REDIS_USER: ${{ secrets.REDIS_USER }}
+  REDIS_HOST: ${{ secrets.REDIS_HOST }}
+  REDIS_PORT: ${{ secrets.REDIS_PORT }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_STORAGE_BUCKET_NAME: ${{ secrets.AWS_STORAGE_BUCKET_NAME }}
+  AWS_S3_SIGNATURE_VERSION: ${{ secrets.AWS_S3_SIGNATURE_VERSION }}
+  AWS_S3_ENDPOINT_URL: ${{ secrets.AWS_S3_ENDPOINT_URL }}
+  EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+  EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+  EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+  EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+  EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
+  DADATA_SECRET_KEY: ${{ secrets.DADATA_SECRET_KEY }}
+  DADATA_API_KEY: ${{ secrets.DADATA_API_KEY }}
+  DB_DEVELOPMENT: ${{ secrets.DB_DEVELOPMENT }}
+  FRONTEND_URL: ${{ secrets.FRONTEND_URL_PROD }}
+  BACKEND_URL: ${{ secrets.BACKEND_URL }}
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_APP_ENV: ${{ env.APP_ENV }}
+          envkey_DB_ENGINE: ${{ env.DB_ENGINE }}
+          envkey_DB_HOST: ${{ env.DB_HOST }}
+          envkey_DB_PORT: ${{ env.DB_PORT }}
+          envkey_DB_NAME: ${{ env.DB_NAME }}
+          envkey_DB_USER: ${{ env.DB_USER }}
+          envkey_DB_PASSWORD: ${{ env.DB_PASSWORD }}
+          envkey_REDIS_PASS: ${{ env.REDIS_PASS }}
+          envkey_REDIS_USER: ${{ env.REDIS_USER }}
+          envkey_REDIS_HOST: ${{ env.REDIS_HOST }}
+          envkey_REDIS_PORT: ${{ env.REDIS_PORT }}
+          envkey_AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
+          envkey_AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          envkey_AWS_STORAGE_BUCKET_NAME: ${{ env.AWS_STORAGE_BUCKET_NAME }}
+          envkey_AWS_S3_SIGNATURE_VERSION: ${{ env.AWS_S3_SIGNATURE_VERSION }}
+          envkey_AWS_S3_ENDPOINT_URL: ${{ env.AWS_S3_ENDPOINT_URL }}
+          envkey_EMAIL_HOST_USER: ${{ env.EMAIL_HOST_USER }}
+          envkey_EMAIL_HOST_PASSWORD: ${{ env.EMAIL_HOST_PASSWORD }}
+          envkey_EMAIL_HOST: ${{ env.EMAIL_HOST }}
+          envkey_EMAIL_PORT: ${{ env.EMAIL_PORT }}
+          envkey_EMAIL_USE_TLS: ${{ env.EMAIL_USE_TLS }}
+          envkey_DADATA_SECRET_KEY: ${{ env.DADATA_SECRET_KEY }}
+          envkey_DADATA_API_KEY: ${{ env.DADATA_API_KEY }}
+          envkey_DB_DEVELOPMENT: ${{ env.DB_DEVELOPMENT }}
+          envkey_FRONTEND_URL: ${{ env.FRONTEND_URL }}
+          envkey_BACKEND_URL: ${{ env.BACKEND_URL }}
+          envkey_DOCKER_USERNAME: ${{ env.DOCKER_USERNAME }}
+          envkey_IMAGE_TAG: ${{ github.sha }}
+          file_name: .env
+          fail_on_empty: false
+          sort_keys: false
+
+      - name: Debug and validate envfile
+        run: |
+          if [ ! -f .env ]; then
+            echo "Error: .env file not created"
+            ls -la
+            exit 1
+          fi
+          echo "DEBUG: .env file contents (sensitive data redacted):"
+          sed 's/DJANGO_SECRET_KEY=.*/DJANGO_SECRET_KEY=****/;s/DB_PASSWORD=.*/DB_PASSWORD=****/;s/EMAIL_HOST_PASSWORD=.*/EMAIL_HOST_PASSWORD=****/' .env
+          required_vars=("DB_NAME" "DB_USER" "DB_PASSWORD" "DOCKER_USERNAME" "IMAGE_TAG")
+          for var in "${required_vars[@]}"; do
+            if ! grep -q "^$var=" .env; then
+              echo "Error: $var is missing in .env"
+              exit 1
+            fi
+            if grep -q "^$var=$" .env; then
+              echo "Error: $var is empty in .env"
+              exit 1
+            fi
+          done
+          echo "Environment variables validated successfully"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/book-arena:${{ github.sha }}
+          no-cache: true  # Disable cache to ensure latest code
+
+      - name: Copy docker-compose.yml and .env to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "docker-compose.yml,.env"
+          target: "/home/bookarena/"
+
+      - name: SSH into production server and deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/bookarena || { echo "Directory /home/bookarena not found"; exit 1; }
+            
+            docker compose down
+            docker compose up -d --build --pull always
+            docker image prune -f
+
+            sudo systemctl restart nginx || { echo "Nginx restart failed"; exit 1; }
+            echo "Deployment complete"
+            docker ps -a
+            docker compose logs --tail=50

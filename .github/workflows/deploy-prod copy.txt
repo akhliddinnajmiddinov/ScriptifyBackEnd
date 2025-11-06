@@ -1,0 +1,88 @@
+name: Deploy Django Backend
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  # Core app settings
+  APP_ENV: ${{ secrets.APP_ENV }}              # e.g., production
+  DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}  # Django secret key
+  # Database settings (adjust if using SQLite, PostgreSQL, etc.)
+  DB_ENGINE: ${{ secrets.DB_ENGINE }}          # e.g., django.db.backends.postgresql
+  DB_HOST: ${{ secrets.DB_HOST }}              # e.g., db (for Docker Compose) or server IP
+  DB_PORT: ${{ secrets.DB_PORT }}              # e.g., 5432
+  DB_NAME: ${{ secrets.DB_NAME }}              # e.g., myapp
+  DB_USER: ${{ secrets.DB_USER }}              # e.g., postgres
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}      # Database password
+  # Redis settings (optional, remove if not used)
+  REDIS_HOST: ${{ secrets.REDIS_HOST }}        # e.g., redis
+  REDIS_PORT: ${{ secrets.REDIS_PORT }}        # e.g., 6379
+  REDIS_PASS: ${{ secrets.REDIS_PASS }}        # Redis password (if applicable)
+  # Email settings (optional, remove if not used)
+  EMAIL_HOST: ${{ secrets.EMAIL_HOST }}        # e.g., smtp.gmail.com
+  EMAIL_PORT: ${{ secrets.EMAIL_PORT }}        # e.g., 587
+  EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}  # e.g., your-email@gmail.com
+  EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}  # Email password
+  EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}  # e.g., True
+  # Other app-specific URLs
+  FRONTEND_URL: ${{ secrets.FRONTEND_URL }}    # e.g., https://frontend.example.com
+  BACKEND_URL: ${{ secrets.BACKEND_URL }}      # e.g., https://backend.example.com
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'  # Adjust to your Python version
+
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          file_name: .env
+          fail_on_empty: false
+          sort_keys: false
+ 
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -f docker/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/book-arena:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/book-arena:latest
+
+      - name: SSH into production server and deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "Changing directory..."
+            cd /home/bookarena || { echo "Directory not found"; exit 1; }
+            echo "Stopping existing containers..."
+            docker compose down || { echo "Compose down failed"; exit 1; }
+            echo "Starting containers..."
+            docker compose up -d --build --pull always || { echo "Compose up failed"; exit 1; }
+            echo "Pruning images..."
+            docker image prune -f
+            echo "Restarting Nginx..."
+            sudo systemctl restart nginx || { echo "Nginx restart failed"; exit 1; }
+            echo "Deployment complete"
+            docker ps -a  # Show all containers (running or stopped)
+            docker compose logs  # Show container logs

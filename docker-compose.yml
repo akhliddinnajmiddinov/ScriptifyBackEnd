@@ -1,0 +1,65 @@
+services:
+  backend:
+    image: ${DOCKER_USERNAME}/book-arena:${IMAGE_TAG}
+    env_file:
+      - .env
+    command:
+      - /bin/bash
+      - -c
+      - |
+        python manage.py makemigrations
+        echo "Running database migrations..."
+        python manage.py migrate --noinput --verbosity=2
+
+        python manage.py migrate book
+        python manage.py migrate user
+        echo "Checking for any issues..."
+        python manage.py check
+        python manage.py runserver 0.0.0.0:8000
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend_book_arena_network
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - backend_book_arena_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+networks:
+  backend_book_arena_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

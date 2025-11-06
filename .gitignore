@@ -1,0 +1,16 @@
+.env
+venv
+apps/book/migrations
+apps/user/migrations
+**/__pycache__/
+__pycache__/
+*.py[cod]
+
+
+.idea
+.vscode
+node_modules
+dist
+db.sqlite3
+media
+./docker/prod/docker-compose.yml

@@ -1,0 +1,565 @@
+openapi: 3.0.3
+info:
+  title: Book Arena API
+  version: 1.0.0
+  description: API documentation for Book Arena
+paths:
+  /api/book/:
+    get:
+      operationId: book_retrieve
+      description: Fetches all books belonging to the authenticated user
+      summary: Retrieve books
+      tags:
+      - Book
+      security:
+      - OAuth2: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+          description: ''
+        '404':
+          description: Object not found
+    post:
+      operationId: book_create
+      description: Adds a new book entry for the authenticated user.
+      summary: Create a new book
+      tags:
+      - Book
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+        required: true
+      security:
+      - OAuth2: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+          description: ''
+        '400':
+          description: 'Bad Request: Validation Error'
+  /api/book/{id}/:
+    get:
+      operationId: book_retrieve_2
+      description: Fetches a specific book by its ID belonging to the authenticated
+        user
+      summary: Retrieve specific book
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Book
+      security:
+      - OAuth2: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+          description: ''
+        '404':
+          description: Object not found
+    put:
+      operationId: book_update
+      description: Modifies the details of an existing book entry identified by its
+        ID.
+      summary: Update an existing book
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Book
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+        required: true
+      security:
+      - OAuth2: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+          description: ''
+        '400':
+          description: 'Bad Request: Validation Error'
+    delete:
+      operationId: book_destroy
+      description: Removes a book entry identified by its ID.
+      summary: Delete a book
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Book
+      security:
+      - OAuth2: []
+      responses:
+        '204':
+          description: Data is deleted
+  /api/book/reading/{id}/:
+    get:
+      operationId: book_reading_retrieve
+      description: Retrieves the specific book reading session for the authenticated
+        user. If id is not given, returns a last book reading session
+      summary: Get the specific book reading session
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - BookReading
+      security:
+      - OAuth2: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookReading'
+          description: ''
+        '204':
+          description: User doesn't have an existing book reading session
+        '404':
+          description: Object not found
+    delete:
+      operationId: book_reading_destroy
+      description: Deletes a specific book reading session identified by its primary
+        key.
+      summary: Delete a book reading session
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - BookReading
+      security:
+      - OAuth2: []
+      responses:
+        '204':
+          description: BookReading is deleted
+  /api/book/reading/finish/:
+    post:
+      operationId: book_reading_finish_create
+      description: Finish an existing book reading session for the authenticated user
+      summary: Finish an existing book reading session
+      tags:
+      - BookReading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookReadingFinishRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookReadingFinishRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookReadingFinishRequest'
+        required: true
+      security:
+      - OAuth2: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookReadingFinish'
+          description: ''
+        '400':
+          description: 'Bad Request: Validation Error'
+  /api/book/reading/list/:
+    get:
+      operationId: book_reading_list_retrieve
+      description: Retrieves the list of book reading session belonging to authenticated
+        user
+      summary: Get the list of book reading session
+      tags:
+      - BookReading
+      security:
+      - OAuth2: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookReading'
+          description: ''
+        '204':
+          description: User doesn't have an existing book reading session yet
+        '404':
+          description: Object not found
+  /api/book/reading/pause/:
+    post:
+      operationId: book_reading_pause_create
+      description: Pauses an existing book reading session for the authenticated user
+      summary: Pause an existing book reading session
+      tags:
+      - BookReading
+      security:
+      - OAuth2: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookReading'
+          description: ''
+        '400':
+          description: 'Bad Request: Validation Error'
+  /api/book/reading/resume/:
+    post:
+      operationId: book_reading_resume_create
+      description: Resumes a paused book reading session for the authenticated user
+      summary: Resume a paused book reading session
+      tags:
+      - BookReading
+      security:
+      - OAuth2: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookReading'
+          description: ''
+        '400':
+          description: 'Bad Request: Validation Error'
+  /api/book/reading/start/{book_id}/:
+    post:
+      operationId: book_reading_start_create
+      description: Creates a new book reading session for the authenticated user,
+        provided there is no ongoing session.
+      summary: Start a new book reading session
+      parameters:
+      - in: path
+        name: book_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - BookReading
+      security:
+      - OAuth2: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookReading'
+          description: ''
+        '400':
+          description: 'Bad Request: Validation Error'
+  /api/user/register/:
+    post:
+      operationId: user_register_create
+      description: Registers a new user and returns an OAuth2 token.
+      summary: Register a new user
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - OAuth2: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                message: User registered successfully
+                data:
+                  access_token: B6YSNgMmjlRVh2DVe1wzwD8X8Id4oO
+                  expires_in: 86400
+                  token_type: Bearer
+                  scope: read write
+                  refresh_token: j41z6KcxMaPGXGbSQy6Obp2HsN0RrL
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                error: string
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                detail: string
+          description: ''
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user_data:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        name:
+          type: string
+          title: Book name
+          maxLength: 200
+        author_name:
+          type: string
+          title: Name of author this book
+          maxLength: 200
+        num_pages:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: Number of pages of book
+        pages_read:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: Pages read before
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          title: Date User started reading this book
+        finish_date:
+          type: string
+          format: date
+          nullable: true
+          title: Date User finished reading this book
+        image:
+          type: string
+          format: uri
+          nullable: true
+          title: Image of this book
+      required:
+      - author_name
+      - id
+      - name
+      - num_pages
+      - pages_read
+      - user_data
+    BookReading:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        book_data:
+          allOf:
+          - $ref: '#/components/schemas/Book'
+          readOnly: true
+        date_read:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Time user started reading this book
+        start_time:
+          type: string
+          format: date-time
+          nullable: true
+          title: Time user started reading session(resuming also)
+        total_time:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: Total time of this reading session
+        num_pages_read:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: Number of pages read in this session
+        is_finished:
+          type: boolean
+          title: Indicator that indicate user is reading this book
+      required:
+      - book_data
+      - date_read
+      - id
+    BookReadingFinish:
+      type: object
+      properties:
+        num_pages_read:
+          type: integer
+          minimum: 1
+          description: Number of pages User read during book reading session
+      required:
+      - num_pages_read
+    BookReadingFinishRequest:
+      type: object
+      properties:
+        num_pages_read:
+          type: integer
+          minimum: 1
+          description: Number of pages User read during book reading session
+      required:
+      - num_pages_read
+    BookRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Book name
+          maxLength: 200
+        author_name:
+          type: string
+          minLength: 1
+          title: Name of author this book
+          maxLength: 200
+        num_pages:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: Number of pages of book
+        pages_read:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: Pages read before
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          title: Date User started reading this book
+        finish_date:
+          type: string
+          format: date
+          nullable: true
+          title: Date User finished reading this book
+        image:
+          type: string
+          format: binary
+          nullable: true
+          title: Image of this book
+      required:
+      - author_name
+      - name
+      - num_pages
+      - pages_read
+    RegisterRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+        confirm_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        client_id:
+          type: string
+          writeOnly: true
+          minLength: 1
+        client_secret:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - client_id
+      - client_secret
+      - confirm_password
+      - password
+      - username
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+      required:
+      - id
+      - username
+    UserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+      required:
+      - username
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows: {}

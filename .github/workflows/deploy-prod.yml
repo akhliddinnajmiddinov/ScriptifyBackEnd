@@ -157,7 +157,6 @@ jobs:
             docker compose up -d --build --pull always
             docker image prune -f
 
-            sudo systemctl restart nginx || { echo "Nginx restart failed"; exit 1; }
             echo "Deployment complete"
             docker ps -a
             docker compose logs --tail=50

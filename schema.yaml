@@ -1,0 +1,1004 @@
+openapi: 3.0.3
+info:
+  title: Scriptify API
+  version: 1.0.0
+  description: API documentation for Scriptify Backend
+paths:
+  /api/runs/:
+    get:
+      operationId: runs_list
+      description: List all runs ordered by start time (newest first). Filter by script_id
+        using query parameter.
+      parameters:
+      - in: query
+        name: script_id
+        schema:
+          type: integer
+        description: Filter runs by script ID
+      tags:
+      - Runs
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Run'
+          description: ''
+    post:
+      operationId: runs_create
+      description: Create and immediately queue a new run for a script. Input data
+        is validated against the script's input_schema.
+      tags:
+      - Runs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RunCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RunCreateRequest'
+        required: true
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Run'
+          description: ''
+        '400':
+          description: Invalid input data
+        '500':
+          description: Task failed to start
+  /api/runs/{id}/:
+    get:
+      operationId: runs_retrieve
+      description: Get detailed information about a specific run including input data,
+        status, and file paths
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this run.
+        required: true
+      tags:
+      - Runs
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Run'
+          description: ''
+    put:
+      operationId: api_runs_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this run.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RunRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RunRequest'
+        required: true
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Run'
+          description: ''
+    patch:
+      operationId: api_runs_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this run.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRunRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRunRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRunRequest'
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Run'
+          description: ''
+    delete:
+      operationId: api_runs_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this run.
+        required: true
+      tags:
+      - api
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '204':
+          description: No response body
+  /api/runs/{id}/abort/:
+    post:
+      operationId: runs_abort
+      description: Abort a running celery task and mark the run as REVOKED.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this run.
+        required: true
+      tags:
+      - Runs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RunRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RunRequest'
+        required: true
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Run'
+          description: ''
+        '400':
+          description: Cannot abort finished run
+  /api/runs/{id}/logs/:
+    get:
+      operationId: runs_get_logs
+      description: Get the complete log content for a specific run. Returns logs as
+        plain text.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this run.
+        required: true
+      tags:
+      - Runs
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+          description: ''
+  /api/runs/{id}/logs-stream/:
+    get:
+      operationId: runs_stream_logs
+      description: Stream logs for a run in real-time using Server-Sent Events (SSE).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this run.
+        required: true
+      tags:
+      - Runs
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+          description: ''
+  /api/runs/{id}/results/:
+    get:
+      operationId: runs_get_results
+      description: Get the results for a specific run. Returns structured JSON data.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this run.
+        required: true
+      tags:
+      - Runs
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/runs/by_script/:
+    get:
+      operationId: runs_by_script
+      description: Get all runs for a specific script, ordered by start time (newest
+        first)
+      parameters:
+      - in: query
+        name: script_id
+        schema:
+          type: integer
+        description: Script ID to filter runs
+        required: true
+      tags:
+      - Runs
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Run'
+          description: ''
+  /api/scripts/:
+    get:
+      operationId: scripts_list
+      description: List all active scripts with their configurations
+      tags:
+      - Scripts
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Script'
+          description: ''
+  /api/scripts/{id}/:
+    get:
+      operationId: scripts_retrieve
+      description: Get detailed information about a specific script including input/output
+        schemas
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this script.
+        required: true
+      tags:
+      - Scripts
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Script'
+          description: ''
+  /api/scripts/{id}/stats/:
+    get:
+      operationId: scripts_stats_retrieve
+      description: Get statistics for a specific script (total runs, success rate,
+        average execution time)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this script.
+        required: true
+      tags:
+      - Scripts
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScriptStats'
+          description: ''
+  /api/scripts/stats/:
+    get:
+      operationId: scripts_stats_list
+      description: Get aggregated statistics for all scripts (total runs, success
+        rate, average execution time)
+      tags:
+      - Scripts
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScriptStats'
+          description: ''
+  /api/user/change-password/:
+    post:
+      operationId: api_user_change_password_create
+      summary: Change user password
+      tags:
+      - User Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+        required: true
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePasswordSuccess'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePasswordError'
+          description: ''
+  /api/user/profile/:
+    get:
+      operationId: api_user_profile_retrieve
+      description: Retrieves the authenticated user's profile information
+      summary: Get user profile
+      tags:
+      - User Profile
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      email:
+                        type: string
+                      first_name:
+                        type: string
+                      last_name:
+                        type: string
+                      photo:
+                        type: string
+                      date_joined:
+                        type: string
+          description: ''
+    put:
+      operationId: api_user_profile_update
+      description: Updates the authenticated user's profile information
+      summary: Update user profile
+      tags:
+      - User Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+          description: ''
+  /api/user/register/:
+    post:
+      operationId: api_user_register_create
+      description: Registers a new user and returns an OAuth2 token.
+      summary: Register a new user
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+        required: true
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                message: User registered successfully
+                data:
+                  access_token: B6YSNgMmjlRVh2DVe1wzwD8X8Id4oO
+                  expires_in: 86400
+                  token_type: Bearer
+                  scope: read write
+                  refresh_token: j41z6KcxMaPGXGbSQy6Obp2HsN0RrL
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                error: string
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                detail: string
+          description: ''
+  /oauth/token/:
+    post:
+      operationId: oauth_token_create
+      description: |-
+        Implements an endpoint to provide access tokens
+
+        The endpoint is used in the following flows:
+        * Authorization code
+        * Password
+        * Client credentials
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineTokenRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InlineTokenRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InlineTokenRequest'
+        required: true
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /oauth/token/revoke/:
+    post:
+      operationId: oauth_token_revoke_create
+      description: Handles OAuth2 token refresh
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+        required: true
+      security:
+      - OAuth2PasswordBearer:
+        - read
+        - write
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+components:
+  schemas:
+    ChangePasswordError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    ChangePasswordRequest:
+      type: object
+      properties:
+        current_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        confirm_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        client_id:
+          type: string
+          writeOnly: true
+          minLength: 1
+        client_secret:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - client_id
+      - client_secret
+      - confirm_password
+      - current_password
+      - new_password
+    ChangePasswordSuccess:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+      - message
+      - success
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    InlineTokenRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+        grant_type:
+          type: string
+          minLength: 1
+        client_id:
+          type: string
+          minLength: 1
+        client_secret:
+          type: string
+          minLength: 1
+      required:
+      - client_id
+      - client_secret
+      - grant_type
+      - password
+      - username
+    PatchedRunRequest:
+      type: object
+      properties:
+        script:
+          type: integer
+        started_by:
+          type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        input_data: {}
+    RefreshTokenRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+          minLength: 1
+        grant_type:
+          type: string
+          minLength: 1
+          default: refresh_token
+        client_id:
+          type: string
+          minLength: 1
+        client_secret:
+          type: string
+          minLength: 1
+      required:
+      - client_id
+      - client_secret
+      - refresh_token
+    RefreshTokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+        expires_in:
+          type: integer
+      required:
+      - access_token
+      - expires_in
+      - refresh_token
+      - token_type
+    RegisterUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          maxLength: 128
+        confirm_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        client_id:
+          type: string
+          writeOnly: true
+          minLength: 1
+        client_secret:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - client_id
+      - client_secret
+      - confirm_password
+      - email
+      - first_name
+      - last_name
+      - password
+    Run:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        script:
+          type: integer
+        script_name:
+          type: string
+          readOnly: true
+        started_by:
+          type: integer
+          nullable: true
+        started_by_email:
+          type: string
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+        finished_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        celery_task_id:
+          type: string
+          readOnly: true
+          nullable: true
+        input_data: {}
+        result_data:
+          readOnly: true
+          nullable: true
+        logs_file_path:
+          type: string
+          readOnly: true
+        result_file_path:
+          type: string
+          readOnly: true
+        error_message:
+          type: string
+          readOnly: true
+        duration:
+          type: number
+          format: float
+          readOnly: true
+      required:
+      - celery_task_id
+      - duration
+      - error_message
+      - finished_at
+      - id
+      - input_data
+      - logs_file_path
+      - result_data
+      - result_file_path
+      - script
+      - script_name
+      - started_at
+      - started_by_email
+    RunCreateRequest:
+      type: object
+      description: Serializer for creating new runs
+      properties:
+        input_data: {}
+      required:
+      - input_data
+    RunRequest:
+      type: object
+      properties:
+        script:
+          type: integer
+        started_by:
+          type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        input_data: {}
+      required:
+      - input_data
+      - script
+    Script:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        celery_task:
+          type: string
+          maxLength: 255
+        input_schema:
+          description: JSON Schema for generating frontend form
+        output_schema:
+          description: JSON Schema for displaying results
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+      required:
+      - celery_task
+      - created_at
+      - id
+      - input_schema
+      - name
+      - output_schema
+      - updated_at
+    ScriptStats:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        total_runs:
+          type: integer
+          readOnly: true
+        success_count:
+          type: integer
+          readOnly: true
+        failed_count:
+          type: integer
+          readOnly: true
+        success_rate:
+          type: number
+          format: float
+          readOnly: true
+        average_time:
+          type: number
+          format: float
+          readOnly: true
+      required:
+      - average_time
+      - failed_count
+      - id
+      - name
+      - success_count
+      - success_rate
+      - total_runs
+    StatusEnum:
+      enum:
+      - PENDING
+      - RECEIVED
+      - STARTED
+      - SUCCESS
+      - FAILURE
+      - RETRY
+      - REVOKED
+      type: string
+      description: |-
+        * `PENDING` - Pending
+        * `RECEIVED` - Received
+        * `STARTED` - Started
+        * `SUCCESS` - Success
+        * `FAILURE` - Failure
+        * `RETRY` - Retry
+        * `REVOKED` - Revoked
+    UserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        photo:
+          type: string
+          format: binary
+          nullable: true
+      required:
+      - email
+      - first_name
+      - last_name
+  securitySchemes:
+    OAuth2PasswordBearer:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: /oauth/token/
+          scopes:
+            read: Read access to resources
+            write: Write access to resources
+    oauth2:
+      type: oauth2
+      flows: {}

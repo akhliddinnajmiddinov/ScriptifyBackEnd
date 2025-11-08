@@ -4,7 +4,6 @@ from rest_framework import status, permissions
 from oauth2_provider.settings import oauth2_settings
 from braces.views import CsrfExemptMixin
 from oauth2_provider.views.mixins import OAuthLibMixin
-from drf_spectacular.utils import extend_schema
 from django.http import HttpRequest, QueryDict
 
 import json
@@ -17,7 +16,6 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.translation import gettext_lazy as _
 from django.db import transaction
 from rest_framework import serializers
-from drf_spectacular.utils import extend_schema, inline_serializer
 from oauth2_provider.views import TokenView, RevokeTokenView
 from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiExample

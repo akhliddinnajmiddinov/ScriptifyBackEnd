@@ -1,6 +1,5 @@
 .env
 venv
-apps/book/migrations
 apps/user/migrations
 **/__pycache__/
 __pycache__/

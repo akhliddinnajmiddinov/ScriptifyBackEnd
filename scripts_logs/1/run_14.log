@@ -1,0 +1,22 @@
+[2025-11-08T16:52:34.820604] Task received by worker
+[2025-11-08T16:52:34.820621] Starting task: Kleinanzeigen Product Scraper
+[2025-11-08T16:52:34.820624] Input data: {
+  "searchQuery": "Druckerpatrone",
+  "maxPages": 5,
+  "brands": [
+    {
+      "brand": "Canon"
+    }
+  ]
+}
+
+
+[2025-11-08T16:52:34.822581] ERROR: No module named 'playwright'
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 41, in execute_script_task
+    if task_name == 'scripts.tasks.scrape_kleinanzeigen_brand':
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 81, in scrape_kleinanzeigen_brand_task
+    """
+ModuleNotFoundError: No module named 'playwright'
+

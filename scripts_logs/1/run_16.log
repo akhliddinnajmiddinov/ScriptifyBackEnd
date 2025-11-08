@@ -1,0 +1,21 @@
+[2025-11-08T16:58:39.684049] Task received by worker
+[2025-11-08T16:58:39.684062] Starting task: Kleinanzeigen Product Scraper
+[2025-11-08T16:58:39.684067] Input data: {
+  "searchQuery": "Druckerpatrone",
+  "maxPages": 5,
+  "brands": [
+    {
+      "brand": "Brand"
+    }
+  ]
+}
+
+[2025-11-08T16:58:41.755559] Starting to scrape brand: {'brand': 'Brand'}
+[2025-11-08T16:58:42.108583] Scraping {'brand': 'Brand'} - Page 1
+[2025-11-08T16:58:57.145623] Failed to load page 1: Page.wait_for_selector: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator("article") to be visible
+
+[2025-11-08T16:58:57.212626] Scraping complete. Total results: 0
+
+[2025-11-08T16:58:57.216134] Task completed successfully

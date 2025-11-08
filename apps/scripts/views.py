@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.http import StreamingHttpResponse
@@ -10,6 +11,7 @@ from drf_spectacular.types import OpenApiTypes
 from .models import Script, Run
 from .serializers import ScriptSerializer, RunSerializer, RunCreateSerializer, ScriptStatsSerializer
 from .tasks import execute_script_task
+from django.contrib.auth.decorators import login_required
 import os
 import json
 import time
@@ -155,6 +157,7 @@ class RunViewSet(viewsets.ModelViewSet):
         except Exception as e:
             run.status = 'FAILURE'
             run.error_message = str(e)
+            print(str(e))
             run.finished_at = timezone.now()
             run.save()
             return Response(
@@ -240,46 +243,7 @@ class RunViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @extend_schema(
-        operation_id="runs_stream_logs",
-        description="Stream logs for a run in real-time using Server-Sent Events (SSE).",
-        tags=["Runs"],
-        responses=OpenApiTypes.STR,
-    )
-    @action(detail=True, methods=['get'], url_path='logs-stream')
-    def logs_stream(self, request, pk=None):
-        run = self.get_object()
 
-        def log_generator():
-            last_position = 0
-            while True:
-                try:
-                    if os.path.exists(run.logs_file_path):
-                        with open(run.logs_file_path, 'r') as f:
-                            f.seek(last_position)
-                            new_logs = f.read()
-                            if new_logs:
-                                last_position = f.tell()
-                                yield f"data: {json.dumps({'logs': new_logs})}\n\n"
-
-                    run.refresh_from_db()
-                    if run.is_finished():
-                        yield f"data: {json.dumps({'finished': True})}\n\n"
-                        break
-
-                    time.sleep(1)
-                except Exception as e:
-                    yield f"data: {json.dumps({'error': str(e)})}\n\n"
-                    break
-
-        return StreamingHttpResponse(
-            log_generator(),
-            content_type='text/event-stream',
-            headers={
-                'Cache-Control': 'no-cache',
-                'X-Accel-Buffering': 'no',
-            }
-        )
 
     @extend_schema(
         operation_id="runs_get_results",
@@ -301,3 +265,94 @@ class RunViewSet(viewsets.ModelViewSet):
                 {'error': f'Failed to read results: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+def log_generator():
+    # Step 1: If run already finished → send full logs once
+    run.refresh_from_db()
+    if run.is_finished():
+        if os.path.exists(log_path):
+            try:
+                with open(log_path, 'r', encoding='utf-8') as f:
+                    full_logs = f.read()
+                yield f"data: {json.dumps({'logs': full_logs, 'finished': True})}\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'error': f'Failed to read logs: {str(e)}'})})\n\n"
+        else:
+            yield f"data: {json.dumps({'logs': 'Log file not found', 'finished': True})}\n\n"
+        return
+
+    # Step 2: Run is in progress → send existing logs first
+    existing_logs = ""
+    if os.path.exists(log_path):
+        try:
+            with open(log_path, 'r', encoding='utf-8') as f:
+                existing_logs = f.read()
+        except Exception as e:
+            yield f"data: {json.dumps({'error': f'Initial read failed: {str(e)}'})})\n\n"
+            return
+
+    if existing_logs:
+        yield f"data: {json.dumps({'logs': existing_logs})}\n\n"
+
+    # Step 3: Start tailing from end of current file
+    position = 0
+    if os.path.exists(log_path):
+        try:
+            with open(log_path, 'r', encoding='utf-8') as f:
+                f.seek(0, os.SEEK_END)
+                position = f.tell()
+        except:
+            position = 0
+
+    # Step 4: Stream new lines until finish
+    while True:
+        run.refresh_from_db()
+        if run.is_finished():
+            # Send any final new lines
+            try:
+                with open(log_path, 'r', encoding='utf-8') as f:
+                    f.seek(position)
+                    final_chunk = f.read()
+                    if final_chunk:
+                        yield f"data: {json.dumps({'logs': final_chunk})}\n\n"
+                    yield f"data: {json.dumps({'finished': True})}\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'error': f'Final chunk error: {str(e)}'})})\n\n"
+            break
+
+        try:
+            if os.path.exists(log_path):
+                with open(log_path, 'r', encoding='utf-8') as f:
+                    f.seek(position)
+                    new_data = f.read()
+                    if new_data:
+                        position = f.tell()
+                        yield f"data: {json.dumps({'logs': new_data})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': f'Stream error: {str(e)}'})})\n\n"
+            break
+
+        time.sleep(1)
+
+
+@extend_schema(
+    operation_id="runs_stream_logs",
+    description="Stream logs in real-time (SSE). "
+                "On connect: sends all existing logs. "
+                "While run is in progress: streams new lines. "
+                "On finish: sends final chunk + 'finished' signal.",
+    tags=["Runs"],
+)
+
+@login_required
+def run_logs_stream(request, run_id):
+    # same generator logic
+    return StreamingHttpResponse(
+        log_generator(),
+        content_type="text/event-stream",
+        headers={
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no',
+        },
+    )

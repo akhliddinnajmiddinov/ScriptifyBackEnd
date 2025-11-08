@@ -1,0 +1,29 @@
+[2025-11-08T17:43:08.615137] Task received by worker
+[2025-11-08T17:43:08.615153] Starting task: Kleinanzeigen Product Scraper
+[2025-11-08T17:43:08.615157] Input data: {
+  "searchQuery": "Druckerpatrone",
+  "maxPages": 5,
+  "brands": [
+    {
+      "brand": "Canon"
+    }
+  ]
+}
+
+[2025-11-08T17:43:10.077471] Starting to scrape brand: Canon
+[2025-11-08T17:43:10.203530] Scraping Canon - Page 1
+[2025-11-08T17:43:56.115764] Error getting images: Page.wait_for_selector: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("#viewad-image") to be visible
+
+[2025-11-08T17:44:27.509839] Error getting images: Page.wait_for_selector: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("#viewad-image") to be visible
+
+[2025-11-08T17:45:23.684510] Scraping Canon - Page 2
+[2025-11-08T17:46:24.281223] Scraping Canon - Page 3
+[2025-11-08T17:47:30.565064] Scraping Canon - Page 4
+[2025-11-08T17:48:18.370307] Scraping Canon - Page 5
+[2025-11-08T17:48:59.341539] Scraping complete. Total results: 118
+
+[2025-11-08T17:48:59.385982] Task completed successfully

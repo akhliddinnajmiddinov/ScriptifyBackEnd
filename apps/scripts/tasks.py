@@ -9,208 +9,165 @@ from datetime import datetime
 
 @shared_task(bind=True)
 def execute_script_task(self, script_id, run_id, input_data):
-    """
-    Main celery task dispatcher that routes to the appropriate script task.
-    This handles logging, status updates, and error handling.
-    """
     run = Run.objects.get(id=run_id)
     script = Script.objects.get(id=script_id)
-    
+
+    # Setup logging
+    log_path = run.logs_file_path
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+
+    logger = logging.getLogger(f"run_{run_id}")
+    logger.setLevel(logging.DEBUG)
+    if not logger.handlers:
+        handler = logging.handlers.RotatingFileHandler(log_path, maxBytes=10*1024*1024, backupCount=5)
+        formatter = logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+
     try:
-        # Log start
-        log_path = run.logs_file_path
-        os.makedirs(os.path.dirname(log_path), exist_ok=True)
-        
         run.status = 'RECEIVED'
         run.celery_task_id = self.request.id
         run.save()
-        
-        with open(log_path, 'a') as f:
-            f.write(f"[{datetime.now().isoformat()}] Task received by worker\n")
-            f.write(f"[{datetime.now().isoformat()}] Starting task: {script.name}\n")
-            f.write(f"[{datetime.now().isoformat()}] Input data: {json.dumps(input_data, indent=2)}\n\n")
-        
+
+        logger.info("Task received by worker")
+        logger.info(f"Starting task: {script.name}")
+        logger.debug(f"Input data: {json.dumps(input_data, indent=2)}")
+
         run.status = 'STARTED'
         run.save()
-        
-        # Execute the actual script task
-        # Route to the appropriate task based on celery_task name
-        task_name = script.celery_task
-        
-        if task_name == 'scripts.tasks.scrape_kleinanzeigen_brand':
-            result = scrape_kleinanzeigen_brand_task(run_id, input_data, log_path)
-        else:
-            raise ValueError(f"Unknown task: {task_name}")
-        
-        # Save result
+
+        # Call as regular function
+        result = scrape_kleinanzeigen_brand_task(run_id, input_data, log_path)
+
+        # Save final result
         result_path = run.result_file_path
         os.makedirs(os.path.dirname(result_path), exist_ok=True)
         with open(result_path, 'w') as f:
             json.dump(result, f, indent=2)
-        
+
         run.result_data = result
         run.status = 'SUCCESS'
         run.finished_at = timezone.now()
         run.save()
-        
-        with open(log_path, 'a') as f:
-            f.write(f"\n[{datetime.now().isoformat()}] Task completed successfully\n")
-        
+
+        logger.info("Task completed successfully")
         return {'status': 'success', 'run_id': run_id}
-    
+
     except Exception as e:
-        # Log error
-        error_msg = f"{str(e)}\n{traceback.format_exc()}"
-        with open(log_path, 'a') as f:
-            f.write(f"\n[{datetime.now().isoformat()}] ERROR: {error_msg}\n")
-        
+        logger.error(f"Task failed: {str(e)}\n{traceback.format_exc()}")
         run.status = 'FAILURE'
         run.error_message = str(e)
         run.finished_at = timezone.now()
         run.save()
-        
         raise
 
-
 def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
-    """
-    Celery task for scraping Kleinanzeigen (German classifieds) for products.
-    Input: { brands: [...], max_pages: int }
-    Output: { results: [...] }
-    """
     from playwright.sync_api import sync_playwright
     from bs4 import BeautifulSoup
-    import pandas as pd
     import time
     import urllib.parse
-    
-    def log_msg(msg):
-        with open(log_path, 'a') as f:
-            f.write(f"[{datetime.now().isoformat()}] {msg}\n")
-    
-    brands = input_data.get('brands', [])
+
+    # Setup logger
+    logger = logging.getLogger(f"scrape_{run_id}")
+    logger.setLevel(logging.DEBUG)
+    if not logger.handlers:
+        handler = logging.handlers.RotatingFileHandler(log_path, maxBytes=10*1024*1024, backupCount=5)
+        formatter = logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+
+    brands = [item['brand'] for item in input_data.get('brands', []) if item.get('brand')]
     max_pages = input_data.get('maxPages', 50)
     search_query = input_data.get('searchQuery', 'Druckerpatrone')
-    
+
     if not brands:
-        raise ValueError("No brands provided in input")
-    
+        logger.error("No brands provided")
+        raise ValueError("No brands provided")
+
     all_results = []
-    
+    run = Run.objects.get(id=run_id)
+    result_path = run.result_file_path
+    os.makedirs(os.path.dirname(result_path), exist_ok=True)
+
+    logger.info(f"Scraping {len(brands)} brand(s): {', '.join(brands)}")
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        
         for brand in brands:
-            log_msg(f"Starting to scrape brand: {brand}")
+            logger.info(f"Processing brand: {brand}")
             page = browser.new_page()
             page_num = 1
-            
+
             try:
                 while page_num <= max_pages:
                     search_term = f"{search_query} {brand}"
-                    encoded_query = urllib.parse.quote_plus(search_term)
-                    
-                    if page_num == 1:
-                        search_url = f"https://www.kleinanzeigen.de/s-{encoded_query}/k0"
-                    else:
-                        search_url = f"https://www.kleinanzeigen.de/s-seite:{page_num}/{encoded_query}/k0"
-                    
-                    log_msg(f"Scraping {brand} - Page {page_num}")
-                    
+                    encoded = urllib.parse.quote(search_term.replace(" ", "-"))
+                    url = f"https://www.kleinanzeigen.de/s-{encoded}/k0" if page_num == 1 else f"https://www.kleinanzeigen.de/s-seite:{page_num}/{encoded}/k0"
+
+                    logger.debug(f"Loading page {page_num}: {url}")
                     try:
-                        page.goto(search_url, timeout=30000)
-                        page.wait_for_selector("article", timeout=10000)
+                        page.goto(url, timeout=30000)
+                        page.wait_for_selector("article", timeout=30000)
                     except Exception as e:
-                        log_msg(f"Failed to load page {page_num}: {e}")
+                        logger.warning(f"Page load failed: {e}")
                         break
-                    
-                    html = page.content()
-                    soup = BeautifulSoup(html, "html.parser")
-                    
-                    ads_on_page = 0
-                    products = []
-                    
-                    for ad in soup.select("article"):
+
+                    soup = BeautifulSoup(page.content(), "html.parser")
+                    ads = soup.select("article")
+                    if not ads:
+                        logger.info(f"No ads on page {page_num}")
+                        break
+
+                    for ad in ads:
                         try:
-                            # Link
                             link_el = ad.select_one(".ellipsis")
-                            link = "https://www.kleinanzeigen.de" + link_el["href"] if link_el and "href" in link_el.attrs else ""
-                            
-                            # Title
-                            title_el = ad.select_one("h2")
-                            title = title_el.get_text(strip=True).replace(",", "") if title_el else ""
-                            
-                            # Price
-                            price_el = ad.select_one("p.aditem-main--middle--price-shipping--price")
-                            price = price_el.get_text(strip=True) if price_el else ""
-                            price = price.split(' ')[0] if price else ""
-                            
-                            products.append({
-                                "link": link,
-                                "brand": brand,
-                                "title": title,
-                                "price": price,
-                                "image_urls": []
-                            })
-                        except Exception as e:
-                            log_msg(f"Error parsing ad: {e}")
-                            continue
-                    
-                    # Scrape details for each product
-                    for product in products:
-                        link = product.get('link')
-                        if link:
-                            try:
+                            link = "https://www.kleinanzeigen.de" + link_el["href"] if link_el else ""
+                            title = ad.select_one("h2").get_text(strip=True).replace(",", "") if ad.select_one("h2") else ""
+                            price = ad.select_one("p.aditem-main--middle--price-shipping--price")
+                            price = price.get_text(strip=True).split()[0] if price else ""
+
+                            product = {"link": link, "brand": brand, "title": title, "price": price, "image_urls": [], "description": ""}
+
+                            if link:
                                 page.goto(link, timeout=30000)
-                                
                                 # Images
-                                img_urls = []
                                 try:
                                     page.wait_for_selector("#viewad-image", timeout=10000)
-                                    img_elements = page.query_selector_all("#viewad-image")
-                                    
-                                    for img_el in img_elements:
-                                        src = img_el.get_attribute("src")
-                                        if src and src not in img_urls:
-                                            img_urls.append(src)
-                                except Exception as e:
-                                    log_msg(f"Error getting images: {e}")
-                                
-                                product["image_urls"] = img_urls
-                                
+                                    product["image_urls"] = [img.get_attribute("src") for img in page.query_selector_all("#viewad-image") if img.get_attribute("src")]
+                                except: pass
                                 # Description
-                                description_text = ""
                                 try:
                                     page.wait_for_selector("#viewad-description-text", timeout=10000)
-                                    description_el = page.query_selector("#viewad-description-text")
-                                    description_text = description_el.inner_text().strip().replace(",", " ") if description_el else ""
-                                except Exception as e:
-                                    log_msg(f"Error getting description: {e}")
-                                
-                                product["description"] = description_text
-                                ads_on_page += 1
-                                all_results.append(product)
-                            except Exception as e:
-                                log_msg(f"Error scraping product detail: {e}")
-                                continue
-                    
-                    # Break if no ads found
-                    if ads_on_page == 0:
-                        log_msg(f"No ads found on page {page_num}, finishing brand {brand}")
-                        break
-                    
+                                    desc = page.query_selector("#viewad-description-text")
+                                    product["description"] = desc.inner_text().strip().replace(",", " ") if desc else ""
+                                except: pass
+
+                            all_results.append(product)
+
+                            # SAVE AFTER EACH PRODUCT
+                            with open(result_path, 'w') as f:
+                                json.dump(all_results, f, indent=2)
+                            
+                            run.result_data = partial
+                            run.save(update_fields=['result_data'])
+
+                            logger.info(f"Product saved: {title[:50]}...")
+
+                        except Exception as e:
+                            logger.error(f"Ad parse error: {e}")
+                            continue
+
                     page_num += 1
-                    time.sleep(1)  # Be polite
-            
+                    time.sleep(1)
             finally:
                 page.close()
-        
         browser.close()
-    
-    log_msg(f"Scraping complete. Total results: {len(all_results)}")
-    
-    return {
+
+    final_result = {
         'results': all_results,
         'total_count': len(all_results),
-        'timestamp': datetime.now().isoformat()
+        'timestamp': datetime.now().isoformat(),
+        'partial': False
     }
+    logger.info(f"Scraping complete: {len(all_results)} products")
+    return final_result

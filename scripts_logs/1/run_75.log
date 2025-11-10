@@ -1,0 +1,15 @@
+[2025-11-10 14:52:07,605] INFO: Task received by worker
+[2025-11-10 14:52:07,605] INFO: Starting task: Kleinanzeigen Product Scraper
+[2025-11-10 14:52:07,606] DEBUG: Input data: {
+  "searchQuery": "Druckerpatrone",
+  "brands": [
+    {
+      "brand": "Canon"
+    },
+    {
+      "brand": "HP"
+    }
+  ],
+  "maxPages": 5
+}
+[2025-11-10 14:52:07,609] INFO: Task completed successfully

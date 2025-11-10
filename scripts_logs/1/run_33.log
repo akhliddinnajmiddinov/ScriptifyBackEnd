@@ -1,0 +1,71 @@
+[2025-11-08 21:52:52,817] INFO: Task received by worker
+[2025-11-08 21:52:52,818] INFO: Starting task: Kleinanzeigen Product Scraper
+[2025-11-08 21:52:52,820] DEBUG: Input data: {
+  "searchQuery": "Druckerpatrone",
+  "maxPages": "1",
+  "brands": [
+    {
+      "brand": "Canon"
+    }
+  ]
+}
+[2025-11-08 21:52:53,289] INFO: Scraping 1 brand(s): Canon
+[2025-11-08 21:52:55,559] INFO: Processing brand: Canon
+[2025-11-08 21:52:56,362] DEBUG: Loading page 1: https://www.kleinanzeigen.de/s-Druckerpatrone-Canon/k0
+[2025-11-08 21:53:04,039] DEBUG: Found 27 product in the page: 1
+[2025-11-08 21:53:04,040] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/ankauf-ihrer-leeren-canon-und-hp-305-hp-305xl-hp-307xl-hp-304-hp-304xl-hp-303-hp-303xl-hp-302-hp-302xl-hp-301-301xl-62-62xl-300-300xl-901-leere-patronen-volle-ueberlagerte-druckerpatronen-toner/1764977037-225-9683">Ankauf Ihrer leeren Canon und HP 305 HP 305XL HP 307XL HP 304 HP 304XL HP 303 HP 303XL HP 302 HP 302XL HP 301 301XL 62 62XL 300 300XL 901 leere Patronen, volle überlagerte Druckerpatronen Toner</a>
+[2025-11-08 21:53:11,887] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:11,892] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/ankauf-ihrer-leeren-vollen-hp-und-canon-540-541-545-546-560-561-575-576-585-586-510-511-512-513-40-41-37-38-50-51-leere-volle-ueberlagerte-druckerpatronen-tintenpatronen-toner-hp-62-302-303-304-305/1117663714-225-9683">Ankauf Ihrer leeren, vollen HP und Canon 540 541 545 546 560 561 575 576 585 586 510 511 512 513 40 41 37 38 50 51 leere, volle überlagerte Druckerpatronen Tintenpatronen Toner + HP 62 302 303 304 305</a>
+[2025-11-08 21:53:17,535] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:17,536] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/canon-druckerpatronen-570-571-incl-canon-ts5055/3240340319-225-922">Canon Druckerpatronen 570/571 incl. Canon TS5055</a>
+[2025-11-08 21:53:20,600] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:20,601] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/druckerpatronen-fuer-canon-pixma-drucker/3240337721-225-26046">Druckerpatronen für Canon Pixma Drucker</a>
+[2025-11-08 21:53:23,988] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:23,990] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/2-druckerpatronen-fuer-canon-drucker-pg545xl-cl546xl-/3240335923-225-4571">2 Druckerpatronen für Canon Drucker: PG545XL,CL546XL.</a>
+[2025-11-08 21:53:27,523] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:27,596] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/druckerpatronen-canon-ts-7450a/3240330396-225-16973">Druckerpatronen Canon TS 7450a</a>
+[2025-11-08 21:53:31,210] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:31,213] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/28x-druckerpatronen-tintenpartonen-canon-drucker-551-und-550/3240304614-225-4711">28x Druckerpatronen Tintenpartonen Canon  Drucker 551 und 550</a>
+[2025-11-08 21:53:34,262] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:34,263] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/3x-original-canon-cli-551-xl-druckerpatronen-neu-druckertinte/3240302834-225-7924">3x Original Canon CLI 551 (XL) Druckerpatronen  neu, Druckertinte</a>
+[2025-11-08 21:53:38,259] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:38,262] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/lxtek-druckerpatronen-580-581-multipack-kompatibel-fuer-canon-tr85/3240292302-225-9602">LxTek Druckerpatronen 580 581 Multipack Kompatibel für Canon TR85</a>
+[2025-11-08 21:53:42,264] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:42,267] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/druckerpatrone-canon-ts-7450a-pg-560xl-black/3240205781-225-16973">Druckerpatrone Canon TS 7450a PG-560XL black</a>
+[2025-11-08 21:53:44,324] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:44,325] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/canon-pixmal-druckerpatronen-neu-blau-rot-schwarz-geld/3240195102-225-2490">Canon Pixmal Druckerpatronen neu blau rot schwarz Geld</a>
+[2025-11-08 21:53:48,119] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:48,123] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/canon-pg-575-druckerpatrone/3240195077-225-25295">Canon PG 575 Druckerpatrone</a>
+[2025-11-08 21:53:51,128] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:51,129] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/druckerpatronen-mit-chip-fuer-canon-drucker-kopierer/3240186983-225-4104">Druckerpatronen mit Chip für Canon Drucker  / Kopierer</a>
+[2025-11-08 21:53:54,329] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:54,333] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/druckerpatronen-canon/3240186887-225-16366">Druckerpatronen Canon</a>
+[2025-11-08 21:53:56,659] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:53:56,660] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/druckerpatronen-fuer-canon-drucker/3240119637-225-5424">Druckerpatronen für Canon Drucker</a>
+[2025-11-08 21:54:01,300] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:54:01,303] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/druckerpatronen-canon-mg-6150/3240111041-225-8830">Druckerpatronen canon mg 6150</a>
+[2025-11-08 21:54:13,052] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:54:13,052] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/druckerpatronen-canon-mg-6150/3240111039-225-8830">Druckerpatronen canon mg 6150</a>
+[2025-11-08 21:54:24,699] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:54:24,700] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/kompatibel-canon-pgi-570xl-cli-571xl-druckerpatronen-multipack/3240095927-225-9419">Kompatibel Canon PGI-570XL/CLI-571XL Druckerpatronen Multipack</a>
+[2025-11-08 21:54:28,087] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:54:28,088] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/druckerpatronen-canon-pixma/3240072819-93-8594">Druckerpatronen Canon Pixma</a>
+[2025-11-08 21:54:31,426] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:54:31,428] DEBUG: Fetching details: <span class="ellipsis ref-not-linked" data-url="/s-anzeige/2-originale-druckerpatronen-und-5-kompatible-canon-maxify/3239996186-225-7980">2 originale Druckerpatronen und 5 kompatible Canon Maxify</span>
+[2025-11-08 21:54:31,431] ERROR: Ad parse error: 'href'
+[2025-11-08 21:54:31,434] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/4-kompatible-druckerpatronen-canon-pixma/3239990973-225-7980">4 kompatible Druckerpatronen Canon Pixma</a>
+[2025-11-08 21:54:35,857] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:54:35,858] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/druckerpatronen-canon-526/3239980805-225-7527">Druckerpatronen Canon 526</a>
+[2025-11-08 21:54:41,541] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:54:41,542] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/druckerpatronen-xl-canon/3239936651-225-3460">Druckerpatronen XL Canon</a>
+[2025-11-08 21:54:43,857] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:54:43,863] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/druckerpatrone-canon-540-black-pg-540/3239901733-225-7422">Druckerpatrone Canon 540 Black - PG-540</a>
+[2025-11-08 21:54:46,475] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:54:46,478] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/atopink-pg540xl-schwarz-druckerpatrone-pg-540-xl-canon/3239898527-225-9358">ATOPINK  PG540XL schwarz, Druckerpatrone PG-540 XL Canon</a>
+[2025-11-08 21:54:49,140] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:54:49,144] DEBUG: Fetching details: <a class="ellipsis" href="/s-anzeige/canon-580-581-druckerpatronen-neu/3239841199-225-3199">Canon 580/581 Druckerpatronen neu</a>
+[2025-11-08 21:54:51,966] ERROR: Ad parse error: name 'partial' is not defined
+[2025-11-08 21:54:51,967] DEBUG: Fetching details: <span class="ellipsis ref-not-linked" data-url="/s-anzeige/canon-druckerpatrone-neu-color-546/3239826608-18-1147">Canon Druckerpatrone neu Color 546</span>
+[2025-11-08 21:54:51,967] ERROR: Ad parse error: 'href'
+[2025-11-08 21:54:53,162] INFO: Scraping complete: 25 products
+[2025-11-08 21:54:53,183] INFO: Task completed successfully

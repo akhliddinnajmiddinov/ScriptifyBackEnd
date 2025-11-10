@@ -1,14 +1,18 @@
-from celery import shared_task
+from django_eventstream import send_event
 from django.utils import timezone
 from .models import Run, Script
-import os
-import json
-import traceback
+from celery import shared_task
 from datetime import datetime
+import traceback
+import logging
+import json
+import time
+import os
 
 
 @shared_task(bind=True)
-def execute_script_task(self, script_id, run_id, input_data):
+def execute_script_task(self, script_id, run_id, input_data, input_file_paths):
+    print(input_file_paths)
     run = Run.objects.get(id=run_id)
     script = Script.objects.get(id=script_id)
 
@@ -37,8 +41,13 @@ def execute_script_task(self, script_id, run_id, input_data):
         run.save()
 
         # Call as regular function
-        result = scrape_kleinanzeigen_brand_task(run_id, input_data, log_path)
-
+        result = None
+        print(script.celery_task)
+        if script.celery_task == "scrape_kleinanzeigen_brand_task":
+            result = scrape_kleinanzeigen_brand_task(run_id, input_data, log_path)
+        elif script.celery_task == "analyze_products":
+            result = analyze_products(run_id, input_data, log_path)
+        
         # Save final result
         result_path = run.result_file_path
         os.makedirs(os.path.dirname(result_path), exist_ok=True)
@@ -77,14 +86,17 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
         logger.addHandler(handler)
 
     brands = [item['brand'] for item in input_data.get('brands', []) if item.get('brand')]
-    max_pages = input_data.get('maxPages', 50)
+    try:
+        max_pages = int(input_data.get('maxPages', 5))
+    except:
+        max_pages = 5
     search_query = input_data.get('searchQuery', 'Druckerpatrone')
 
     if not brands:
         logger.error("No brands provided")
         raise ValueError("No brands provided")
 
-    all_results = []
+    all_results = {}
     run = Run.objects.get(id=run_id)
     result_path = run.result_file_path
     os.makedirs(os.path.dirname(result_path), exist_ok=True)
@@ -97,6 +109,7 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
             logger.info(f"Processing brand: {brand}")
             page = browser.new_page()
             page_num = 1
+            results = []
 
             try:
                 while page_num <= max_pages:
@@ -118,10 +131,11 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
                         logger.info(f"No ads on page {page_num}")
                         break
 
+                    logger.debug(f"Found {len(ads)} product in the page: {page_num}")
                     for ad in ads:
                         try:
                             link_el = ad.select_one(".ellipsis")
-                            link = "https://www.kleinanzeigen.de" + link_el["href"] if link_el else ""
+                            link = "https://www.kleinanzeigen.de" + link_el.get('href') if link_el else ""
                             title = ad.select_one("h2").get_text(strip=True).replace(",", "") if ad.select_one("h2") else ""
                             price = ad.select_one("p.aditem-main--middle--price-shipping--price")
                             price = price.get_text(strip=True).split()[0] if price else ""
@@ -129,6 +143,7 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
                             product = {"link": link, "brand": brand, "title": title, "price": price, "image_urls": [], "description": ""}
 
                             if link:
+                                logger.debug(f"Fetching details: {link}")
                                 page.goto(link, timeout=30000)
                                 # Images
                                 try:
@@ -142,14 +157,15 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
                                     product["description"] = desc.inner_text().strip().replace(",", " ") if desc else ""
                                 except: pass
 
-                            all_results.append(product)
+                            results.append(product)
 
+                            all_results[brand] = results
                             # SAVE AFTER EACH PRODUCT
                             with open(result_path, 'w') as f:
                                 json.dump(all_results, f, indent=2)
                             
-                            run.result_data = partial
-                            run.save(update_fields=['result_data'])
+                            # run.result_data = partial
+                            # run.save(update_fields=['result_data'])
 
                             logger.info(f"Product saved: {title[:50]}...")
 
@@ -163,11 +179,59 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
                 page.close()
         browser.close()
 
-    final_result = {
-        'results': all_results,
-        'total_count': len(all_results),
-        'timestamp': datetime.now().isoformat(),
-        'partial': False
-    }
     logger.info(f"Scraping complete: {len(all_results)} products")
-    return final_result
+    return all_results
+
+
+@shared_task(bind=True)
+def analyze_products(self, script_id, run_id, input_data):
+    print("SALOM")
+    return {"salomlar": "olsun"}
+
+
+@shared_task
+def stream_logs(run_id, log_path, channel):
+    # Start from end
+    print("MANANAKU")
+    position = 0
+    if os.path.exists(log_path):
+        try:
+            with open(log_path, 'r', encoding='utf-8') as f:
+                f.seek(0, 2)  # SEEK_END
+                position = f.tell()
+        except:
+            position = 0
+
+    while True:
+        try:
+            run = Run.objects.get(pk=run_id)
+        except Run.DoesNotExist:
+            break
+
+        # If finished → send final chunk + finish
+        if run.is_finished():
+            try:
+                with open(log_path, 'r', encoding='utf-8') as f:
+                    f.seek(position)
+                    final_chunk = f.read()
+                    if final_chunk:
+                        send_event(channel, 'logs', {'logs': final_chunk})
+                    send_event(channel, 'finished', {'finished': True})
+            except Exception as e:
+                send_event(channel, 'error', {'message': f'Final read error: {str(e)}'})
+            break
+
+        # Stream new data
+        try:
+            if os.path.exists(log_path):
+                with open(log_path, 'r', encoding='utf-8') as f:
+                    f.seek(position)
+                    new_data = f.read().strip()
+                    if new_data:
+                        position = f.tell()
+                        send_event(channel, 'logs', {'logs': new_data})
+        except Exception as e:
+            send_event(channel, 'error', {'message': f'Stream error: {str(e)}'})
+            break
+
+        time.sleep(1)

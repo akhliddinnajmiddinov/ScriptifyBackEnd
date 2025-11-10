@@ -1,17 +1,18 @@
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.parsers import JSONParser
+from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from .renderers import EventStreamRenderer
 from django.http import StreamingHttpResponse
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
 from .models import Script, Run
 from .serializers import ScriptSerializer, RunSerializer, RunCreateSerializer, ScriptStatsSerializer
-from .tasks import execute_script_task
-from django.contrib.auth.decorators import login_required
+from .tasks import execute_script_task, stream_logs
+from django_eventstream import send_event
 import os
 import json
 import time
@@ -68,6 +69,8 @@ class ScriptViewSet(viewsets.ReadOnlyModelViewSet):
 class RunViewSet(viewsets.ModelViewSet):
     queryset = Run.objects.all()
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser]
+
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -120,23 +123,28 @@ class RunViewSet(viewsets.ModelViewSet):
         },
     )
     def create(self, request, *args, **kwargs):
-        script_id = request.data.get('script_id')  # Better: from request.data
-        print("SALAOMLAAR")
-        if not script_id:
-            return Response({'error': 'script_id is required'}, status=400)
+        print(request.data)
+        # Combine JSON + FILES into one dict for serializer
+        mutable_data = request.data.copy()
+        mutable_data.update(request.FILES)  # Crucial: include uploaded files
 
-        script = get_object_or_404(Script, id=script_id)
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=mutable_data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        input_data = serializer.validated_data['input_data']
 
+        script = serializer.validated_data['script']
+        input_data = serializer.validated_data['input_data']
+        input_file_paths = serializer.validated_data.get('input_file_paths', {})
+
+        # Create run
         run = Run.objects.create(
             script=script,
             started_by=request.user,
             input_data=input_data,
+            input_file_path=json.dumps(input_file_paths),  # Store file paths
             status='PENDING'
         )
 
+        # Create directories
         logs_dir = os.path.join('scripts_logs', str(script.id))
         result_dir = os.path.join('scripts_results', str(script.id))
         os.makedirs(logs_dir, exist_ok=True)
@@ -150,23 +158,27 @@ class RunViewSet(viewsets.ModelViewSet):
             task = execute_script_task.delay(
                 script_id=script.id,
                 run_id=run.id,
-                input_data=input_data
+                input_data=input_data,
+                input_file_paths=input_file_paths  # Pass file paths to Celery
             )
+            channel = f"run-{run.id}"
+            stream_logs.delay(run_id=run.id, log_path=run.logs_file_path, channel=channel)
+
             run.celery_task_id = task.id
             run.save()
+
+            return Response(RunSerializer(run).data, status=status.HTTP_201_CREATED)
+
         except Exception as e:
             run.status = 'FAILURE'
-            run.error_message = str(e)
-            print(str(e))
+            run.error_message = f"Task failed to start: {str(e)}"
             run.finished_at = timezone.now()
             run.save()
             return Response(
                 {'error': f'Failed to start task: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-        return Response(RunSerializer(run).data, status=status.HTTP_201_CREATED)
-
+        
     @extend_schema(
         operation_id="runs_by_script",
         description="Get all runs for a specific script, ordered by start time (newest first)",
@@ -242,8 +254,44 @@ class RunViewSet(viewsets.ModelViewSet):
                 {'error': f'Failed to read logs: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+    
+    @extend_schema(
+        operation_id="runs_stream_logs",
+        description="Stream logs in real-time (SSE). "
+                    "On connect: sends all existing logs. "
+                    "While run is in progress: streams new lines. "
+                    "On finish: sends final chunk + 'finished' signal.",
+        tags=["Runs"],
+    )
+    @action(detail=True, methods=['get'], url_path='logs-stream')
+    def logs_stream(self, request, pk=None):
+        run = self.get_object()
+        log_path = run.logs_file_path
+        channel = f"run-{run.id}"
 
+        # === 1. Read existing logs ===
+        existing_logs = ""
+        if os.path.exists(log_path):
+            try:
+                with open(log_path, 'r', encoding='utf-8') as f:
+                    existing_logs = f.read()
+            except Exception as e:
+                return Response({'error': str(e)}, status=500)
 
+        run.refresh_from_db()
+        finished = run.is_finished()
+
+        # === 2. Return SSE URL + existing logs ===
+        sse_url = f"events/?channel={channel}"
+        if request.GET.get('access_token'):
+            sse_url += f"&access_token={request.GET['access_token']}"
+
+        return Response({
+            'sse_url': sse_url,
+            'channel': channel,
+            'logs': existing_logs,  # ← HERE!
+            'finished': finished
+        })
 
     @extend_schema(
         operation_id="runs_get_results",
@@ -258,101 +306,26 @@ class RunViewSet(viewsets.ModelViewSet):
             if os.path.exists(run.result_file_path):
                 with open(run.result_file_path, 'r') as f:
                     results = json.load(f)
-                return Response(results)
-            return Response({'data': None})
+                    print("results")
+                    print(str(results)[:100])
+                return Response({"results": results, "status": run.status})
+            return Response([])
         except Exception as e:
             return Response(
                 {'error': f'Failed to read results: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-def log_generator():
-    # Step 1: If run already finished → send full logs once
-    run.refresh_from_db()
-    if run.is_finished():
-        if os.path.exists(log_path):
-            try:
-                with open(log_path, 'r', encoding='utf-8') as f:
-                    full_logs = f.read()
-                yield f"data: {json.dumps({'logs': full_logs, 'finished': True})}\n\n"
-            except Exception as e:
-                yield f"data: {json.dumps({'error': f'Failed to read logs: {str(e)}'})})\n\n"
-        else:
-            yield f"data: {json.dumps({'logs': 'Log file not found', 'finished': True})}\n\n"
-        return
+    @action(detail=True, methods=['get'], url_path='download/(?P<field_name>[^/.]+)')
+    def download_file(self, request, pk=None, field_name=None):
+        run = self.get_object()
+        file_paths = json.loads(run.input_file_path or '{}')
+        file_path = file_paths.get(field_name)
 
-    # Step 2: Run is in progress → send existing logs first
-    existing_logs = ""
-    if os.path.exists(log_path):
-        try:
-            with open(log_path, 'r', encoding='utf-8') as f:
-                existing_logs = f.read()
-        except Exception as e:
-            yield f"data: {json.dumps({'error': f'Initial read failed: {str(e)}'})})\n\n"
-            return
+        if not file_path or not default_storage.exists(file_path):
+            return Response({'error': 'File not found'}, status=404)
 
-    if existing_logs:
-        yield f"data: {json.dumps({'logs': existing_logs})}\n\n"
-
-    # Step 3: Start tailing from end of current file
-    position = 0
-    if os.path.exists(log_path):
-        try:
-            with open(log_path, 'r', encoding='utf-8') as f:
-                f.seek(0, os.SEEK_END)
-                position = f.tell()
-        except:
-            position = 0
-
-    # Step 4: Stream new lines until finish
-    while True:
-        run.refresh_from_db()
-        if run.is_finished():
-            # Send any final new lines
-            try:
-                with open(log_path, 'r', encoding='utf-8') as f:
-                    f.seek(position)
-                    final_chunk = f.read()
-                    if final_chunk:
-                        yield f"data: {json.dumps({'logs': final_chunk})}\n\n"
-                    yield f"data: {json.dumps({'finished': True})}\n\n"
-            except Exception as e:
-                yield f"data: {json.dumps({'error': f'Final chunk error: {str(e)}'})})\n\n"
-            break
-
-        try:
-            if os.path.exists(log_path):
-                with open(log_path, 'r', encoding='utf-8') as f:
-                    f.seek(position)
-                    new_data = f.read()
-                    if new_data:
-                        position = f.tell()
-                        yield f"data: {json.dumps({'logs': new_data})}\n\n"
-        except Exception as e:
-            yield f"data: {json.dumps({'error': f'Stream error: {str(e)}'})})\n\n"
-            break
-
-        time.sleep(1)
-
-
-@extend_schema(
-    operation_id="runs_stream_logs",
-    description="Stream logs in real-time (SSE). "
-                "On connect: sends all existing logs. "
-                "While run is in progress: streams new lines. "
-                "On finish: sends final chunk + 'finished' signal.",
-    tags=["Runs"],
-)
-
-@login_required
-def run_logs_stream(request, run_id):
-    # same generator logic
-    return StreamingHttpResponse(
-        log_generator(),
-        content_type="text/event-stream",
-        headers={
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-            'X-Accel-Buffering': 'no',
-        },
-    )
+        file = default_storage.open(file_path)
+        response = HttpResponse(file, content_type='application/octet-stream')
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+        return response

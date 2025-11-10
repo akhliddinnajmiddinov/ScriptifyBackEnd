@@ -25,8 +25,8 @@ class Script(models.Model):
     """
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, unique=True)
-    description = models.TextField(blank=True)
-    
+    description = models.TextField(blank=True, null=True)
+    pic = models.ImageField(blank=True, null=True)
     # Celery task name - e.g., 'scripts.tasks.scrape_brand'
     celery_task = models.CharField(max_length=255)
     
@@ -66,6 +66,7 @@ class Run(models.Model):
     
     # Input data (captured from script input_schema)
     input_data = models.JSONField()
+    input_file_path = models.TextField(blank=True, null=True)
     
     # Output results (captured from script output_schema)
     result_data = models.JSONField(null=True, blank=True)

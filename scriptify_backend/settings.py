@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    "daphne",
+    'django_eventstream',
     'django.contrib.staticfiles',
     'rest_framework',
     'apps.user',
@@ -85,11 +87,18 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'scriptify_backend.wsgi.application'
+ASGI_APPLICATION = 'scriptify_backend.asgi.application'
 
 REST_FRAMEWORK = {             
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema', 
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': ('oauth2_provider.contrib.rest_framework.OAuth2Authentication',),
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+        'django_eventstream.renderers.SSEEventRenderer',  # ← SSE
+        'django_eventstream.renderers.BrowsableAPIEventStreamRenderer',  # ← Browsable SSE
+    ]
 }
 
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
@@ -100,6 +109,18 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+
+# EventStream settings
+EVENTSTREAM_STORAGE_CLASS = 'django_eventstream.storage.DjangoModelStorage'  # Reliable delivery
+EVENTSTREAM_REDIS = {  # For Celery workers
+    'host': 'localhost',  # Your Redis host
+    'port': 6379,
+    'db': 0,
+}
+
+EVENTSTREAM_ALLOW_ORIGINS = ['http://localhost:3000']  # Your Next.js
+EVENTSTREAM_ALLOW_CREDENTIALS = True
+EVENTSTREAM_ALLOW_HEADERS = 'Authorization'
 
 OAUTH2_PROVIDER = {
     'ACCESS_TOKEN_EXPIRE_SECONDS': 86400,

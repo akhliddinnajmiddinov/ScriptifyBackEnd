@@ -1,0 +1,15 @@
+[2025-11-10 13:28:51,894] INFO: Task received by worker
+[2025-11-10 13:28:51,903] INFO: Starting task: AI Product Analyzer
+[2025-11-10 13:28:51,905] DEBUG: Input data: {
+  "AI_MODEL": "claude",
+  "products": {}
+}
+[2025-11-10 13:28:51,923] ERROR: No brands provided
+[2025-11-10 13:28:51,949] ERROR: Task failed: No brands provided
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 43, in execute_script_task
+    if script.celery_task == "scrape_kleinanzeigen_brand_task":
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 91, in scrape_kleinanzeigen_brand_task
+ValueError: No brands provided
+

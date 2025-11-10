@@ -1,0 +1,23 @@
+[2025-11-08 20:10:48,585] INFO: Task received by worker
+[2025-11-08 20:10:48,590] INFO: Starting task: Kleinanzeigen Product Scraper
+[2025-11-08 20:10:48,591] DEBUG: Input data: {
+  "searchQuery": "Druckerpatrone",
+  "maxPages": "1",
+  "brands": [
+    {
+      "brand": "Canon"
+    }
+  ]
+}
+[2025-11-08 20:10:48,599] INFO: Scraping 1 brand(s): Canon
+[2025-11-08 20:10:50,428] INFO: Processing brand: Canon
+[2025-11-08 20:10:51,365] ERROR: Task failed: '<=' not supported between instances of 'int' and 'str'
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 41, in execute_script_task
+    # Call as regular function
+             ^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 103, in scrape_kleinanzeigen_brand_task
+    try:
+         
+TypeError: '<=' not supported between instances of 'int' and 'str'
+

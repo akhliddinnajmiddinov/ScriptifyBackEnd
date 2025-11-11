@@ -11,7 +11,7 @@ class ScriptAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'description', 'is_active')
+            'fields': ('name', 'description', 'pic', 'is_active')
         }),
         ('Task Configuration', {
             'fields': ('celery_task', 'input_schema', 'output_schema')

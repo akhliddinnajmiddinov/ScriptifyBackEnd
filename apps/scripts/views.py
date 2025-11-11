@@ -7,16 +7,26 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from .renderers import EventStreamRenderer
 from django.http import StreamingHttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
+from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.types import OpenApiTypes
 from .models import Script, Run
 from .serializers import ScriptSerializer, RunSerializer, RunCreateSerializer, ScriptStatsSerializer
 from .tasks import execute_script_task, stream_logs
 from django_eventstream import send_event
+from .filters import RunFilter
+from django.core.files.storage import default_storage
+from django.http import HttpResponse, FileResponse
 import os
 import json
 import time
 
+
+class StandardPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class ScriptViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Script.objects.filter(is_active=True)
@@ -70,6 +80,9 @@ class RunViewSet(viewsets.ModelViewSet):
     queryset = Run.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [JSONParser, MultiPartParser]
+    pagination_class = StandardPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RunFilter
 
 
     def get_serializer_class(self):
@@ -78,29 +91,27 @@ class RunViewSet(viewsets.ModelViewSet):
         return RunSerializer
 
     def get_queryset(self):
-        queryset = Run.objects.all()
-        script_id = self.request.query_params.get('script_id')
-        if script_id:
-            queryset = queryset.filter(script_id=script_id)
-        return queryset.order_by('-started_at')
-
+        # Remove manual script_id filtering - now handled by django-filter
+        return Run.objects.all().order_by('-started_at')
+    
     @extend_schema(
         operation_id="runs_list",
-        description="List all runs ordered by start time (newest first). Filter by script_id using query parameter.",
+        description="List all runs with filtering and pagination",
         tags=["Runs"],
         parameters=[
-            OpenApiParameter(
-                name='script_id',
-                description='Filter runs by script ID',
-                required=False,
-                type=OpenApiTypes.INT,
-                location=OpenApiParameter.QUERY
-            ),
+            OpenApiParameter('script_id', OpenApiTypes.INT, description='Filter by script ID'),
+            OpenApiParameter('status', OpenApiTypes.STR, description='Filter by status'),
+            OpenApiParameter('started_by', OpenApiTypes.INT, description='Filter by user ID'),
+            OpenApiParameter('started_after', OpenApiTypes.DATETIME, description='Filter runs started after date'),
+            OpenApiParameter('started_before', OpenApiTypes.DATETIME, description='Filter runs started before date'),
+            OpenApiParameter('page', OpenApiTypes.INT, description='Page number'),
+            OpenApiParameter('page_size', OpenApiTypes.INT, description='Results per page'),
         ],
         responses=RunSerializer(many=True),
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+        
 
     @extend_schema(
         operation_id="runs_retrieve",
@@ -204,9 +215,16 @@ class RunViewSet(viewsets.ModelViewSet):
             )
         script = get_object_or_404(Script, id=script_id)
         runs = Run.objects.filter(script=script).order_by('-started_at')
+        
+        # Apply pagination
+        page = self.paginate_queryset(runs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
         serializer = self.get_serializer(runs, many=True)
         return Response(serializer.data)
-
+        
     @extend_schema(
         operation_id="runs_abort",
         description="Abort a running celery task and mark the run as REVOKED.",
@@ -325,7 +343,8 @@ class RunViewSet(viewsets.ModelViewSet):
         if not file_path or not default_storage.exists(file_path):
             return Response({'error': 'File not found'}, status=404)
 
-        file = default_storage.open(file_path)
-        response = HttpResponse(file, content_type='application/octet-stream')
+        # Use FileResponse to efficiently stream large files
+        file = default_storage.open(file_path, 'rb')
+        response = FileResponse(file, content_type='application/octet-stream')
         response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
         return response

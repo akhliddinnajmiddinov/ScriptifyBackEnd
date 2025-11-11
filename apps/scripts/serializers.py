@@ -2,10 +2,12 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.files.storage import default_storage
 from drf_spectacular.utils import extend_schema_field
 from drf_spectacular.openapi import OpenApiTypes
+from django.utils.text import get_valid_filename
 from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import Script, Run
+from django.conf import settings
 import uuid
 import json
 import os
@@ -16,7 +18,7 @@ User = get_user_model()
 class ScriptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Script
-        fields = ['id', 'name', 'description', 'celery_task', 'input_schema', 'output_schema', 'created_at', 'updated_at', 'is_active']
+        fields = ['id', 'name', 'description', 'pic', 'celery_task', 'input_schema', 'output_schema', 'created_at', 'updated_at', 'is_active']
         read_only_fields = ['created_at', 'updated_at']
 
 
@@ -78,16 +80,11 @@ class RunCreateSerializer(serializers.Serializer):
         return file_obj
 
     def _save_uploaded_file(self, file_obj, field_name):
-        print(file_obj.name)
-        print(file_obj.size)
-        print(file_obj.__class__)
         """Save file and return relative path"""
-        ext = os.path.splitext(file_obj.name)[1]
-        filename = f"runs/input/{uuid.uuid4().hex}{ext}"
+        clean_name = get_valid_filename(file_obj.name)  # removes bad chars
+        filename = f"runs/input/{clean_name}"
         file_obj.seek(0)
         path = default_storage.save(filename, ContentFile(file_obj.read()))
-        saved_size = default_storage.size(path)
-        print(saved_size)
         return path
 
     def _validate_field_value(self, field_def, value, field_name, files_dict=None):
@@ -162,8 +159,6 @@ class RunCreateSerializer(serializers.Serializer):
             if field_type == 'file':
                 file_obj = files_dict.get(field_name)
                 validated_file = self._validate_field_value(field_def, None, field_name, files_dict)
-                print("validated_data")
-                print(validated_file)
                 if validated_file:
                     file_path = self._save_uploaded_file(validated_file, field_name)
                     file_paths[field_name] = file_path
@@ -202,12 +197,15 @@ class ScriptStatsSerializer(serializers.ModelSerializer):
     total_runs = serializers.SerializerMethodField()
     success_count = serializers.SerializerMethodField()
     failed_count = serializers.SerializerMethodField()
+    aborted_count = serializers.SerializerMethodField()
+    running_count = serializers.SerializerMethodField()
+    pending_count = serializers.SerializerMethodField()
     success_rate = serializers.SerializerMethodField()
     average_time = serializers.SerializerMethodField()
     
     class Meta:
         model = Script
-        fields = ['id', 'name', 'description', 'total_runs', 'success_count', 'failed_count', 'success_rate', 'average_time']
+        fields = ['id', 'name', 'description', 'total_runs', 'success_count', 'failed_count', 'aborted_count', 'running_count', 'pending_count', 'success_rate', 'average_time']
     
     @extend_schema_field(OpenApiTypes.INT)
     def get_total_runs(self, obj):
@@ -221,6 +219,18 @@ class ScriptStatsSerializer(serializers.ModelSerializer):
     def get_failed_count(self, obj):
         return obj.runs.filter(status='FAILURE').count()
     
+    @extend_schema_field(OpenApiTypes.INT)
+    def get_aborted_count(self, obj):
+        return obj.runs.filter(status='REVOKED').count()
+    
+    @extend_schema_field(OpenApiTypes.INT)
+    def get_running_count(self, obj):
+        return obj.runs.filter(status='STARTED').count()
+    
+    @extend_schema_field(OpenApiTypes.INT)
+    def get_pending_count(self, obj):
+        return obj.runs.filter(status='PENDING').count()
+
     @extend_schema_field(OpenApiTypes.FLOAT)
     def get_success_rate(self, obj):
         total = obj.runs.count()

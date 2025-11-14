@@ -36,6 +36,8 @@ class Script(models.Model):
     # JSON Schema for output display
     output_schema = models.JSONField(help_text="JSON Schema for displaying results")
     
+    cookies_file = models.FileField(upload_to="cookies/", null=True, blank=True)
+
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -1,0 +1,23 @@
+[2025-11-11 21:08:22,281] INFO: Task received by worker
+[2025-11-11 21:08:22,283] INFO: Starting task: Facebook Marketplace Scraper
+[2025-11-11 21:08:22,284] DEBUG: Input data: {
+  "cities": [
+    "berlin"
+  ],
+  "query": "Canon Printer Cartridge",
+  "last_n_days": 7,
+  "listings_per_city": 100
+}
+[2025-11-11 21:08:22,291] INFO: AADSASDASDASDASDASSDFSDFSDKFHSDKJFHKDSHKJHkjhjhkjhkj
+[2025-11-11 21:08:22,292] INFO: Scraping 1 city(s): berlin
+[2025-11-11 21:08:22,294] INFO: ================================================================================
+[2025-11-11 21:08:22,295] INFO: 🚀 FACEBOOK MARKETPLACE SCRAPER
+[2025-11-11 21:08:22,296] INFO: ================================================================================
+[2025-11-11 21:08:22,297] INFO: 📋 Configuration:
+[2025-11-11 21:08:22,298] INFO:    Query: "Canon Printer Cartridge"
+[2025-11-11 21:08:22,299] INFO:    Cities: berlin
+[2025-11-11 21:08:22,300] INFO:    Days: 7
+[2025-11-11 21:08:22,301] INFO:    Listings per city: 100
+[2025-11-11 21:08:22,302] INFO:    Cookies file: Facebook Marketplace Scraper - 122 (STARTED)
+[2025-11-11 21:08:22,303] INFO: ================================================================================
+[2025-11-11 21:08:22,313] INFO: Task completed successfully

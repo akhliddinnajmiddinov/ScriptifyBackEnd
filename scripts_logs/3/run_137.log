@@ -1,0 +1,42 @@
+[2025-11-12 10:36:41,332] INFO: Task received by worker
+[2025-11-12 10:36:41,333] INFO: Starting task: Facebook Marketplace Scraper
+[2025-11-12 10:36:41,334] DEBUG: Input data: {
+  "cities": [
+    "london"
+  ],
+  "query": "Canon Printer Cartridge",
+  "last_n_days": 7,
+  "listings_per_city": 100
+}
+[2025-11-12 10:36:41,338] INFO: AADSASDASDASDASDASSDFSDFSDKFHSDKJFHKDSHKJHkjhjhkjhkj
+[2025-11-12 10:36:41,338] INFO: Scraping 1 city(s): london
+[2025-11-12 10:36:41,340] INFO: ================================================================================
+[2025-11-12 10:36:41,342] INFO: 🚀 FACEBOOK MARKETPLACE SCRAPER
+[2025-11-12 10:36:41,343] INFO: ================================================================================
+[2025-11-12 10:36:41,343] INFO: 📋 Configuration:
+[2025-11-12 10:36:41,343] INFO:    Query: "Canon Printer Cartridge"
+[2025-11-12 10:36:41,343] INFO:    Cities: london
+[2025-11-12 10:36:41,343] INFO:    Days: 7
+[2025-11-12 10:36:41,343] INFO:    Listings per city: 100
+[2025-11-12 10:36:41,344] INFO:    Cookies file: Facebook Marketplace Scraper - 137 (STARTED)
+[2025-11-12 10:36:41,345] INFO: ================================================================================
+[2025-11-12 10:36:44,335] INFO: 
+🔐 LOGIN PROCESS
+[2025-11-12 10:36:44,339] INFO: --------------------------------------------------------------------------------
+[2025-11-12 10:36:44,377] INFO: ✅ Cookies loaded. Checking session...
+[2025-11-12 10:36:56,943] INFO: ✅ Session is valid.
+[2025-11-12 10:36:56,944] INFO: 
+🌍 SCRAPING CITIES
+[2025-11-12 10:36:56,944] INFO: --------------------------------------------------------------------------------
+[2025-11-12 10:36:56,944] INFO: 
+📍 City 1/1: London
+[2025-11-12 10:36:56,944] INFO: --------------------------------------------------------------------------------
+[2025-11-12 10:36:56,944] INFO: 🔗 URL: https://www.facebook.com/marketplace/london/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-12 10:36:57,182] INFO: ⏳ Loading marketplace page...
+[2025-11-12 10:37:55,196] INFO: ❌ Failed to scrape London after retries. Error: clear_items() missing 1 required positional argument: 'logger'
+[2025-11-12 10:37:55,196] INFO: 
+================================================================================
+[2025-11-12 10:37:55,196] INFO: ✅ SCRAPING COMPLETE!
+[2025-11-12 10:37:55,196] INFO: 📊 Total unique listings scraped: 3
+[2025-11-12 10:37:55,196] INFO: ================================================================================
+[2025-11-12 10:37:55,477] INFO: Task completed successfully

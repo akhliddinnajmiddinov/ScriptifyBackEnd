@@ -1,0 +1,264 @@
+[2025-11-12 22:14:45,227] INFO: Task received by worker
+[2025-11-12 22:14:45,236] INFO: Starting task: Facebook Marketplace Scraper
+[2025-11-12 22:14:45,236] DEBUG: Input data: {
+  "cities": [
+    "frankfurt",
+    "manchester",
+    "birmingham"
+  ],
+  "query": "Canon Printer Cartridge",
+  "last_n_days": 7,
+  "listings_per_city": 100
+}
+[2025-11-12 22:14:45,245] INFO: AADSASDASDASDASDASSDFSDFSDKFHSDKJFHKDSHKJHkjhjhkjhkj
+[2025-11-12 22:14:45,246] INFO: Scraping 3 city(s): frankfurt, manchester, birmingham
+[2025-11-12 22:14:45,268] INFO: ================================================================================
+[2025-11-12 22:14:45,268] INFO: 🚀 FACEBOOK MARKETPLACE SCRAPER
+[2025-11-12 22:14:45,269] INFO: ================================================================================
+[2025-11-12 22:14:45,269] INFO: 📋 Configuration:
+[2025-11-12 22:14:45,269] INFO:    Query: "Canon Printer Cartridge"
+[2025-11-12 22:14:45,270] INFO:    Cities: frankfurt, manchester, birmingham
+[2025-11-12 22:14:45,270] INFO:    Days: 7
+[2025-11-12 22:14:45,270] INFO:    Listings per city: 100
+[2025-11-12 22:14:45,270] INFO:    Cookies file: Facebook Marketplace Scraper - 160 (STARTED)
+[2025-11-12 22:14:45,270] INFO: ================================================================================
+[2025-11-12 22:14:47,803] INFO: 
+🔐 LOGIN PROCESS
+[2025-11-12 22:14:47,803] INFO: --------------------------------------------------------------------------------
+[2025-11-12 22:14:47,823] INFO: ✅ Cookies loaded. Checking session...
+[2025-11-12 22:14:59,921] INFO: ✅ Session is valid.
+[2025-11-12 22:14:59,921] INFO: 
+🌍 SCRAPING CITIES
+[2025-11-12 22:14:59,922] INFO: --------------------------------------------------------------------------------
+[2025-11-12 22:14:59,922] INFO: 
+📍 City 1/3: Frankfurt
+[2025-11-12 22:14:59,922] INFO: --------------------------------------------------------------------------------
+[2025-11-12 22:14:59,922] INFO: 🔗 URL: https://www.facebook.com/marketplace/frankfurt/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-12 22:15:00,237] INFO: ⏳ Loading marketplace page...
+[2025-11-12 22:15:02,482] INFO:   ⏳ Scraping up to 100 listings...
+[2025-11-12 22:15:17,497] INFO:     🔄 Iteration 1
+[2025-11-12 22:15:17,497] INFO:     ⚠️  No new items found. Attempt 1/3
+[2025-11-12 22:15:17,497] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 22:15:19,003] INFO:   ⏳ Scraping up to 100 listings...
+[2025-11-12 22:15:34,018] INFO:     🔄 Iteration 1
+[2025-11-12 22:15:34,018] INFO:     ⚠️  No new items found. Attempt 1/3
+[2025-11-12 22:15:34,018] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 22:15:37,549] INFO:   ⏳ Scraping up to 100 listings...
+[2025-11-12 22:15:52,564] INFO:     🔄 Iteration 1
+[2025-11-12 22:15:52,564] INFO:     ⚠️  No new items found. Attempt 1/3
+[2025-11-12 22:15:52,564] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 22:16:01,149] INFO: ❌ Failed to scrape Frankfurt after retries. Error: Page.evaluate: Target page, context or browser has been closed
+[2025-11-12 22:16:01,149] INFO: 
+📍 City 2/3: Manchester
+[2025-11-12 22:16:01,149] INFO: --------------------------------------------------------------------------------
+[2025-11-12 22:16:01,149] INFO: 🔗 URL: https://www.facebook.com/marketplace/manchester/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-12 22:16:01,271] INFO: ⏳ Loading marketplace page...
+[2025-11-12 22:16:02,757] INFO:   ⏳ Scraping up to 100 listings...
+[2025-11-12 22:16:03,019] INFO:   📄 HTML → 24 items
+[2025-11-12 22:16:17,761] INFO:     🔄 Iteration 1
+[2025-11-12 22:16:17,761] INFO:     ✅ Found 24 new items. Total: 0/100 | Total unique: 100
+[2025-11-12 22:16:17,920] INFO:       ⏭️  Skipped 804443662396158: Duplicate
+[2025-11-12 22:16:18,020] INFO:       ⏭️  Skipped 1388820689325856: Duplicate
+[2025-11-12 22:16:18,094] INFO:       ⏭️  Skipped 821587960580790: Duplicate
+[2025-11-12 22:16:18,186] INFO:       ⏭️  Skipped 1409378457250684: Duplicate
+[2025-11-12 22:16:18,304] INFO:       ⏭️  Skipped 2634536553592425: Duplicate
+[2025-11-12 22:16:18,387] INFO:       ⏭️  Skipped 25439726585661717: Duplicate
+[2025-11-12 22:16:18,453] INFO:       ⏭️  Skipped 1533404871411826: Duplicate
+[2025-11-12 22:16:18,545] INFO:       ⏭️  Skipped 4200158923604827: Duplicate
+[2025-11-12 22:16:18,611] INFO:       ⏭️  Skipped 1996643580893125: Duplicate
+[2025-11-12 22:16:18,678] INFO:       ⏭️  Skipped 1595795774739741: Duplicate
+[2025-11-12 22:16:18,766] INFO:       ⏭️  Skipped 1362971471954146: Duplicate
+[2025-11-12 22:16:18,860] INFO:       ⏭️  Skipped 1165421041786090: Duplicate
+[2025-11-12 22:16:18,941] INFO:       ⏭️  Skipped 1808046583245508: Duplicate
+[2025-11-12 22:16:19,022] INFO:       ⏭️  Skipped 805123005626129: Duplicate
+[2025-11-12 22:16:19,114] INFO:       ⏭️  Skipped 1907867313413066: Duplicate
+[2025-11-12 22:16:19,205] INFO:       ⏭️  Skipped 1554036418929335: Duplicate
+[2025-11-12 22:16:19,313] INFO:       ⏭️  Skipped 724021280062561: Duplicate
+[2025-11-12 22:16:19,405] INFO:       ⏭️  Skipped 3237053193118320: Duplicate
+[2025-11-12 22:16:19,472] INFO:       ⏭️  Skipped 1343984273540151: Duplicate
+[2025-11-12 22:16:19,548] INFO:       ⏭️  Skipped 1332803175252000: Duplicate
+[2025-11-12 22:16:19,615] INFO:       ⏭️  Skipped 832326779395829: Duplicate
+[2025-11-12 22:16:19,715] INFO:       ⏭️  Skipped 2089559951820011: Duplicate
+[2025-11-12 22:16:19,798] INFO:       ⏭️  Skipped 1397369008671703: Duplicate
+[2025-11-12 22:16:19,865] INFO:       ⏭️  Skipped 649613181565539: Duplicate
+[2025-11-12 22:16:19,865] INFO:     🔄 Iteration 2
+[2025-11-12 22:16:19,866] INFO:     ⚠️  No new items found. Attempt 1/3
+[2025-11-12 22:16:19,866] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 22:16:31,377] INFO:     🔄 Iteration 3
+[2025-11-12 22:16:31,377] INFO:     ⚠️  No new items found. Attempt 2/3
+[2025-11-12 22:16:31,377] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 22:16:32,479] INFO:   📊 GraphQL → 24 items
+[2025-11-12 22:16:33,978] INFO:   📊 GraphQL → 24 items
+[2025-11-12 22:16:42,897] INFO:     🔄 Iteration 4
+[2025-11-12 22:16:42,897] INFO:     ✅ Found 48 new items. Total: 0/100 | Total unique: 100
+[2025-11-12 22:16:42,981] INFO:       ⏭️  Skipped 826237803464638: Duplicate
+[2025-11-12 22:16:43,049] INFO:       ⏭️  Skipped 832862975878515: Duplicate
+[2025-11-12 22:16:43,171] INFO:       ⏭️  Skipped 1802585840390656: Duplicate
+[2025-11-12 22:16:43,255] INFO:       ⏭️  Skipped 862355533027965: Duplicate
+[2025-11-12 22:16:43,352] INFO:       ⏭️  Skipped 932832663238117: Duplicate
+[2025-11-12 22:16:43,460] INFO:       ⏭️  Skipped 1346914177100437: Duplicate
+[2025-11-12 22:16:43,542] INFO:       ⏭️  Skipped 3266361300198687: Duplicate
+[2025-11-12 22:16:43,609] INFO:       ⏭️  Skipped 792299093801756: Duplicate
+[2025-11-12 22:16:43,684] INFO:       ⏭️  Skipped 651067787942053: Duplicate
+[2025-11-12 22:16:43,750] INFO:       ⏭️  Skipped 845592694592730: Duplicate
+[2025-11-12 22:16:43,818] INFO:       ⏭️  Skipped 812162075012254: Duplicate
+[2025-11-12 22:16:43,947] INFO:       ⏭️  Skipped 835893242730509: Duplicate
+[2025-11-12 22:16:44,013] INFO:       ⏭️  Skipped 2496756177372090: Duplicate
+[2025-11-12 22:16:44,079] INFO:       ⏭️  Skipped 2341519326336848: Duplicate
+[2025-11-12 22:16:44,151] INFO:       ⏭️  Skipped 837074238871635: Duplicate
+[2025-11-12 22:16:44,218] INFO:       ⏭️  Skipped 25015282818100616: Duplicate
+[2025-11-12 22:16:44,285] INFO:       ⏭️  Skipped 1543534536553493: Duplicate
+[2025-11-12 22:16:44,434] INFO:       ⏭️  Skipped 1463298951405998: Duplicate
+[2025-11-12 22:16:44,502] INFO:       ⏭️  Skipped 2254285295081869: Duplicate
+[2025-11-12 22:16:44,569] INFO:       ⏭️  Skipped 24918229847834585: Duplicate
+[2025-11-12 22:16:44,677] INFO:       ⏭️  Skipped 1888079798754394: Duplicate
+[2025-11-12 22:16:44,761] INFO:       ⏭️  Skipped 1213075990872284: Duplicate
+[2025-11-12 22:16:44,845] INFO:       ⏭️  Skipped 2349034075529669: Duplicate
+[2025-11-12 22:16:44,939] INFO:       ⏭️  Skipped 1342491731006530: Duplicate
+[2025-11-12 22:16:45,005] INFO:       ⏭️  Skipped 1316724486435641: Duplicate
+[2025-11-12 22:16:45,072] INFO:       ⏭️  Skipped 2283700612058112: Duplicate
+[2025-11-12 22:16:45,179] INFO:       ⏭️  Skipped 785202961005297: Duplicate
+[2025-11-12 22:16:45,262] INFO:       ⏭️  Skipped 827568980231457: Duplicate
+[2025-11-12 22:16:49,953] INFO:       [29/48] Processed 851810877264166... (1/100)
+[2025-11-12 22:16:49,953] INFO:       Title: Canon colour inkjet printer (PIXMA MG2450) in great working order | Price: 5.00
+[2025-11-12 22:16:50,030] INFO:       ⏭️  Skipped 1161437302837830: Duplicate
+[2025-11-12 22:16:50,127] INFO:       ⏭️  Skipped 819359297517915: Duplicate
+[2025-11-12 22:16:50,194] INFO:       ⏭️  Skipped 1041704031369989: Duplicate
+[2025-11-12 22:16:50,282] INFO:       ⏭️  Skipped 1377635170643776: Duplicate
+[2025-11-12 22:16:50,389] INFO:       ⏭️  Skipped 4308290512832118: Duplicate
+[2025-11-12 22:16:50,472] INFO:       ⏭️  Skipped 1031578899093719: Duplicate
+[2025-11-12 22:16:50,576] INFO:       ⏭️  Skipped 1580667719778744: Duplicate
+[2025-11-12 22:16:50,659] INFO:       ⏭️  Skipped 1947766232449507: Duplicate
+[2025-11-12 22:16:50,731] INFO:       ⏭️  Skipped 695989156887288: Duplicate
+[2025-11-12 22:16:50,814] INFO:       ⏭️  Skipped 2005787683540037: Duplicate
+[2025-11-12 22:16:50,915] INFO:       ⏭️  Skipped 820043943962063: Duplicate
+[2025-11-12 22:16:51,031] INFO:       ⏭️  Skipped 2043500243052481: Duplicate
+[2025-11-12 22:16:51,122] INFO:       ⏭️  Skipped 1344436397378512: Duplicate
+[2025-11-12 22:16:51,236] INFO:       ⏭️  Skipped 1380239786871615: Duplicate
+[2025-11-12 22:16:57,230] INFO:       [44/48] Processed 690235447104618... (2/100)
+[2025-11-12 22:16:57,230] INFO:       Title: All-in-one colour printer | Price: 20.00
+[2025-11-12 22:16:57,351] INFO:       ⏭️  Skipped 1951389322926735: Duplicate
+[2025-11-12 22:16:57,521] INFO:       ⏭️  Skipped 846624017875744: Duplicate
+[2025-11-12 22:16:57,646] INFO:       ⏭️  Skipped 1368016338252688: Duplicate
+[2025-11-12 22:16:57,873] INFO:       ⏭️  Skipped 2253659958393091: Duplicate
+[2025-11-12 22:16:57,873] INFO:     🔄 Iteration 5
+[2025-11-12 22:16:57,874] INFO:     ⚠️  No new items found. Attempt 1/3
+[2025-11-12 22:16:57,874] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 22:17:09,391] INFO:     🔄 Iteration 6
+[2025-11-12 22:17:09,391] INFO:     ⚠️  No new items found. Attempt 2/3
+[2025-11-12 22:17:09,391] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 22:17:20,898] INFO:     🔄 Iteration 7
+[2025-11-12 22:17:20,898] INFO:     ⚠️  No new items found. Attempt 3/3
+[2025-11-12 22:17:20,898] INFO:     ❌ No new items after 3 attempts. Stopping.
+[2025-11-12 22:17:20,899] INFO:   ⏳ Final wait for responses...
+[2025-11-12 22:17:35,900] INFO: ✅ Scraped 2 items from Manchester
+[2025-11-12 22:17:35,900] INFO: 
+📍 City 3/3: Birmingham
+[2025-11-12 22:17:35,900] INFO: --------------------------------------------------------------------------------
+[2025-11-12 22:17:35,900] INFO: 🔗 URL: https://www.facebook.com/marketplace/birmingham/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-12 22:17:36,145] INFO: ⏳ Loading marketplace page...
+[2025-11-12 22:17:37,881] INFO:   📄 HTML → 24 items
+[2025-11-12 22:17:37,882] INFO:   ⏳ Scraping up to 100 listings...
+[2025-11-12 22:17:52,885] INFO:     🔄 Iteration 1
+[2025-11-12 22:17:52,885] INFO:     ✅ Found 24 new items. Total: 0/100 | Total unique: 102
+[2025-11-12 22:17:53,029] INFO:       ⏭️  Skipped 1533404871411826: Duplicate
+[2025-11-12 22:17:53,094] INFO:       ⏭️  Skipped 1388820689325856: Duplicate
+[2025-11-12 22:17:53,161] INFO:       ⏭️  Skipped 25439726585661717: Duplicate
+[2025-11-12 22:17:53,228] INFO:       ⏭️  Skipped 1343984273540151: Duplicate
+[2025-11-12 22:17:53,349] INFO:       ⏭️  Skipped 2634536553592425: Duplicate
+[2025-11-12 22:17:53,450] INFO:       ⏭️  Skipped 1409378457250684: Duplicate
+[2025-11-12 22:17:53,534] INFO:       ⏭️  Skipped 821587960580790: Duplicate
+[2025-11-12 22:17:53,650] INFO:       ⏭️  Skipped 4200158923604827: Duplicate
+[2025-11-12 22:17:53,748] INFO:       ⏭️  Skipped 1996643580893125: Duplicate
+[2025-11-12 22:17:53,815] INFO:       ⏭️  Skipped 1362971471954146: Duplicate
+[2025-11-12 22:17:53,899] INFO:       ⏭️  Skipped 805123005626129: Duplicate
+[2025-11-12 22:17:53,999] INFO:       ⏭️  Skipped 1165421041786090: Duplicate
+[2025-11-12 22:17:54,098] INFO:       ⏭️  Skipped 1907867313413066: Duplicate
+[2025-11-12 22:17:54,181] INFO:       ⏭️  Skipped 1595795774739741: Duplicate
+[2025-11-12 22:17:54,281] INFO:       ⏭️  Skipped 804443662396158: Duplicate
+[2025-11-12 22:17:54,381] INFO:       ⏭️  Skipped 1554036418929335: Duplicate
+[2025-11-12 22:17:54,476] INFO:       ⏭️  Skipped 724021280062561: Duplicate
+[2025-11-12 22:17:54,560] INFO:       ⏭️  Skipped 1332803175252000: Duplicate
+[2025-11-12 22:17:54,659] INFO:       ⏭️  Skipped 832326779395829: Duplicate
+[2025-11-12 22:17:54,748] INFO:       ⏭️  Skipped 3237053193118320: Duplicate
+[2025-11-12 22:17:54,815] INFO:       ⏭️  Skipped 842753322033398: Duplicate
+[2025-11-12 22:17:54,886] INFO:       ⏭️  Skipped 1767010063866766: Duplicate
+[2025-11-12 22:17:54,981] INFO:       ⏭️  Skipped 1397369008671703: Duplicate
+[2025-11-12 22:17:55,056] INFO:       ⏭️  Skipped 25115557958135469: Duplicate
+[2025-11-12 22:17:55,056] INFO:     🔄 Iteration 2
+[2025-11-12 22:17:55,056] INFO:     ⚠️  No new items found. Attempt 1/3
+[2025-11-12 22:17:55,056] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 22:17:56,471] INFO:   📊 GraphQL → 24 items
+[2025-11-12 22:18:06,567] INFO:     🔄 Iteration 3
+[2025-11-12 22:18:06,567] INFO:     ✅ Found 24 new items. Total: 0/100 | Total unique: 102
+[2025-11-12 22:18:06,649] INFO:       ⏭️  Skipped 1107790084761646: Duplicate
+[2025-11-12 22:18:06,725] INFO:       ⏭️  Skipped 2089559951820011: Duplicate
+[2025-11-12 22:18:06,792] INFO:       ⏭️  Skipped 867863309009116: Duplicate
+[2025-11-12 22:18:06,934] INFO:       ⏭️  Skipped 4227006190880224: Duplicate
+[2025-11-12 22:18:07,095] INFO:       ⏭️  Skipped 1356698949235939: Duplicate
+[2025-11-12 22:18:07,159] INFO:       ⏭️  Skipped 649613181565539: Duplicate
+[2025-11-12 22:18:07,266] INFO:       ⏭️  Skipped 1596403328463194: Duplicate
+[2025-11-12 22:18:07,333] INFO:       ⏭️  Skipped 1522001412469948: Duplicate
+[2025-11-12 22:18:07,429] INFO:       ⏭️  Skipped 4079285479068173: Duplicate
+[2025-11-12 22:18:07,495] INFO:       ⏭️  Skipped 25299163479699786: Duplicate
+[2025-11-12 22:18:07,562] INFO:       ⏭️  Skipped 2064374574376417: Duplicate
+[2025-11-12 22:18:07,685] INFO:       ⏭️  Skipped 1712179912783068: Duplicate
+[2025-11-12 22:18:07,785] INFO:       ⏭️  Skipped 1881933909199971: Duplicate
+[2025-11-12 22:18:07,852] INFO:       ⏭️  Skipped 1357479955762941: Duplicate
+[2025-11-12 22:18:07,960] INFO:       ⏭️  Skipped 4364662043807658: Duplicate
+[2025-11-12 22:18:08,027] INFO:       ⏭️  Skipped 25005585095737198: Duplicate
+[2025-11-12 22:18:08,094] INFO:       ⏭️  Skipped 820176747282037: Duplicate
+[2025-11-12 22:18:08,236] INFO:       ⏭️  Skipped 835893242730509: Duplicate
+[2025-11-12 22:18:08,306] INFO:       ⏭️  Skipped 811648921497685: Duplicate
+[2025-11-12 22:18:08,405] INFO:       ⏭️  Skipped 842869248116020: Duplicate
+[2025-11-12 22:18:08,562] INFO:       ⏭️  Skipped 826237803464638: Duplicate
+[2025-11-12 22:18:08,664] INFO:       ⏭️  Skipped 1346914177100437: Duplicate
+[2025-11-12 22:18:08,760] INFO:       ⏭️  Skipped 802491352586788: Duplicate
+[2025-11-12 22:18:08,835] INFO:       ⏭️  Skipped 932832663238117: Duplicate
+[2025-11-12 22:18:08,835] INFO:     🔄 Iteration 4
+[2025-11-12 22:18:08,835] INFO:     ⚠️  No new items found. Attempt 1/3
+[2025-11-12 22:18:08,835] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 22:18:09,956] INFO:   📊 GraphQL → 24 items
+[2025-11-12 22:18:20,345] INFO:     🔄 Iteration 5
+[2025-11-12 22:18:20,345] INFO:     ✅ Found 24 new items. Total: 0/100 | Total unique: 102
+[2025-11-12 22:18:20,422] INFO:       ⏭️  Skipped 785202961005297: Duplicate
+[2025-11-12 22:18:20,489] INFO:       ⏭️  Skipped 2254285295081869: Duplicate
+[2025-11-12 22:18:20,555] INFO:       ⏭️  Skipped 651067787942053: Duplicate
+[2025-11-12 22:18:20,666] INFO:       ⏭️  Skipped 4308290512832118: Duplicate
+[2025-11-12 22:18:20,761] INFO:       ⏭️  Skipped 1161437302837830: Duplicate
+[2025-11-12 22:18:20,842] INFO:       ⏭️  Skipped 819359297517915: Duplicate
+[2025-11-12 22:18:20,951] INFO:       ⏭️  Skipped 1031578899093719: Duplicate
+[2025-11-12 22:18:21,016] INFO:       ⏭️  Skipped 1377635170643776: Duplicate
+[2025-11-12 22:18:21,084] INFO:       ⏭️  Skipped 695989156887288: Duplicate
+[2025-11-12 22:18:21,174] INFO:       ⏭️  Skipped 1213075990872284: Duplicate
+[2025-11-12 22:18:21,267] INFO:       ⏭️  Skipped 851810877264166: Duplicate
+[2025-11-12 22:18:21,350] INFO:       ⏭️  Skipped 1947766232449507: Duplicate
+[2025-11-12 22:18:21,462] INFO:       ⏭️  Skipped 1041704031369989: Duplicate
+[2025-11-12 22:18:21,543] INFO:       ⏭️  Skipped 2005787683540037: Duplicate
+[2025-11-12 22:18:21,609] INFO:       ⏭️  Skipped 820043943962063: Duplicate
+[2025-11-12 22:18:21,697] INFO:       ⏭️  Skipped 1580667719778744: Duplicate
+[2025-11-12 22:18:21,781] INFO:       ⏭️  Skipped 1344436397378512: Duplicate
+[2025-11-12 22:18:21,865] INFO:       ⏭️  Skipped 1380239786871615: Duplicate
+[2025-11-12 22:18:21,967] INFO:       ⏭️  Skipped 1951389322926735: Duplicate
+[2025-11-12 22:18:22,044] INFO:       ⏭️  Skipped 2253659958393091: Duplicate
+[2025-11-12 22:18:22,110] INFO:       ⏭️  Skipped 846624017875744: Duplicate
+[2025-11-12 22:18:22,330] INFO:       ⏭️  Skipped 690235447104618: Duplicate
+[2025-11-12 22:18:22,599] INFO:       ⏭️  Skipped 2043500243052481: Duplicate
+[2025-11-12 22:18:22,682] INFO:       ⏭️  Skipped 1368016338252688: Duplicate
+[2025-11-12 22:18:22,682] INFO:     🔄 Iteration 6
+[2025-11-12 22:18:22,682] INFO:     ⚠️  No new items found. Attempt 1/3
+[2025-11-12 22:18:22,683] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 22:18:34,196] INFO:     🔄 Iteration 7
+[2025-11-12 22:18:34,196] INFO:     ⚠️  No new items found. Attempt 2/3
+[2025-11-12 22:18:34,196] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 22:18:45,705] INFO:     🔄 Iteration 8
+[2025-11-12 22:18:45,705] INFO:     ⚠️  No new items found. Attempt 3/3
+[2025-11-12 22:18:45,705] INFO:     ❌ No new items after 3 attempts. Stopping.
+[2025-11-12 22:18:45,705] INFO:   ⏳ Final wait for responses...
+[2025-11-12 22:19:00,709] INFO: ❌ Failed to scrape Birmingham after retries. Error: None
+[2025-11-12 22:19:00,717] INFO: 
+================================================================================
+[2025-11-12 22:19:00,718] INFO: ✅ SCRAPING COMPLETE!
+[2025-11-12 22:19:00,718] INFO: 📊 Total unique listings scraped: 102
+[2025-11-12 22:19:00,718] INFO: ================================================================================
+[2025-11-12 22:19:01,147] INFO: Task completed successfully

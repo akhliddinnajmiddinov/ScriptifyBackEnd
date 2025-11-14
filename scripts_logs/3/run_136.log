@@ -1,0 +1,49 @@
+[2025-11-12 10:13:16,294] INFO: Task received by worker
+[2025-11-12 10:13:16,295] INFO: Starting task: Facebook Marketplace Scraper
+[2025-11-12 10:13:16,295] DEBUG: Input data: {
+  "cities": [
+    "berlin",
+    "london"
+  ],
+  "query": "Canon Printer Cartridge",
+  "last_n_days": 7,
+  "listings_per_city": 100
+}
+[2025-11-12 10:13:16,302] INFO: AADSASDASDASDASDASSDFSDFSDKFHSDKJFHKDSHKJHkjhjhkjhkj
+[2025-11-12 10:13:16,302] INFO: Scraping 2 city(s): berlin, london
+[2025-11-12 10:13:16,303] INFO: ================================================================================
+[2025-11-12 10:13:16,303] INFO: 🚀 FACEBOOK MARKETPLACE SCRAPER
+[2025-11-12 10:13:16,303] INFO: ================================================================================
+[2025-11-12 10:13:16,304] INFO: 📋 Configuration:
+[2025-11-12 10:13:16,304] INFO:    Query: "Canon Printer Cartridge"
+[2025-11-12 10:13:16,304] INFO:    Cities: berlin, london
+[2025-11-12 10:13:16,304] INFO:    Days: 7
+[2025-11-12 10:13:16,304] INFO:    Listings per city: 100
+[2025-11-12 10:13:16,305] INFO:    Cookies file: Facebook Marketplace Scraper - 136 (STARTED)
+[2025-11-12 10:13:16,305] INFO: ================================================================================
+[2025-11-12 10:13:18,952] INFO: 
+🔐 LOGIN PROCESS
+[2025-11-12 10:13:18,952] INFO: --------------------------------------------------------------------------------
+[2025-11-12 10:13:18,974] INFO: ✅ Cookies loaded. Checking session...
+[2025-11-12 10:13:30,935] INFO: ✅ Session is valid.
+[2025-11-12 10:13:30,935] INFO: 
+🌍 SCRAPING CITIES
+[2025-11-12 10:13:30,936] INFO: --------------------------------------------------------------------------------
+[2025-11-12 10:13:30,936] INFO: 
+📍 City 1/2: Berlin
+[2025-11-12 10:13:30,936] INFO: --------------------------------------------------------------------------------
+[2025-11-12 10:13:30,936] INFO: 🔗 URL: https://www.facebook.com/marketplace/berlin/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-12 10:13:31,231] INFO: ⏳ Loading marketplace page...
+[2025-11-12 10:14:14,629] INFO: ❌ Failed to scrape Berlin after retries. Error: None
+[2025-11-12 10:14:14,629] INFO: 
+📍 City 2/2: London
+[2025-11-12 10:14:14,629] INFO: --------------------------------------------------------------------------------
+[2025-11-12 10:14:14,630] INFO: 🔗 URL: https://www.facebook.com/marketplace/london/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-12 10:14:14,934] INFO: ⏳ Loading marketplace page...
+[2025-11-12 10:20:18,442] INFO: ❌ Error scraping London: name 'csv_filename' is not defined
+[2025-11-12 10:20:18,442] INFO: 
+================================================================================
+[2025-11-12 10:20:18,442] INFO: ✅ SCRAPING COMPLETE!
+[2025-11-12 10:20:18,442] INFO: 📊 Total unique listings scraped: 24
+[2025-11-12 10:20:18,442] INFO: ================================================================================
+[2025-11-12 10:20:18,762] INFO: Task completed successfully

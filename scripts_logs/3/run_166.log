@@ -1,0 +1,73 @@
+[2025-11-13 14:26:13,052] INFO: Task received by worker
+[2025-11-13 14:26:13,058] INFO: Starting task: Facebook Marketplace Scraper
+[2025-11-13 14:26:13,061] DEBUG: Input data: {
+  "cities": [
+    "frankfurt",
+    "london"
+  ],
+  "query": "Canon Printer Cartridge",
+  "last_n_days": 7,
+  "listings_per_city": 100
+}
+[2025-11-13 14:26:13,079] INFO: AADSASDASDASDASDASSDFSDFSDKFHSDKJFHKDSHKJHkjhjhkjhkj
+[2025-11-13 14:26:13,083] INFO: Scraping 2 city(s): frankfurt, london
+[2025-11-13 14:26:13,115] INFO: ================================================================================
+[2025-11-13 14:26:13,116] INFO: 🚀 FACEBOOK MARKETPLACE SCRAPER
+[2025-11-13 14:26:13,116] INFO: ================================================================================
+[2025-11-13 14:26:13,116] INFO: 📋 Configuration:
+[2025-11-13 14:26:13,116] INFO:    Query: "Canon Printer Cartridge"
+[2025-11-13 14:26:13,117] INFO:    Cities: frankfurt, london
+[2025-11-13 14:26:13,117] INFO:    Days: 7
+[2025-11-13 14:26:13,117] INFO:    Listings per city: 100
+[2025-11-13 14:26:13,121] INFO:    Cookies file: Facebook Marketplace Scraper - 166 (STARTED)
+[2025-11-13 14:26:13,121] INFO: ================================================================================
+[2025-11-13 14:26:16,529] INFO: 
+🔐 LOGIN PROCESS
+[2025-11-13 14:26:16,531] INFO: --------------------------------------------------------------------------------
+[2025-11-13 14:26:16,578] INFO: ✅ Cookies loaded. Checking session...
+[2025-11-13 14:26:30,593] INFO: ✅ Session is valid.
+[2025-11-13 14:26:30,593] INFO: 
+🌍 SCRAPING CITIES
+[2025-11-13 14:26:30,593] INFO: --------------------------------------------------------------------------------
+[2025-11-13 14:26:30,594] INFO: 
+📍 City 1/2: Frankfurt
+[2025-11-13 14:26:30,594] INFO: --------------------------------------------------------------------------------
+[2025-11-13 14:26:30,594] INFO: 🔗 URL: https://www.facebook.com/marketplace/frankfurt/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-13 14:26:31,084] INFO: ⏳ Loading marketplace page...
+[2025-11-13 14:26:31,472] INFO:   ⚠️  HTML parse error: Response.text: Response body is unavailable for redirect responses
+[2025-11-13 14:26:34,556] INFO:   ⏳ Scraping up to 100 listings...
+[2025-11-13 14:26:49,559] INFO:     🔄 Iteration 1
+[2025-11-13 14:26:49,559] INFO:     ⚠️  No new items found. Attempt 1/3
+[2025-11-13 14:26:49,560] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-13 14:27:01,088] INFO:     🔄 Iteration 2
+[2025-11-13 14:27:01,088] INFO:     ⚠️  No new items found. Attempt 2/3
+[2025-11-13 14:27:01,088] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-13 14:27:12,606] INFO:     🔄 Iteration 3
+[2025-11-13 14:27:12,607] INFO:     ⚠️  No new items found. Attempt 3/3
+[2025-11-13 14:27:12,607] INFO:     ❌ No new items after 3 attempts. Stopping.
+[2025-11-13 14:27:12,607] INFO:   ⏳ Final wait for responses...
+[2025-11-13 14:27:27,612] INFO: ❌ Failed to scrape Frankfurt after retries. Error: None
+[2025-11-13 14:27:27,613] INFO: 
+📍 City 2/2: London
+[2025-11-13 14:27:27,613] INFO: --------------------------------------------------------------------------------
+[2025-11-13 14:27:27,613] INFO: 🔗 URL: https://www.facebook.com/marketplace/london/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-13 14:27:27,797] INFO: ⏳ Loading marketplace page...
+[2025-11-13 14:27:28,076] INFO:   ⚠️  HTML parse error: Response.text: Response body is unavailable for redirect responses
+[2025-11-13 14:27:29,631] INFO:   ⏳ Scraping up to 100 listings...
+[2025-11-13 14:27:44,635] INFO:     🔄 Iteration 1
+[2025-11-13 14:27:44,636] INFO:     ⚠️  No new items found. Attempt 1/3
+[2025-11-13 14:27:44,636] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-13 14:27:56,164] INFO:     🔄 Iteration 2
+[2025-11-13 14:27:56,166] INFO:     ⚠️  No new items found. Attempt 2/3
+[2025-11-13 14:27:56,166] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-13 14:28:07,698] INFO:     🔄 Iteration 3
+[2025-11-13 14:28:07,698] INFO:     ⚠️  No new items found. Attempt 3/3
+[2025-11-13 14:28:07,698] INFO:     ❌ No new items after 3 attempts. Stopping.
+[2025-11-13 14:28:07,698] INFO:   ⏳ Final wait for responses...
+[2025-11-13 14:28:22,714] INFO: ❌ Failed to scrape London after retries. Error: None
+[2025-11-13 14:28:22,714] INFO: 
+================================================================================
+[2025-11-13 14:28:22,714] INFO: ✅ SCRAPING COMPLETE!
+[2025-11-13 14:28:22,714] INFO: 📊 Total unique listings scraped: 0
+[2025-11-13 14:28:22,715] INFO: ================================================================================
+[2025-11-13 14:28:23,082] INFO: Task completed successfully

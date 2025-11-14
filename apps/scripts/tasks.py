@@ -3,30 +3,25 @@ from django.utils import timezone
 from .models import Run, Script
 from celery import shared_task
 from datetime import datetime
+from .facebook_scraper.facebook_scraper_main import FacebookMarketplaceScraper
+from .utils import get_run_logger, ResultWriter
 import traceback
 import logging
 import json
 import time
 import os
 
-
 @shared_task(bind=True)
 def execute_script_task(self, script_id, run_id, input_data, input_file_paths):
-    print(input_file_paths)
-    run = Run.objects.get(id=run_id)
+    run = Run.objects.select_related('script').get(id=run_id)
     script = Script.objects.get(id=script_id)
 
     # Setup logging
     log_path = run.logs_file_path
-    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+    logger = get_run_logger(run.id, log_path)
 
-    logger = logging.getLogger(f"run_{run_id}")
-    logger.setLevel(logging.DEBUG)
-    if not logger.handlers:
-        handler = logging.handlers.RotatingFileHandler(log_path, maxBytes=10*1024*1024, backupCount=5)
-        formatter = logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+    output_path = run.result_file_path
+    writer = ResultWriter(output_path, logger)
 
     try:
         run.status = 'RECEIVED'
@@ -47,7 +42,9 @@ def execute_script_task(self, script_id, run_id, input_data, input_file_paths):
             result = scrape_kleinanzeigen_brand_task(run_id, input_data, log_path)
         elif script.celery_task == "analyze_products":
             result = analyze_products(run_id, input_data, log_path)
-        
+        elif script.celery_task == "facebook_marketplace_scraper":
+            result = scrape_facebook_marketplace(run, script, input_data, logger, writer)
+
         # Save final result
         result_path = run.result_file_path
         os.makedirs(os.path.dirname(result_path), exist_ok=True)
@@ -188,6 +185,12 @@ def analyze_products(self, script_id, run_id, input_data):
     print("SALOM")
     return {"salomlar": "olsun"}
 
+
+@shared_task(bind=True)
+def scrape_facebook_marketplace(self, run, script, input_data, logger, writer):
+    logger.info("AADSASDASDASDASDASSDFSDFSDKFHSDKJFHKDSHKJHkjhjhkjhkj")
+    facebook_scraper = FacebookMarketplaceScraper(run, script, input_data, logger, writer)
+    return facebook_scraper.start_scraping()
 
 @shared_task
 def stream_logs(run_id, log_path, channel):

@@ -1,0 +1,13 @@
+[2025-11-11 16:12:28,992] INFO: Task received by worker
+[2025-11-11 16:12:28,992] INFO: Starting task: Facebook Marketplace Scraper
+[2025-11-11 16:12:28,993] DEBUG: Input data: {
+  "cities": [
+    "berlin"
+  ],
+  "query": "Canon Printer Cartridge",
+  "last_n_days": 7,
+  "listings_per_city": 100
+}
+[2025-11-11 16:12:28,998] INFO: AADSASDASDASDASDASSDFSDFSDKFHSDKJFHKDSHKJHkjhjhkjhkj
+[2025-11-11 16:12:28,999] INFO: Scraping 1 city(s): berlin
+[2025-11-11 16:12:29,006] INFO: Task completed successfully

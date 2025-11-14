@@ -1,0 +1,39 @@
+[2025-11-12 20:14:11,116] INFO: Task received by worker
+[2025-11-12 20:14:11,116] INFO: Starting task: Facebook Marketplace Scraper
+[2025-11-12 20:14:11,117] DEBUG: Input data: {
+  "cities": [
+    "london"
+  ],
+  "query": "Canon Printer Cartridge",
+  "last_n_days": 7,
+  "listings_per_city": 100
+}
+[2025-11-12 20:14:11,119] INFO: AADSASDASDASDASDASSDFSDFSDKFHSDKJFHKDSHKJHkjhjhkjhkj
+[2025-11-12 20:14:11,119] INFO: Scraping 1 city(s): london
+[2025-11-12 20:14:11,120] INFO: ================================================================================
+[2025-11-12 20:14:11,120] INFO: 🚀 FACEBOOK MARKETPLACE SCRAPER
+[2025-11-12 20:14:11,120] INFO: ================================================================================
+[2025-11-12 20:14:11,120] INFO: 📋 Configuration:
+[2025-11-12 20:14:11,120] INFO:    Query: "Canon Printer Cartridge"
+[2025-11-12 20:14:11,120] INFO:    Cities: london
+[2025-11-12 20:14:11,120] INFO:    Days: 7
+[2025-11-12 20:14:11,121] INFO:    Listings per city: 100
+[2025-11-12 20:14:11,121] INFO:    Cookies file: Facebook Marketplace Scraper - 155 (STARTED)
+[2025-11-12 20:14:11,121] INFO: ================================================================================
+[2025-11-12 20:14:12,769] INFO: 
+🔐 LOGIN PROCESS
+[2025-11-12 20:14:12,785] INFO: --------------------------------------------------------------------------------
+[2025-11-12 20:14:12,860] INFO: ✅ Cookies loaded. Checking session...
+[2025-11-12 20:14:24,927] INFO: ✅ Session is valid.
+[2025-11-12 20:14:24,927] INFO: 
+🌍 SCRAPING CITIES
+[2025-11-12 20:14:24,927] INFO: --------------------------------------------------------------------------------
+[2025-11-12 20:14:24,927] INFO: 
+📍 City 1/1: London
+[2025-11-12 20:14:24,927] INFO: --------------------------------------------------------------------------------
+[2025-11-12 20:14:24,928] INFO: 🔗 URL: https://www.facebook.com/marketplace/london/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-12 20:14:25,078] INFO: ⏳ Loading marketplace page...
+[2025-11-12 20:14:26,617] INFO:   📄 HTML → 24 items
+[2025-11-12 20:14:26,619] INFO:   ⏳ Scraping up to 100 listings...
+[2025-11-12 20:14:41,623] INFO:     🔄 Iteration 1
+[2025-11-12 20:14:41,623] INFO:     ✅ Found 24 new items. Total: 0/100 | Total unique: 0

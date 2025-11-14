@@ -105,7 +105,11 @@ class RunCreateSerializer(serializers.Serializer):
                 raise serializers.ValidationError(f"Field '{field_name}' must be a string")
 
         elif field_type == 'slider':
-            if not isinstance(value, (int, float)):
+            try:
+                value = float(value)
+                if value == int(value):
+                    value = int(value)
+            except:
                 raise serializers.ValidationError(f"Field '{field_name}' must be a number")
             min_val = field_def.get('min')
             max_val = field_def.get('max')
@@ -113,6 +117,18 @@ class RunCreateSerializer(serializers.Serializer):
                 raise serializers.ValidationError(f"Field '{field_name}' must be >= {min_val}")
             if max_val is not None and value > max_val:
                 raise serializers.ValidationError(f"Field '{field_name}' must be <= {max_val}")
+
+        elif field_type == 'multiselect':
+            if not isinstance(value, list):
+                raise serializers.ValidationError(
+                    f"Field '{field_name}' must be an array"
+                )
+            allowed = {opt['value'] for opt in field_def.get('options', [])}
+            for idx, v in enumerate(value):
+                if v not in allowed:
+                    raise serializers.ValidationError(
+                        f"Invalid option '{v}' in field '{field_name}'"
+                    )
 
         elif field_type == 'dynamicArray':
             if not isinstance(value, list):

@@ -14,7 +14,7 @@ class ScriptAdmin(admin.ModelAdmin):
             'fields': ('name', 'description', 'pic', 'is_active')
         }),
         ('Task Configuration', {
-            'fields': ('celery_task', 'input_schema', 'output_schema')
+            'fields': ('celery_task', 'input_schema', 'output_schema', 'cookies_file')
         }),
         ('Metadata', {
             'fields': ('created_at', 'updated_at'),

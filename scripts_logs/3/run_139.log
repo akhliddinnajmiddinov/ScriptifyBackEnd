@@ -1,0 +1,50 @@
+[2025-11-12 10:44:20,283] INFO: Task received by worker
+[2025-11-12 10:44:20,284] INFO: Starting task: Facebook Marketplace Scraper
+[2025-11-12 10:44:20,284] DEBUG: Input data: {
+  "cities": [
+    "berlin"
+  ],
+  "query": "Canon Printer Cartridge",
+  "last_n_days": 7,
+  "listings_per_city": 100
+}
+[2025-11-12 10:44:20,288] INFO: AADSASDASDASDASDASSDFSDFSDKFHSDKJFHKDSHKJHkjhjhkjhkj
+[2025-11-12 10:44:20,288] INFO: Scraping 1 city(s): berlin
+[2025-11-12 10:44:20,289] INFO: ================================================================================
+[2025-11-12 10:44:20,289] INFO: 🚀 FACEBOOK MARKETPLACE SCRAPER
+[2025-11-12 10:44:20,290] INFO: ================================================================================
+[2025-11-12 10:44:20,290] INFO: 📋 Configuration:
+[2025-11-12 10:44:20,290] INFO:    Query: "Canon Printer Cartridge"
+[2025-11-12 10:44:20,290] INFO:    Cities: berlin
+[2025-11-12 10:44:20,290] INFO:    Days: 7
+[2025-11-12 10:44:20,290] INFO:    Listings per city: 100
+[2025-11-12 10:44:20,290] INFO:    Cookies file: Facebook Marketplace Scraper - 139 (STARTED)
+[2025-11-12 10:44:20,290] INFO: ================================================================================
+[2025-11-12 10:44:23,177] INFO: 
+🔐 LOGIN PROCESS
+[2025-11-12 10:44:23,177] INFO: --------------------------------------------------------------------------------
+[2025-11-12 10:44:23,201] INFO: ✅ Cookies loaded. Checking session...
+[2025-11-12 10:44:35,345] INFO: ✅ Session is valid.
+[2025-11-12 10:44:35,345] INFO: 
+🌍 SCRAPING CITIES
+[2025-11-12 10:44:35,345] INFO: --------------------------------------------------------------------------------
+[2025-11-12 10:44:35,345] INFO: 
+📍 City 1/1: Berlin
+[2025-11-12 10:44:35,345] INFO: --------------------------------------------------------------------------------
+[2025-11-12 10:44:35,345] INFO: 🔗 URL: https://www.facebook.com/marketplace/berlin/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-12 10:44:35,717] INFO: ⏳ Loading marketplace page...
+[2025-11-12 10:44:37,691] INFO:   ⏳ Scraping up to 100 listings...
+[2025-11-12 10:44:52,693] INFO:     🔄 Iteration 1
+[2025-11-12 10:44:52,693] INFO:     ⚠️  No new items found. Attempt 1/2
+[2025-11-12 10:44:52,694] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 10:45:04,225] INFO:     🔄 Iteration 2
+[2025-11-12 10:45:04,225] INFO:     ⚠️  No new items found. Attempt 2/2
+[2025-11-12 10:45:04,225] INFO:     ❌ No new items after 2 attempts. Stopping.
+[2025-11-12 10:45:04,226] INFO:   ⏳ Final wait for responses...
+[2025-11-12 10:45:19,231] INFO: ❌ Failed to scrape Berlin after retries. Error: None
+[2025-11-12 10:45:19,232] INFO: 
+================================================================================
+[2025-11-12 10:45:19,232] INFO: ✅ SCRAPING COMPLETE!
+[2025-11-12 10:45:19,232] INFO: 📊 Total unique listings scraped: 0
+[2025-11-12 10:45:19,232] INFO: ================================================================================
+[2025-11-12 10:45:19,551] INFO: Task completed successfully

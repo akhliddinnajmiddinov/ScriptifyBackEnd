@@ -1,0 +1,73 @@
+[2025-11-13 14:30:57,251] INFO: Task received by worker
+[2025-11-13 14:30:57,252] INFO: Starting task: Facebook Marketplace Scraper
+[2025-11-13 14:30:57,252] DEBUG: Input data: {
+  "cities": [
+    "london",
+    "manchester"
+  ],
+  "query": "Canon Printer Cartridge",
+  "last_n_days": 7,
+  "listings_per_city": 100
+}
+[2025-11-13 14:30:57,257] INFO: AADSASDASDASDASDASSDFSDFSDKFHSDKJFHKDSHKJHkjhjhkjhkj
+[2025-11-13 14:30:57,257] INFO: Scraping 2 city(s): london, manchester
+[2025-11-13 14:30:57,260] INFO: ================================================================================
+[2025-11-13 14:30:57,260] INFO: 🚀 FACEBOOK MARKETPLACE SCRAPER
+[2025-11-13 14:30:57,260] INFO: ================================================================================
+[2025-11-13 14:30:57,260] INFO: 📋 Configuration:
+[2025-11-13 14:30:57,260] INFO:    Query: "Canon Printer Cartridge"
+[2025-11-13 14:30:57,260] INFO:    Cities: london, manchester
+[2025-11-13 14:30:57,261] INFO:    Days: 7
+[2025-11-13 14:30:57,261] INFO:    Listings per city: 100
+[2025-11-13 14:30:57,261] INFO:    Cookies file: Facebook Marketplace Scraper - 167 (STARTED)
+[2025-11-13 14:30:57,261] INFO: ================================================================================
+[2025-11-13 14:31:00,834] INFO: 
+🔐 LOGIN PROCESS
+[2025-11-13 14:31:00,834] INFO: --------------------------------------------------------------------------------
+[2025-11-13 14:31:00,844] INFO: ✅ Cookies loaded. Checking session...
+[2025-11-13 14:31:12,975] INFO: ✅ Session is valid.
+[2025-11-13 14:31:12,976] INFO: 
+🌍 SCRAPING CITIES
+[2025-11-13 14:31:12,976] INFO: --------------------------------------------------------------------------------
+[2025-11-13 14:31:12,976] INFO: 
+📍 City 1/2: London
+[2025-11-13 14:31:12,976] INFO: --------------------------------------------------------------------------------
+[2025-11-13 14:31:12,976] INFO: 🔗 URL: https://www.facebook.com/marketplace/london/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-13 14:31:13,190] INFO: ⏳ Loading marketplace page...
+[2025-11-13 14:31:13,479] INFO:   ⚠️  HTML parse error: Response.text: Response body is unavailable for redirect responses
+[2025-11-13 14:31:14,912] INFO:   ⏳ Scraping up to 100 listings...
+[2025-11-13 14:31:29,914] INFO:     🔄 Iteration 1
+[2025-11-13 14:31:29,915] INFO:     ⚠️  No new items found. Attempt 1/3
+[2025-11-13 14:31:29,915] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-13 14:31:41,438] INFO:     🔄 Iteration 2
+[2025-11-13 14:31:41,440] INFO:     ⚠️  No new items found. Attempt 2/3
+[2025-11-13 14:31:41,441] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-13 14:31:52,964] INFO:     🔄 Iteration 3
+[2025-11-13 14:31:52,964] INFO:     ⚠️  No new items found. Attempt 3/3
+[2025-11-13 14:31:52,964] INFO:     ❌ No new items after 3 attempts. Stopping.
+[2025-11-13 14:31:52,964] INFO:   ⏳ Final wait for responses...
+[2025-11-13 14:32:07,979] INFO: ❌ Failed to scrape London after retries. Error: None
+[2025-11-13 14:32:07,980] INFO: 
+📍 City 2/2: Manchester
+[2025-11-13 14:32:07,980] INFO: --------------------------------------------------------------------------------
+[2025-11-13 14:32:07,980] INFO: 🔗 URL: https://www.facebook.com/marketplace/manchester/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-13 14:32:08,187] INFO: ⏳ Loading marketplace page...
+[2025-11-13 14:32:08,455] INFO:   ⚠️  HTML parse error: Response.text: Response body is unavailable for redirect responses
+[2025-11-13 14:32:09,624] INFO:   ⏳ Scraping up to 100 listings...
+[2025-11-13 14:32:24,628] INFO:     🔄 Iteration 1
+[2025-11-13 14:32:24,629] INFO:     ⚠️  No new items found. Attempt 1/3
+[2025-11-13 14:32:24,629] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-13 14:32:36,150] INFO:     🔄 Iteration 2
+[2025-11-13 14:32:36,151] INFO:     ⚠️  No new items found. Attempt 2/3
+[2025-11-13 14:32:36,151] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-13 14:32:47,666] INFO:     🔄 Iteration 3
+[2025-11-13 14:32:47,667] INFO:     ⚠️  No new items found. Attempt 3/3
+[2025-11-13 14:32:47,667] INFO:     ❌ No new items after 3 attempts. Stopping.
+[2025-11-13 14:32:47,667] INFO:   ⏳ Final wait for responses...
+[2025-11-13 14:33:02,670] INFO: ❌ Failed to scrape Manchester after retries. Error: None
+[2025-11-13 14:33:02,671] INFO: 
+================================================================================
+[2025-11-13 14:33:02,671] INFO: ✅ SCRAPING COMPLETE!
+[2025-11-13 14:33:02,671] INFO: 📊 Total unique listings scraped: 0
+[2025-11-13 14:33:02,671] INFO: ================================================================================
+[2025-11-13 14:33:02,932] INFO: Task completed successfully

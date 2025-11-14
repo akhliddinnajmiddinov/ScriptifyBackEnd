@@ -1,0 +1,107 @@
+[2025-11-12 23:40:29,024] INFO: Task received by worker
+[2025-11-12 23:40:29,025] INFO: Starting task: Facebook Marketplace Scraper
+[2025-11-12 23:40:29,025] DEBUG: Input data: {
+  "cities": [
+    "cologne",
+    "london"
+  ],
+  "query": "Canon Printer Cartridge",
+  "last_n_days": "10",
+  "listings_per_city": "20"
+}
+[2025-11-12 23:40:29,028] INFO: AADSASDASDASDASDASSDFSDFSDKFHSDKJFHKDSHKJHkjhjhkjhkj
+[2025-11-12 23:40:29,029] INFO: Scraping 2 city(s): cologne, london
+[2025-11-12 23:40:29,030] INFO: ================================================================================
+[2025-11-12 23:40:29,030] INFO: 🚀 FACEBOOK MARKETPLACE SCRAPER
+[2025-11-12 23:40:29,030] INFO: ================================================================================
+[2025-11-12 23:40:29,030] INFO: 📋 Configuration:
+[2025-11-12 23:40:29,030] INFO:    Query: "Canon Printer Cartridge"
+[2025-11-12 23:40:29,030] INFO:    Cities: cologne, london
+[2025-11-12 23:40:29,030] INFO:    Days: 10
+[2025-11-12 23:40:29,031] INFO:    Listings per city: 20
+[2025-11-12 23:40:29,031] INFO:    Cookies file: Facebook Marketplace Scraper - 165 (STARTED)
+[2025-11-12 23:40:29,031] INFO: ================================================================================
+[2025-11-12 23:40:31,361] INFO: 
+🔐 LOGIN PROCESS
+[2025-11-12 23:40:31,362] INFO: --------------------------------------------------------------------------------
+[2025-11-12 23:40:31,378] INFO: ✅ Cookies loaded. Checking session...
+[2025-11-12 23:40:43,530] INFO: ✅ Session is valid.
+[2025-11-12 23:40:43,531] INFO: 
+🌍 SCRAPING CITIES
+[2025-11-12 23:40:43,531] INFO: --------------------------------------------------------------------------------
+[2025-11-12 23:40:43,531] INFO: 
+📍 City 1/2: Cologne
+[2025-11-12 23:40:43,531] INFO: --------------------------------------------------------------------------------
+[2025-11-12 23:40:43,531] INFO: 🔗 URL: https://www.facebook.com/marketplace/cologne/search?daysSinceListed=10&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-12 23:40:43,923] INFO: ⏳ Loading marketplace page...
+[2025-11-12 23:40:45,625] INFO:   ⏳ Scraping up to 20 listings...
+[2025-11-12 23:41:00,629] INFO:     🔄 Iteration 1
+[2025-11-12 23:41:00,630] INFO:     ⚠️  No new items found. Attempt 1/3
+[2025-11-12 23:41:00,638] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 23:41:12,155] INFO:     🔄 Iteration 2
+[2025-11-12 23:41:12,155] INFO:     ⚠️  No new items found. Attempt 2/3
+[2025-11-12 23:41:12,155] INFO:     📜 Scrolling to bottom and waiting...
+[2025-11-12 23:41:23,665] INFO:     🔄 Iteration 3
+[2025-11-12 23:41:23,665] INFO:     ⚠️  No new items found. Attempt 3/3
+[2025-11-12 23:41:23,665] INFO:     ❌ No new items after 3 attempts. Stopping.
+[2025-11-12 23:41:23,665] INFO:   ⏳ Final wait for responses...
+[2025-11-12 23:41:38,666] INFO: ❌ Failed to scrape Cologne after retries. Error: None
+[2025-11-12 23:41:38,666] INFO: 
+📍 City 2/2: London
+[2025-11-12 23:41:38,667] INFO: --------------------------------------------------------------------------------
+[2025-11-12 23:41:38,667] INFO: 🔗 URL: https://www.facebook.com/marketplace/london/search?daysSinceListed=10&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-12 23:41:38,974] INFO: ⏳ Loading marketplace page...
+[2025-11-12 23:41:40,917] INFO:   📄 HTML → 24 items
+[2025-11-12 23:41:40,935] INFO:   ⏳ Scraping up to 20 listings...
+[2025-11-12 23:41:55,937] INFO:     🔄 Iteration 1
+[2025-11-12 23:41:55,938] INFO:     ✅ Found 24 new items. Total: 0/20 | Total unique: 0
+[2025-11-12 23:42:01,611] INFO:       [1/24] Processed 25439726585661717... (1/20)
+[2025-11-12 23:42:01,611] INFO:       Title: Canon Printer Cartridge Pixma 561 XL | Price: 15.00
+[2025-11-12 23:42:06,257] INFO:       [2/24] Processed 1388820689325856... (2/20)
+[2025-11-12 23:42:06,257] INFO:       Title: Canon - EXV 34 printer cartridges All Colours PRICE PER CARTRIDGE £25 | Price: 25.00
+[2025-11-12 23:42:10,774] INFO:       [3/24] Processed 724021280062561... (3/20)
+[2025-11-12 23:42:10,774] INFO:       Title: Genuine CANON ink cartridges for PIXMA printer (CLI-551/PGI-550) | Price: 22.00
+[2025-11-12 23:42:15,356] INFO:       [4/24] Processed 1522001412469948... (4/20)
+[2025-11-12 23:42:15,356] INFO:       Title: Canon Pixma MP495 Printer and Ink Cartridges | Price: 20.00
+[2025-11-12 23:42:20,966] INFO:       [5/24] Processed 1554036418929335... (5/20)
+[2025-11-12 23:42:20,966] INFO:       Title: Canon Printer Cartridge XL 540 | Price: 15.00
+[2025-11-12 23:42:25,498] INFO:       [6/24] Processed 4200158923604827... (6/20)
+[2025-11-12 23:42:25,498] INFO:       Title: Canon 545 XL printer cartridge | Price: 10.00
+[2025-11-12 23:42:30,084] INFO:       [7/24] Processed 2634536553592425... (7/20)
+[2025-11-12 23:42:30,084] INFO:       Title: Canon Printer Cartridges | Price: 12.00
+[2025-11-12 23:42:33,688] INFO:       [8/24] Processed 821587960580790... (8/20)
+[2025-11-12 23:42:33,688] INFO:       Title: 5 x Canon Pixma multipack printer cartridges | Price: 100.00
+[2025-11-12 23:42:38,248] INFO:       [9/24] Processed 1948978528979830... (9/20)
+[2025-11-12 23:42:38,248] INFO:       Title: Genuine canon PIXMA printer cartridges 550&551 NEW | Price: 50.00
+[2025-11-12 23:42:43,947] INFO:       [10/24] Processed 805123005626129... (10/20)
+[2025-11-12 23:42:43,947] INFO:       Title: Canon IPF6400 24” colour printer | Price: 0.00
+[2025-11-12 23:42:49,520] INFO:       [11/24] Processed 804443662396158... (11/20)
+[2025-11-12 23:42:49,521] INFO:       Title: 10x printer in cartridges. | Price: 20.00
+[2025-11-12 23:42:53,249] INFO:       [12/24] Processed 1533404871411826... (12/20)
+[2025-11-12 23:42:53,249] INFO:       Title: Canon pixma printer and black ink cartridge | Price: 35.00
+[2025-11-12 23:42:54,838] INFO:   📊 GraphQL → 24 items
+[2025-11-12 23:42:56,877] INFO:       [13/24] Processed 1595795774739741... (13/20)
+[2025-11-12 23:42:56,877] INFO:       Title: Canon Ink cartridges mixed bundle | Price: 350.00
+[2025-11-12 23:43:01,471] INFO:       [14/24] Processed 932832663238117... (14/20)
+[2025-11-12 23:43:01,472] INFO:       Title: Canon Pixma TS3355 Printer | Price: 20.00
+[2025-11-12 23:43:06,103] INFO:       [15/24] Processed 1996643580893125... (15/20)
+[2025-11-12 23:43:06,104] INFO:       Title: Canon imageprograf PRO-300 printer | Price: 200.00
+[2025-11-12 23:43:10,647] INFO:       [16/24] Processed 867863309009116... (16/20)
+[2025-11-12 23:43:10,648] INFO:       Title: FS: Brand New Sealed Genuine Canon Cartridge 312 Printer Black Toner for LBP3050 LBP3100 LBP3150 | Price: 20.00
+[2025-11-12 23:43:14,297] INFO:       [17/24] Processed 1802585840390656... (17/20)
+[2025-11-12 23:43:14,297] INFO:       Title: Two Empty Ink Canon Printer Cartridges . (Collect Brentford Tw8 0de) | Price: 3.00
+[2025-11-12 23:43:17,936] INFO:       [18/24] Processed 1409378457250684... (18/20)
+[2025-11-12 23:43:17,937] INFO:       Title: Canon SELPHY Square mini photo printer with brand new ink cartridge | Price: 90.00
+[2025-11-12 23:43:23,476] INFO:       [19/24] Processed 1165421041786090... (19/20)
+[2025-11-12 23:43:23,476] INFO:       Title: Ink Cartridges - Canon | Price: 10.00
+[2025-11-12 23:43:29,146] INFO:       [20/24] Processed 3237053193118320... (20/20)
+[2025-11-12 23:43:29,146] INFO:       Title: Cannon Ink Cartridges - free to collect | Price: 0.00
+[2025-11-12 23:43:29,146] INFO:     ✅ Reached target of 20 listings.
+[2025-11-12 23:43:29,147] INFO:   ⏳ Final wait for responses...
+[2025-11-12 23:43:44,148] INFO: ✅ Scraped 20 items from London
+[2025-11-12 23:43:44,148] INFO: 
+================================================================================
+[2025-11-12 23:43:44,148] INFO: ✅ SCRAPING COMPLETE!
+[2025-11-12 23:43:44,148] INFO: 📊 Total unique listings scraped: 20
+[2025-11-12 23:43:44,148] INFO: ================================================================================
+[2025-11-12 23:43:44,526] INFO: Task completed successfully

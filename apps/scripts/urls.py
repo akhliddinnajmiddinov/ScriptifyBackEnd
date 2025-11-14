@@ -6,9 +6,6 @@ router = DefaultRouter()
 router.register(r'scripts', ScriptViewSet, basename='script')
 router.register(r'runs', RunViewSet, basename='run')
 
-print("Registered URLs:")
-for url in router.urls:
-    print(url)
 
 urlpatterns = [
     path('', include(router.urls)),

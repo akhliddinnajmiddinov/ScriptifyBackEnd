@@ -1,0 +1,91 @@
+[2025-11-11 16:16:06,338] INFO: Task received by worker
+[2025-11-11 16:16:06,339] INFO: Starting task: Facebook Marketplace Scraper
+[2025-11-11 16:16:06,339] DEBUG: Input data: {
+  "cities": [
+    "berlin",
+    "frankfurt"
+  ],
+  "query": "Canon Printer Cartridge",
+  "last_n_days": 7,
+  "listings_per_city": 100
+}
+[2025-11-11 16:16:06,342] INFO: AADSASDASDASDASDASSDFSDFSDKFHSDKJFHKDSHKJHkjhjhkjhkj
+[2025-11-11 16:16:06,343] INFO: Scraping 2 city(s): berlin, frankfurt
+[2025-11-11 16:16:06,344] INFO: ================================================================================
+[2025-11-11 16:16:06,344] INFO: 🚀 FACEBOOK MARKETPLACE SCRAPER
+[2025-11-11 16:16:06,345] INFO: ================================================================================
+[2025-11-11 16:16:06,345] INFO: 📋 Configuration:
+[2025-11-11 16:16:06,345] INFO:    Query: "Canon Printer Cartridge"
+[2025-11-11 16:16:06,345] INFO:    Cities: berlin, frankfurt
+[2025-11-11 16:16:06,345] INFO:    Days: 7
+[2025-11-11 16:16:06,346] INFO:    Listings per city: 100
+[2025-11-11 16:16:06,364] ERROR: Task failed: You cannot call this from an async context - use a thread or sync_to_async.
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/django/db/models/fields/related_descriptors.py", line 239, in __get__
+    rel_obj = self.field.get_cached_value(instance)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/django/db/models/fields/mixins.py", line 37, in get_cached_value
+    return instance._state.fields_cache[self.cache_name]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+KeyError: 'script'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 43, in execute_script_task
+    result = scrape_facebook_marketplace(run, input_data, logger)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/celery/local.py", line 182, in __call__
+    return self._get_current_object()(*a, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/celery/app/trace.py", line 737, in __protected_call__
+    return orig(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/celery/app/task.py", line 411, in __call__
+    return self.run(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 190, in scrape_facebook_marketplace
+    return facebook_scraper.start_scraping()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/facebook_scraper/facebook_scraper_main.py", line 182, in start_scraping
+    return asyncio.run(self._async_main())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/facebook_scraper/facebook_scraper_main.py", line 67, in _async_main
+    self.logger.info(f"   Cookies file: {self.run}")
+                                        ^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/models.py", line 85, in __str__
+    return f"{self.script.name} - {self.id} ({self.status})"
+              ^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/django/db/models/fields/related_descriptors.py", line 257, in __get__
+    rel_obj = self.get_object(instance)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/django/db/models/fields/related_descriptors.py", line 220, in get_object
+    return qs.get(self.field.get_reverse_related_filter(instance))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/django/db/models/query.py", line 645, in get
+    num = len(clone)
+          ^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/django/db/models/query.py", line 382, in __len__
+    self._fetch_all()
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/django/db/models/query.py", line 1928, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1572, in execute_sql
+    cursor = self.connection.cursor()
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/django/utils/asyncio.py", line 24, in inner
+    raise SynchronousOnlyOperation(message)
+django.core.exceptions.SynchronousOnlyOperation: You cannot call this from an async context - use a thread or sync_to_async.
+

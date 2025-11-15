@@ -3,7 +3,7 @@ import time
 import json
 from typing import Callable, TypeVar, Tuple, Optional
 
-from config import get_retry_config
+from .config import get_retry_config
 
 T = TypeVar('T')
 
@@ -17,8 +17,8 @@ def retry_with_backoff(func: Callable[[], T]) -> Tuple[bool, Optional[T], Option
             result = func()
             return True, result, None
         except Exception as e:
+            print(e)
             error = str(e)
-            logger.info(error)
 
             payload = json.loads(str(e).split(":", 1)[-1].strip())
             refill_ms = payload.get("refillIn")
@@ -29,7 +29,6 @@ def retry_with_backoff(func: Callable[[], T]) -> Tuple[bool, Optional[T], Option
                 refill_ms = None
 
             if refill_ms is not None:
-                logger.info(f"Refill in limit exceeded error: {refill_ms} ms")
                 wait = refill_ms / 1000  # convert milliseconds to seconds
             else:
                 wait = min(cfg.backoff_max_sec, cfg.backoff_base_sec * (2 ** attempt))

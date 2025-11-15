@@ -1,0 +1,480 @@
+{
+  "Validated": [
+    {
+      "id": 1,
+      "link": "https://www.kleinanzeigen.de/s-anzeige/hp-950-951-druckerpatronen-schwarz-und-blau/3246035102-225-7337",
+      "description": "Noch voll  sind noch im Drucker  damit sie nicht austrocknen. Drucker wird eventuell auf Wunsch dazu geschenkt",
+      "title": "HP 950/951 Druckerpatronen schwarz und blau",
+      "price": "35",
+      "image_urls": [
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/35/35d522d0-0bb2-4aff-b4cc-69a0e474e163?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/cc/cc73081a-c445-4ecf-bce0-e3e7b0a7faa5?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/a9/a9dfc00f-ca34-4f24-9906-ee1630491839?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/8d/8d0e792a-5241-49de-8f00-ab19152ff27f?rule=$_59.AUTO"
+      ],
+      "generated_title": "HP 950, 951 Druckerpatronen",
+      "ai_confidence": 0.95,
+      "ai_confidence_reason": "Clear images showing exact model numbers and official HP branding.",
+      "title_match_confidence": 0.95,
+      "title_match_confidence_reason": "Seller's title matches the identified HP 950 and 951 cartridges.",
+      "products": [
+        {
+          "title": "HP 950 Black Druckerpatrone",
+          "brand": "HP",
+          "model": "950",
+          "quantity": 1,
+          "confidence": 0.95,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official packaging with HP brand logo visible",
+          "amazon_title": "HP CN049AE 950 Schwarz Original Druckerpatrone f\u00fcr HP Officejet Pro 276dw, 8600, 8610, 8620, 251dw, 8100",
+          "amazon_price": 34.99,
+          "amazon_url": "https://www.amazon.de/dp/B005J1U42E",
+          "asin": "B005J1U42E",
+          "price_time": "2025-10-30 14:24:00 UTC",
+          "id": 1
+        },
+        {
+          "title": "HP 951 Cyan Druckerpatrone",
+          "brand": "HP",
+          "model": "951",
+          "quantity": 1,
+          "confidence": 0.95,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official packaging with HP brand logo visible",
+          "amazon_title": "HP 951 Blau Original Druckerpatrone f\u00fcr HP Officejet Pro 276dw, 8600, 8610, 8620, 251dw, 8100",
+          "amazon_price": 23.99,
+          "amazon_url": "https://www.amazon.de/dp/B00I69O0YE",
+          "asin": "B00I69O0YE",
+          "price_time": "2024-04-27 23:12:00 UTC",
+          "id": 2
+        }
+      ],
+      "total_amazon_price": 58.98,
+      "difference": -23.98
+    },
+    {
+      "id": 3,
+      "link": "https://www.kleinanzeigen.de/s-anzeige/1-druckerpatrone-hp-laserjet-p3015-500-mfp-m525/2927970228-225-1601",
+      "description": "Hallo \n\nzum Verkauf steht eine Druckerpatrone (neu) aus einem Doppelpack!\nSteht zum Verkauf  da Drucker verkauft.\n\nPreis f\u00fcr das Doppelpack 409 99\u20ac im September 2024.",
+      "title": "1 Druckerpatrone HP Laserjet P3015 500 MFP M525",
+      "price": "80",
+      "image_urls": [
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/98/982fd43a-4f7d-4519-bf67-81b09ba9d97c?rule=$_59.AUTO"
+      ],
+      "generated_title": "HP Laserjet CE255XD 55X Dual Pack for P3015, MFP M525",
+      "ai_confidence": 0.95,
+      "ai_confidence_reason": "Clear image showing exact model number and packaging details.",
+      "title_match_confidence": 0.8,
+      "title_match_confidence_reason": "Seller's title mentions one cartridge, but the image shows a dual pack.",
+      "products": [
+        {
+          "title": "HP Laserjet CE255XD 55X Dual Pack",
+          "brand": "HP",
+          "model": "CE255XD",
+          "quantity": 1,
+          "confidence": 0.95,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official packaging with brand logo and security hologram visible",
+          "amazon_title": "HP 55X Tonerpatrone 2er-Pack Schwarz Original Toner Laser Bis zu 2 x 12500 Seiten",
+          "amazon_price": 490.88,
+          "amazon_url": "https://www.amazon.de/dp/B004D50OSQ",
+          "asin": "B004D50OSQ",
+          "price_time": "2025-08-10 18:24:00 UTC",
+          "id": 1
+        }
+      ],
+      "total_amazon_price": 490.88,
+      "difference": -410.88
+    },
+    {
+      "id": 4,
+      "link": "https://www.kleinanzeigen.de/s-anzeige/druckerpatrone-hp-302/3245992642-225-1934",
+      "description": "biete hp druckerpatrone 302 neu hier an  da ich sie leider nicht mehr gebrauchen kann .",
+      "title": "druckerpatrone  hp 302",
+      "price": "26",
+      "image_urls": [
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/4e/4e4d6dfb-6bd5-44db-b476-163eac6ddf04?rule=$_59.AUTO"
+      ],
+      "generated_title": "HP 302 Black + Tri-colour 2-pack Druckerpatronen",
+      "ai_confidence": 0.95,
+      "ai_confidence_reason": "Clear image showing exact model numbers and packaging.",
+      "title_match_confidence": 0.9,
+      "title_match_confidence_reason": "Seller's title matches the identified product model and brand accurately.",
+      "products": [
+        {
+          "title": "HP 302 Black + Tri-colour 2-pack",
+          "brand": "HP",
+          "model": "302",
+          "quantity": 1,
+          "confidence": 0.95,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official packaging with brand logo visible",
+          "amazon_title": "HP 302 (X4D37AE) Original Druckerpatronen, Black + Tri-color, 2er Pack f\u00fcr HP DeskJet 1100, 2300, 3600, 3800, 4600 series, HP ENVY 4500 series, HP OfficeJet 3800 Serie",
+          "amazon_price": 39.9,
+          "amazon_url": "https://www.amazon.de/dp/B01LXLFF6H",
+          "asin": "B01LXLFF6H",
+          "price_time": "2025-11-14 05:14:00 UTC",
+          "id": 1
+        }
+      ],
+      "total_amazon_price": 39.9,
+      "difference": -13.9
+    },
+    {
+      "id": 5,
+      "link": "https://www.kleinanzeigen.de/s-anzeige/hp-drucker-patrone-304-hp304-farbe-neu-original/3245981377-225-18570",
+      "description": "Marke: HP\n\nTyp: 304\n\nFarbe: Farbe\n\nZustand: Neu\n\nAbholung in 21037 Hamburg-Kirchwerder m\u00f6glich oder Versand.\nBarzahlung  PayPal und \u00dcberweisung m\u00f6glich.\nDa Privatverkauf keine Garantie oder R\u00fccknahme.",
+      "title": "HP Drucker-Patrone 304 - HP304 - Farbe Neu + Original",
+      "price": "10",
+      "image_urls": [
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/28/288dfe86-b07f-4c9e-9826-379ed740dd76?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/c2/c23ac0ee-a92f-4d6d-ab1b-b211cfb8d279?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/6c/6c9a520d-f400-4655-9d1d-4d3fc59d13d4?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/9f/9fee4027-0baf-4af4-8293-7dc8e025f068?rule=$_59.AUTO"
+      ],
+      "generated_title": "HP 304 Tri-colour Original Druckerpatrone",
+      "ai_confidence": 0.95,
+      "ai_confidence_reason": "Clear images showing exact model numbers and official packaging.",
+      "title_match_confidence": 1.0,
+      "title_match_confidence_reason": "Seller's title perfectly matches identified product with model number and originality.",
+      "products": [
+        {
+          "title": "HP 304 Tri-colour Original Druckerpatrone",
+          "brand": "HP",
+          "model": "304",
+          "quantity": 1,
+          "confidence": 0.95,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official packaging with brand logo and security hologram visible",
+          "amazon_title": "HP 304 (N9K05AE) Original Druckerpatrone Farbe f\u00fcr HP DeskJet 26xx, 37xx, HP ENVY 50xx ,Standard (1er Pack), Tricolor",
+          "amazon_price": 14.9,
+          "amazon_url": "https://www.amazon.de/dp/B01EA0HDRI",
+          "asin": "B01EA0HDRI",
+          "price_time": "2025-08-06 00:48:00 UTC",
+          "id": 1
+        }
+      ],
+      "total_amazon_price": 14.9,
+      "difference": -4.9
+    },
+    {
+      "id": 6,
+      "link": "https://www.kleinanzeigen.de/s-anzeige/druckerpatrone-schwarz-305-xl-fuer-hp-drucker/3245969260-225-6891",
+      "description": "Verkaufe hier 2 Druckerpatronen da es ein Fehlksuf war beide Unbenutzt 1 komplett original verpackt. 1 f\u00fcr 15 \u20ac . Beide f\u00fcr 25 Euro .",
+      "title": "Druckerpatrone Schwarz 305 XL f\u00fcr HP Drucker",
+      "price": "25",
+      "image_urls": [
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/9d/9d507733-2458-4a4b-a6b1-788a62055985?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/33/331d2f4c-7b7d-4afa-bb88-8fae721e0252?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/2d/2dfa3211-8a8a-4adc-8033-94dd8b3ead54?rule=$_59.AUTO"
+      ],
+      "generated_title": "HP 305XL Druckerpatronen Schwarz",
+      "ai_confidence": 0.9,
+      "ai_confidence_reason": "Images clearly show the model number 305XL and indicate they are HP cartridges.",
+      "title_match_confidence": 0.95,
+      "title_match_confidence_reason": "Seller's title matches the identified product model and brand accurately.",
+      "products": [
+        {
+          "title": "HP 305XL Schwarz Druckerpatrone",
+          "brand": "HP",
+          "model": "305XL",
+          "quantity": 2,
+          "confidence": 0.9,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official packaging with brand logo visible",
+          "amazon_title": "HP 305XL High Yield Black Original-Tintenpatrone f\u00fcr HP DeskJet 2300/2700 / Plus 4100, ENVY 6000 / Pro 6400 (3YM62AE)",
+          "amazon_price": 22.9,
+          "amazon_url": "https://www.amazon.de/dp/B087DH9GT3",
+          "asin": "B087DH9GT3",
+          "price_time": "2025-11-14 04:50:00 UTC",
+          "id": 1
+        }
+      ],
+      "total_amazon_price": 45.8,
+      "difference": -20.8
+    },
+    {
+      "id": 7,
+      "link": "https://www.kleinanzeigen.de/s-anzeige/original-hp-304-druckerpatrone-schwarz/3245941185-225-7806",
+      "description": "Siehe Bilder  in OVP. War als Ersatz gekauft  wird nicht mehr ben\u00f6tigt. Privatverkauf",
+      "title": "Original HP 304  Druckerpatrone Schwarz",
+      "price": "12",
+      "image_urls": [
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/83/83c7b0b4-66cc-43b2-bd7a-7229047d4db0?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/8a/8a16bdf2-fa8c-4403-9ad3-0ff243ec3f25?rule=$_59.AUTO"
+      ],
+      "generated_title": "Original HP 304 Druckerpatrone Schwarz",
+      "ai_confidence": 0.95,
+      "ai_confidence_reason": "Clear image showing the exact model number and brand on the packaging.",
+      "title_match_confidence": 1.0,
+      "title_match_confidence_reason": "Seller's title perfectly matches the identified product model and brand.",
+      "products": [
+        {
+          "title": "Original HP 304 Druckerpatrone Schwarz",
+          "brand": "HP",
+          "model": "304",
+          "quantity": 1,
+          "confidence": 0.95,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official packaging with brand logo visible",
+          "amazon_title": "HP 304 (N9K06AE) Original Druckerpatrone Schwarz f\u00fcr HP Deskjet und HP ENVY , 1er Pack",
+          "amazon_price": 15.81,
+          "amazon_url": "https://www.amazon.de/dp/B01EA0EG3W",
+          "asin": "B01EA0EG3W",
+          "price_time": "2025-11-15 05:36:00 UTC",
+          "id": 1
+        }
+      ],
+      "total_amazon_price": 15.81,
+      "difference": -3.81
+    },
+    {
+      "id": 8,
+      "link": "https://www.kleinanzeigen.de/s-anzeige/8x-hp-epson-druckerpatronen-62-mit-ovp-leer/3245936646-225-4704",
+      "description": "Verkaufe die 8x abgebildeten HP und Epson Druckerpatronen. Alle Patronen sind gebraucht und leer incl der OVP\n1x HP 62 Farbe\n3x HP 62 Schwarz\n1x Epson Schwarz T7891\n1x Epson Blau T7892\n1x Epson Magenta T7893\n1x Epson Gelb T7894\n\nAkzeptierte Zahlungsmethoden : Vorab \u00dcberweisung oder Paypal Freunde  Bar bei Abholung\n\nVersand versichert f\u00fcr 4 99 Euro m\u00f6glich\n\nDer Verkauf erfolgt unter Ausschluss jeglicher Sachm\u00e4ngelhaftung. Die Haftung auf Schadenersatz wegen Verletzungen von Gesundheit  K\u00f6rper oder Leben und grob fahrl\u00e4ssiger und/oder vors\u00e4tzlicher Verletzungen meiner Pflichten als Verk\u00e4ufer bleibt davon unber\u00fchrt.\n\nDieses Angebot ist rein privater  nicht gewerblicher Natur. Alle Angaben zu diesem Artikel wurden von mir wahrheitsgem\u00e4\u00df nach bestem Wissen und Gewissen gemacht. Der Artikel wird so wie beschrieben von Privat als - wenn nicht anders beschrieben - Gebrauchtware verkauft. Der K\u00e4ufer dieses Artikels erkl\u00e4rt sich damit einverstanden  dass alle m\u00f6glichen Gew\u00e4hrleistungs- und Garantieanspr\u00fcche  sowie Widerrufs-  R\u00fcckgabe-  Umtauschrechte o. \u00e4. Anspr\u00fcche ausgeschlossen werden. Bieten Sie deshalb auch nur  wenn Sie mit dieser Regelung einverstanden sind. Jegliche Haftung bei Verlust oder Besch\u00e4digung sowie Abnutzung durch den Transport obliegt ab Versand beim Empf\u00e4nger.",
+      "title": "8x HP Epson Druckerpatronen 62 mit OVP leer",
+      "price": "15",
+      "image_urls": [
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/c4/c45700f9-9c38-455d-8ef5-7dbc3fb4b300?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/46/46b15aec-f325-4725-8295-880d4db9ca00?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/ce/ce6c5da1-ab43-4ff4-81c7-c3dbf28a1d3e?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/88/8867eafd-0c37-417c-a82c-d6f3d3374e2a?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/36/36eeb1ce-7731-4ce8-88f4-e3ac48b473cf?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/16/168838b3-e223-482e-97c3-97601dde527f?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/39/39980800-1b92-40ad-91f8-430543f5a07a?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/05/05d71401-c9c3-460f-b0a8-5df99dfc8d54?rule=$_59.AUTO"
+      ],
+      "generated_title": "Ankauf Ihrer leeren HP 62, Epson T7891, T7892, T7893, T7894 Druckerpatronen",
+      "ai_confidence": 0.95,
+      "ai_confidence_reason": "Clear images showing exact model numbers and packaging.",
+      "title_match_confidence": 0.9,
+      "title_match_confidence_reason": "Seller's title matches the identified products well, specifying the models and brands accurately.",
+      "products": [
+        {
+          "title": "HP 62 Farbe",
+          "brand": "HP",
+          "model": "62",
+          "quantity": 1,
+          "confidence": 0.95,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official packaging with brand logo visible",
+          "amazon_title": "HP 62 Patrone C2P06AE UUS",
+          "amazon_price": 26.99,
+          "amazon_url": "https://www.amazon.de/dp/B00MWOTQ6Q",
+          "asin": "B00MWOTQ6Q",
+          "price_time": "2025-11-14 04:20:00 UTC",
+          "id": 1
+        },
+        {
+          "title": "HP 62 Schwarz",
+          "brand": "HP",
+          "model": "62",
+          "quantity": 3,
+          "confidence": 0.95,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official packaging with brand logo visible",
+          "amazon_title": "Remanufactured HP 62 - Schwarz",
+          "amazon_price": 19.99,
+          "amazon_url": "https://www.amazon.de/dp/B00MWOSVZS",
+          "asin": "B00MWOSVZS",
+          "price_time": "2025-11-15 00:18:00 UTC",
+          "id": 2
+        },
+        {
+          "title": "Epson Schwarz T7891",
+          "brand": "Epson",
+          "model": "T7891",
+          "quantity": 1,
+          "confidence": 0.95,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official packaging with brand logo visible",
+          "amazon_title": "Epson Original T7891 Tinte, Singlepack schwarz, Extra hohe Kapazit\u00e4t",
+          "amazon_price": 63.74,
+          "amazon_url": "https://www.amazon.de/dp/B00I8EV2G6",
+          "asin": "B00I8EV2G6",
+          "price_time": "2025-10-31 16:04:00 UTC",
+          "id": 3
+        },
+        {
+          "title": "Epson Blau T7892",
+          "brand": "Epson",
+          "model": "T7892",
+          "quantity": 1,
+          "confidence": 0.95,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official packaging with brand logo visible",
+          "amazon_title": "Tinten Patrone kompatibel f\u00fcr Epson Workforce Pro WF-5620DWF, 2X T7892 Cyan Drucker, Druckerpatronen",
+          "amazon_price": 10.59,
+          "amazon_url": "https://www.amazon.de/dp/B00IIY4SNA",
+          "asin": "B00IIY4SNA",
+          "price_time": "2023-01-04 02:50:00 UTC",
+          "id": 4
+        },
+        {
+          "title": "Epson Magenta T7893",
+          "brand": "Epson",
+          "model": "T7893",
+          "quantity": 1,
+          "confidence": 0.95,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official packaging with brand logo visible",
+          "amazon_title": "Epson 235G865 T7893 Tinte, Singlepack magenta, extra hohe Kapazit\u00e4t, Super high",
+          "amazon_price": 74.67,
+          "amazon_url": "https://www.amazon.de/dp/B00I8EVB0I",
+          "asin": "B00I8EVB0I",
+          "price_time": "2025-11-11 07:36:00 UTC",
+          "id": 5
+        },
+        {
+          "title": "Epson Gelb T7894",
+          "brand": "Epson",
+          "model": "T7894",
+          "quantity": 1,
+          "confidence": 0.95,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official packaging with brand logo visible",
+          "amazon_title": "Epson T7894 Tinte, Singlepack gelb, extra hohe Kapazit\u00e4t",
+          "amazon_price": 58.79,
+          "amazon_url": "https://www.amazon.de/dp/B00I8EVCJ8",
+          "asin": "B00I8EVCJ8",
+          "price_time": "2024-07-03 02:22:00 UTC",
+          "id": 6
+        }
+      ],
+      "total_amazon_price": 294.75,
+      "difference": -279.75
+    },
+    {
+      "id": 9,
+      "link": "https://www.kleinanzeigen.de/s-anzeige/diverse-hp-druckerpatronen/3245915638-225-7963",
+      "description": "neue Druckerpatronen  abgelaufen\n\nAblaufdaten\n88XL schwarz: August 2012\n88XL Magenta: Januar  M\u00e4rz 2017  1x November 2013\n88XL Gelb: August 2016  November 2017\n88XL Cyan: Juli 2017\n\n3 50\u20ac pro St\u00fcck\nAlle zusammen 25\u20ac\n\nVersand berechnet sich je nach Menge.\n\nHinweis:\nDies ist ein Privatverkauf. Der Artikel wird unter Ausschluss jeglicher Gew\u00e4hrleistung  Sachm\u00e4ngelhaftung und R\u00fccknahme verkauft.\nEine Garantie oder Haftung nach EU-Recht ist ebenfalls ausgeschlossen.\nMit dem Kauf erkl\u00e4rst du dich ausdr\u00fccklich damit einverstanden.",
+      "title": "diverse HP Druckerpatronen",
+      "price": "VB",
+      "image_urls": [
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/39/3913388a-f97c-44b5-adda-abfda2998701?rule=$_59.AUTO"
+      ],
+      "generated_title": "HP 88XL Druckerpatronen Schwarz, Magenta, Gelb, Cyan",
+      "ai_confidence": 0.9,
+      "ai_confidence_reason": "The image clearly shows the HP 88XL model numbers and packaging.",
+      "title_match_confidence": 0.7,
+      "title_match_confidence_reason": "The seller's title is generic and does not specify the model numbers, but it correctly identifies the brand and type of product.",
+      "products": [
+        {
+          "title": "HP 88XL Schwarz Druckerpatrone",
+          "brand": "HP",
+          "model": "88XL Schwarz",
+          "quantity": 1,
+          "confidence": 0.9,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official HP packaging visible with brand logo.",
+          "amazon_title": "HP 981Y (L0R16A) Schwarz Original PageWide Druckerpatrone mit sehr hoher Reichweite f\u00fcr HP PageWide Enterprise, XXL",
+          "amazon_price": 147.47,
+          "amazon_url": "https://www.amazon.de/dp/B01EMQUV88",
+          "asin": "B01EMQUV88",
+          "price_time": "2025-09-22 09:16:00 UTC",
+          "id": 1
+        },
+        {
+          "title": "HP 88XL Magenta Druckerpatrone",
+          "brand": "HP",
+          "model": "88XL Magenta",
+          "quantity": 3,
+          "confidence": 0.9,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official HP packaging visible with brand logo.",
+          "amazon_title": "Hp 88xl Tintenpatrone B, Magenta",
+          "amazon_price": 15.09,
+          "amazon_url": "https://www.amazon.de/dp/B000Y3Z792",
+          "asin": "B000Y3Z792",
+          "price_time": "2025-04-06 22:16:00 UTC",
+          "id": 2
+        },
+        {
+          "title": "HP 88XL Gelb Druckerpatrone",
+          "brand": "HP",
+          "model": "88XL Gelb",
+          "quantity": 2,
+          "confidence": 0.9,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official HP packaging visible with brand logo.",
+          "amazon_title": "ABC Kompatible Druckerpatrone f\u00fcr HP 88XL Gelb f\u00fcr Officejet Pro K5300 K5400 K5400DN K5400DTN K5400N Series K5400TN K550 K550DTN K550DTWN K550TN K550TWN K8600 K8600DN L7400 L7480",
+          "amazon_price": 11.7,
+          "amazon_url": "https://www.amazon.de/dp/B07P6RJVJN",
+          "asin": "B07P6RJVJN",
+          "price_time": "2024-03-06 09:12:00 UTC",
+          "id": 3
+        },
+        {
+          "title": "HP 88XL Cyan Druckerpatrone",
+          "brand": "HP",
+          "model": "88XL Cyan",
+          "quantity": 1,
+          "confidence": 0.9,
+          "is_original": true,
+          "is_cartridge": true,
+          "original_verification_reason": "Official HP packaging visible with brand logo.",
+          "amazon_title": "HP Original Tinte Nr. 88XL Cyan f\u00fcr OFFICEJET PRO K550",
+          "amazon_price": 35.25,
+          "amazon_url": "https://www.amazon.de/dp/B0043FM4M0",
+          "asin": "B0043FM4M0",
+          "price_time": "2025-09-29 12:34:00 UTC",
+          "id": 4
+        }
+      ],
+      "total_amazon_price": 251.39
+    }
+  ],
+  "Excluded": [
+    {
+      "id": 2,
+      "link": "https://www.kleinanzeigen.de/s-anzeige/hp-937e-multipack-druckerpatronen/3246018360-225-7752",
+      "description": "Druckerpatronen Multipack f\u00fcr HP 937e.\nNeu und unbenutzt.\nTier und Rauchfreier Haushalt.\nPrivatverkauf  keine Garantie oder R\u00fccknahme m\u00f6glich.",
+      "title": "HP 937e Multipack Druckerpatronen",
+      "price": "30",
+      "image_urls": [
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/1f/1fca5f4f-3fc3-415a-956d-5cb3c34e5687?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/66/66b28561-133b-4604-a8a0-549fef320309?rule=$_59.AUTO",
+        "https://img.kleinanzeigen.de/api/v1/prod-ads/images/48/488f306e-b7c3-4647-9252-800754c05f9d?rule=$_59.AUTO"
+      ],
+      "generated_title": "HP 937e Multipack Druckerpatronen",
+      "ai_confidence": 0.9,
+      "ai_confidence_reason": "Clear images showing exact model numbers and packaging details.",
+      "title_match_confidence": 0.95,
+      "title_match_confidence_reason": "Seller's title matches the identified product model and type accurately.",
+      "products": [
+        {
+          "title": "HP 937e Multipack Druckerpatronen",
+          "brand": "HP",
+          "model": "937e",
+          "quantity": 1,
+          "confidence": 0.9,
+          "is_original": false,
+          "is_cartridge": true,
+          "original_verification_reason": "Packaging labeled as 'ashope', indicating possible third-party or compatible product.",
+          "amazon_title": "N/A",
+          "amazon_price": 0,
+          "amazon_url": "",
+          "asin": "",
+          "price_time": "",
+          "id": 1
+        }
+      ]
+    }
+  ]
+}

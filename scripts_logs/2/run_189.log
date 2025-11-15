@@ -1,0 +1,22 @@
+[2025-11-14 19:53:27,334] INFO: Task received by worker
+[2025-11-14 19:53:27,334] INFO: Starting task: AI Product Analyzer
+[2025-11-14 19:53:27,335] DEBUG: Input data: {
+  "AI_MODEL": "claude"
+}
+[2025-11-14 19:53:27,427] INFO: CLI Processor initialized
+[2025-11-14 19:53:27,427] INFO: 
+============================================================
+[2025-11-14 19:53:27,427] INFO: STARTING PRODUCT PROCESSING PIPELINE
+[2025-11-14 19:53:27,427] INFO: ============================================================
+
+[2025-11-14 19:53:27,427] INFO: ==============================
+[2025-11-14 19:53:27,427] INFO: STAGE 1: IMPORTING DATA
+[2025-11-14 19:53:27,427] INFO: ==============================
+[2025-11-14 19:53:27,437] INFO: ✅ Successfully imported 761 products from JSON
+[2025-11-14 19:53:27,438] INFO: STAGE 2-3: PROCESSING PRODUCTS (TITLE GENERATION + PRICE FETCHING)
+[2025-11-14 19:53:27,438] INFO: ============================================================
+[2025-11-14 19:53:27,438] INFO: ============================================================
+[2025-11-14 19:53:27,440] INFO: 
+============================================================
+[2025-11-14 19:53:27,440] INFO: [1/761] Processing: Ankauf Ihrer leeren Canon und HP 305 HP 305XL HP 307XL HP 304 HP 304XL HP 303 HP 303XL HP 302 HP 302XL HP 301 301XL 62 62XL 300 300XL 901 leere Patronen volle überlagerte Druckerpatronen Toner
+[2025-11-14 19:53:27,440] INFO: ============================================================

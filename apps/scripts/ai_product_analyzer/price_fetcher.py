@@ -1,14 +1,11 @@
 import time
-import logging
-from keepa_http import get_first_priced_product
-
-logger = logging.getLogger()
+from .keepa_http import get_first_priced_product
 
 class PriceFetcher:
     """Handles Amazon price fetching"""
     
     @staticmethod
-    def fetch_prices(product):
+    def fetch_prices(logger, product):
         """Fetch Amazon prices for sub-products"""
         logger.info("→ Fetching Amazon prices for sub-products...")
         
@@ -35,7 +32,6 @@ class PriceFetcher:
                     sub_product["amazon_price"] = amazon_match.get("price", 0)
                     sub_product["amazon_url"] = amazon_match.get("url", "")
                     sub_product["asin"] = amazon_match.get("asin", "")
-                    sub_product["source"] = amazon_match.get("source", "")
                     sub_product["price_time"] = amazon_match.get("price_time", "")
                     
                     quantity = sub_product.get("quantity", 1)
@@ -51,7 +47,6 @@ class PriceFetcher:
                     sub_product["amazon_price"] = 0
                     sub_product["amazon_url"] = ""
                     sub_product["asin"] = ""
-                    sub_product["source"] = ""
                     sub_product["price_time"] = ""
 
             product["total_amazon_price"] = round(total_price, 2)

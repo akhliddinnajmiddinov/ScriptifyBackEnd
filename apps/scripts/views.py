@@ -151,7 +151,7 @@ class RunViewSet(viewsets.ModelViewSet):
             script=script,
             started_by=request.user,
             input_data=input_data,
-            input_file_path=json.dumps(input_file_paths),  # Store file paths
+            input_file_paths=input_file_paths,  # Store file paths
             status='PENDING'
         )
 
@@ -337,7 +337,7 @@ class RunViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='download/(?P<field_name>[^/.]+)')
     def download_file(self, request, pk=None, field_name=None):
         run = self.get_object()
-        file_paths = json.loads(run.input_file_path or '{}')
+        file_paths = run.input_file_paths or '{}'
         file_path = file_paths.get(field_name)
 
         if not file_path or not default_storage.exists(file_path):

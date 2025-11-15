@@ -68,7 +68,7 @@ class Run(models.Model):
     
     # Input data (captured from script input_schema)
     input_data = models.JSONField()
-    input_file_path = models.TextField(blank=True, null=True)
+    input_file_paths = models.JSONField(blank=True, null=True)
     
     # Output results (captured from script output_schema)
     result_data = models.JSONField(null=True, blank=True)

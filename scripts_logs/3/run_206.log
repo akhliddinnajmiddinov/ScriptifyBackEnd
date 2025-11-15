@@ -1,0 +1,51 @@
+[2025-11-15 00:32:57,967] INFO: Task received by worker
+[2025-11-15 00:32:57,968] INFO: Starting task: Facebook Marketplace Scraper
+[2025-11-15 00:32:57,968] DEBUG: Input data: {
+  "cities": [
+    "london"
+  ],
+  "query": "Canon Printer Cartridge",
+  "last_n_days": 7,
+  "listings_per_city": "10"
+}
+[2025-11-15 00:32:57,970] INFO: Scraping 1 city(s): london
+[2025-11-15 00:32:57,971] INFO: ================================================================================
+[2025-11-15 00:32:57,971] INFO: 🚀 FACEBOOK MARKETPLACE SCRAPER
+[2025-11-15 00:32:57,971] INFO: ================================================================================
+[2025-11-15 00:32:57,971] INFO: 📋 Configuration:
+[2025-11-15 00:32:57,971] INFO:    Query: "Canon Printer Cartridge"
+[2025-11-15 00:32:57,972] INFO:    Cities: london
+[2025-11-15 00:32:57,972] INFO:    Days: 7
+[2025-11-15 00:32:57,972] INFO:    Listings per city: 10
+[2025-11-15 00:32:57,972] INFO:    Cookies file: Facebook Marketplace Scraper - 206 (STARTED)
+[2025-11-15 00:32:57,972] INFO: ================================================================================
+[2025-11-15 00:32:58,518] INFO: 
+🔐 LOGIN PROCESS
+[2025-11-15 00:32:58,518] INFO: --------------------------------------------------------------------------------
+[2025-11-15 00:32:58,523] INFO: ✅ Cookies loaded. Checking session...
+[2025-11-15 00:33:11,126] INFO: ✅ Session is valid.
+[2025-11-15 00:33:11,126] INFO: 
+🌍 SCRAPING CITIES
+[2025-11-15 00:33:11,126] INFO: --------------------------------------------------------------------------------
+[2025-11-15 00:33:11,126] INFO: 
+📍 City 1/1: London
+[2025-11-15 00:33:11,126] INFO: --------------------------------------------------------------------------------
+[2025-11-15 00:33:11,126] INFO: 🔗 URL: https://www.facebook.com/marketplace/london/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-15 00:33:11,184] INFO: ⏳ Loading marketplace page...
+[2025-11-15 00:33:13,859] INFO:   📄 HTML → 24 items
+[2025-11-15 00:33:13,871] INFO:   ⏳ Scraping up to 10 listings...
+[2025-11-15 00:33:28,875] INFO:     🔄 Iteration 1
+[2025-11-15 00:33:28,875] INFO:     ✅ Found 24 new items. Total: 0/10 | Total unique: 0
+[2025-11-15 00:33:30,808] INFO:   ⏳ Scraping up to 10 listings...
+[2025-11-15 00:33:45,809] INFO:     🔄 Iteration 1
+[2025-11-15 00:33:45,809] INFO:     ✅ Found 23 new items. Total: 0/10 | Total unique: 1
+[2025-11-15 00:33:49,736] INFO:   ⏳ Scraping up to 10 listings...
+[2025-11-15 00:34:04,741] INFO:     🔄 Iteration 1
+[2025-11-15 00:34:04,741] INFO:     ✅ Found 22 new items. Total: 0/10 | Total unique: 2
+[2025-11-15 00:34:14,642] INFO: ❌ Failed to scrape London after retries. Error: object of type 'NoneType' has no len()
+[2025-11-15 00:34:14,642] INFO: 
+================================================================================
+[2025-11-15 00:34:14,642] INFO: ✅ SCRAPING COMPLETE!
+[2025-11-15 00:34:14,642] INFO: 📊 Total unique listings scraped: 3
+[2025-11-15 00:34:14,642] INFO: ================================================================================
+[2025-11-15 00:34:14,719] INFO: Task completed successfully

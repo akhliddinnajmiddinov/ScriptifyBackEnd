@@ -1,9 +1,10 @@
 import os
 import logging
 from typing import List, Dict, Any
-from ai_base import AIModelBase
-from openai_model import OpenAIModel
-from claude_model import ClaudeModel
+from .ai_base import AIModelBase
+from .openai_model import OpenAIModel
+from .claude_model import ClaudeModel
+from .config import get_ai_model_config
 
 logger = logging.getLogger()
 
@@ -66,7 +67,14 @@ class AIModelRouter:
             Dictionary with response content and metadata
         """
         model = self.get_model()
-        return model.generate_title(prompt, image_urls, schema)
+        ai_config = get_ai_model_config()
+        
+        if ai_config.use_file_based_images:
+            logger.info("Using file-based image upload method")
+            return model.generate_title_from_urls_as_files(prompt, image_urls, schema)
+        else:
+            logger.info("Using direct URL image method")
+            return model.generate_title(prompt, image_urls, schema)
     
     def get_model_name(self) -> str:
         """Get the name of the currently loaded model"""

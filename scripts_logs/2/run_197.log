@@ -1,0 +1,41 @@
+[2025-11-15 00:18:33,616] INFO: Task received by worker
+[2025-11-15 00:18:33,617] INFO: Starting task: AI Product Analyzer
+[2025-11-15 00:18:33,617] DEBUG: Input data: {
+  "AI_MODEL": "claude"
+}
+[2025-11-15 00:18:33,708] INFO: CLI Processor initialized
+[2025-11-15 00:18:33,708] INFO: STARTING PRODUCT PROCESSING PIPELINE
+[2025-11-15 00:18:33,708] INFO: ==============================
+[2025-11-15 00:18:33,708] INFO: STAGE 1: IMPORTING DATA
+[2025-11-15 00:18:33,709] INFO: ==============================
+[2025-11-15 00:18:33,709] INFO: ✅ Successfully imported 5 products from CSV
+[2025-11-15 00:18:33,709] INFO: STAGE 2-3: PROCESSING PRODUCTS (TITLE GENERATION + PRICE FETCHING)
+[2025-11-15 00:18:33,709] INFO: [1/5] Processing: 
+[2025-11-15 00:18:33,709] INFO: → Generating AI title...
+[2025-11-15 00:18:33,709] WARNING: No description or images, skipping title generation
+[2025-11-15 00:18:33,711] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:18:33,711] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:18:33,711] INFO: [2/5] Processing: 
+[2025-11-15 00:18:33,711] INFO: → Generating AI title...
+[2025-11-15 00:18:33,712] WARNING: No description or images, skipping title generation
+[2025-11-15 00:18:33,712] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:18:33,712] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:18:33,713] INFO: [3/5] Processing: 
+[2025-11-15 00:18:33,713] INFO: → Generating AI title...
+[2025-11-15 00:18:33,713] WARNING: No description or images, skipping title generation
+[2025-11-15 00:18:33,713] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:18:33,713] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:18:33,714] INFO: [4/5] Processing: 
+[2025-11-15 00:18:33,714] INFO: → Generating AI title...
+[2025-11-15 00:18:33,714] WARNING: No description or images, skipping title generation
+[2025-11-15 00:18:33,715] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:18:33,715] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:18:33,716] INFO: [5/5] Processing: 
+[2025-11-15 00:18:33,716] INFO: → Generating AI title...
+[2025-11-15 00:18:33,717] WARNING: No description or images, skipping title generation
+[2025-11-15 00:18:33,718] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:18:33,718] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:18:33,719] INFO: 
+✅ Processing complete for all 5 products
+[2025-11-15 00:18:33,720] INFO: ✅ PIPELINE COMPLETED SUCCESSFULLY
+[2025-11-15 00:18:33,722] INFO: Task completed successfully

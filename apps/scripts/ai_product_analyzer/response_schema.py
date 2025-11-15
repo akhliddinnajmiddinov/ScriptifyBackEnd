@@ -19,7 +19,8 @@ schema = {
                         "quantity": {"type": "number"},
                         "confidence": {"type": "number"},
                         "is_original": {"type": "boolean"},
-                        "original_verification_reason": {"type": "string"}
+                        "original_verification_reason": {"type": "string"},
+                        "is_cartridge": {"type": "boolean"},
                     },
                     "required": ["title"]
                 }

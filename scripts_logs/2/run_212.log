@@ -1,0 +1,42 @@
+[2025-11-15 00:52:45,384] INFO: Task received by worker
+[2025-11-15 00:52:45,384] INFO: Starting task: AI Product Analyzer
+[2025-11-15 00:52:45,384] DEBUG: Input data: {
+  "AI_MODEL": "claude"
+}
+[2025-11-15 00:52:45,480] INFO: CLI Processor initialized
+[2025-11-15 00:52:45,481] INFO: STARTING PRODUCT PROCESSING PIPELINE
+[2025-11-15 00:52:45,481] INFO: STAGE 1: IMPORTING DATA
+[2025-11-15 00:52:45,481] INFO: ✅ Successfully imported 10 products from JSON
+[2025-11-15 00:52:45,481] INFO: STAGE 2-3: PROCESSING PRODUCTS (TITLE GENERATION + PRICE FETCHING)
+[2025-11-15 00:52:45,481] INFO: [1/10] Processing: Canon Printer Cartridge Pixma 561 XL
+[2025-11-15 00:52:45,481] INFO: → Generating AI title...
+[2025-11-15 00:52:51,172] INFO: ✅ Title generated: Canon Pixma 561 XL Printer Cartridge... (AI Conf: 0.95, Match Conf: 1.00, Products: validated: 1, excluded: 0)
+[2025-11-15 00:52:51,173] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:52:51,173] INFO:   Searching for: Canon Pixma 561 XL Printer Cartridge
+[2025-11-15 00:52:55,645] INFO:   ✅ Found: Canon Originaltinte CL-561XL, Größe XL, Farbe, Rec... - 22.9 EUR x 1
+[2025-11-15 00:52:55,645] INFO:   ✅ Total Amazon Price: 22.90 EUR
+[2025-11-15 00:52:55,646] INFO: [2/10] Processing: Two Empty Ink Canon Printer Cartridges . (Collect Brentford Tw8 0de)
+[2025-11-15 00:52:55,646] INFO: → Generating AI title...
+[2025-11-15 00:53:09,561] INFO: ✅ Title generated: Ankauf Ihrer leeren Canon CL-541 und PG-540 Patronen... (AI Conf: 0.90, Match Conf: 0.80, Products: validated: 2, excluded: 0)
+[2025-11-15 00:53:09,563] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:53:09,563] INFO:   Searching for: Canon CL-541 Color Cartridge
+[2025-11-15 00:53:13,201] INFO:   ✅ Found: Canon Originaltinte CL-541, Größe Standard, Farbe,... - 23.99 EUR x 1
+[2025-11-15 00:53:13,201] INFO:   Searching for: Canon PG-540 Black Cartridge
+[2025-11-15 00:53:18,708] INFO:   ✅ Found: Canon Originaltinte PG-540, Größe Standard, Schwar... - 19.99 EUR x 1
+[2025-11-15 00:53:18,709] INFO:   ✅ Total Amazon Price: 43.98 EUR
+[2025-11-15 00:53:18,709] INFO: [3/10] Processing: Canon Printer Cartridge XL 540
+[2025-11-15 00:53:18,710] INFO: → Generating AI title...
+[2025-11-15 00:53:28,609] INFO: ✅ Title generated: Canon PG-540 Black Ink Cartridge... (AI Conf: 0.95, Match Conf: 0.90, Products: validated: 1, excluded: 0)
+[2025-11-15 00:53:28,612] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:53:28,612] INFO:   Searching for: Canon PG-540 Black Ink Cartridge
+[2025-11-15 00:53:31,309] INFO:   ✅ Found: Canon Originaltinte PG-540, Größe Standard, Schwar... - 19.99 EUR x 1
+[2025-11-15 00:53:31,309] INFO:   ✅ Total Amazon Price: 19.99 EUR
+[2025-11-15 00:53:31,310] INFO: [4/10] Processing: Brand new canon printer and cartridges
+[2025-11-15 00:53:31,310] INFO: → Generating AI title...
+[2025-11-15 00:54:17,144] INFO: ✅ Title generated: Canon PIXMA MG3650S Printer and PG-540 & CL-541 Ink Cartridg... (AI Conf: 0.95, Match Conf: 0.85, Products: validated: 1, excluded: 1)
+[2025-11-15 00:54:17,145] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:54:17,145] INFO:   Searching for: Canon PG-540 & CL-541 Ink Cartridges - Black & Colour
+[2025-11-15 00:54:21,975] WARNING:   ❌ No Amazon match found
+[2025-11-15 00:54:21,975] INFO:   ✅ Total Amazon Price: 0.00 EUR
+[2025-11-15 00:54:21,977] INFO: [5/10] Processing: Canon Ink cartridges mixed bundle-open to offers
+[2025-11-15 00:54:21,977] INFO: → Generating AI title...

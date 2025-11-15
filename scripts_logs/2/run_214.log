@@ -1,0 +1,94 @@
+[2025-11-15 07:19:20,699] INFO: Task received by worker
+[2025-11-15 07:19:20,699] INFO: Starting task: AI Product Analyzer
+[2025-11-15 07:19:20,699] DEBUG: Input data: {
+  "AI_MODEL": "claude"
+}
+[2025-11-15 07:19:20,789] INFO: CLI Processor initialized
+[2025-11-15 07:19:20,789] INFO: STARTING PRODUCT PROCESSING PIPELINE
+[2025-11-15 07:19:20,789] INFO: STAGE 1: IMPORTING DATA
+[2025-11-15 07:19:20,790] INFO: ✅ Successfully imported 10 products from JSON
+[2025-11-15 07:19:20,790] INFO: STAGE 2-3: PROCESSING PRODUCTS (TITLE GENERATION + PRICE FETCHING)
+[2025-11-15 07:19:20,790] INFO: [1/10] Processing: Canon Printer Cartridge Pixma 561 XL
+[2025-11-15 07:19:20,790] INFO: → Generating AI title...
+[2025-11-15 07:19:28,042] INFO: ✅ Title generated: Canon Pixma 561 XL Color Druckerpatrone... (AI Conf: 0.95, Match Conf: 1.00, Products: validated: 1, excluded: 0)
+[2025-11-15 07:19:28,043] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 07:19:28,043] INFO:   Searching for: Canon Pixma 561 XL Color
+[2025-11-15 07:19:30,576] INFO:   ✅ Found: Canon Originaltinte CL-561XL, Größe XL, Farbe, Rec... - 22.9 EUR x 1
+[2025-11-15 07:19:30,576] INFO:   ✅ Total Amazon Price: 22.90 EUR
+[2025-11-15 07:19:30,576] INFO: [2/10] Processing: Two Empty Ink Canon Printer Cartridges . (Collect Brentford Tw8 0de)
+[2025-11-15 07:19:30,576] INFO: → Generating AI title...
+[2025-11-15 07:19:35,834] INFO: ✅ Title generated: Ankauf Ihrer leeren Canon CL-541 und PG-540 Patronen... (AI Conf: 0.90, Match Conf: 0.80, Products: validated: 2, excluded: 0)
+[2025-11-15 07:19:35,836] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 07:19:35,836] INFO:   Searching for: Canon CL-541 Color
+[2025-11-15 07:19:38,549] INFO:   ✅ Found: Canon Originaltinte CL-541, Größe Standard, Farbe,... - 23.99 EUR x 1
+[2025-11-15 07:19:38,549] INFO:   Searching for: Canon PG-540 Black
+[2025-11-15 07:19:42,879] INFO:   ✅ Found: Canon Tinte - PG-540 Original Druckerpatrone Schwa... - 20.99 EUR x 1
+[2025-11-15 07:19:42,880] INFO:   ✅ Total Amazon Price: 44.98 EUR
+[2025-11-15 07:19:42,881] INFO: [3/10] Processing: Canon Printer Cartridge XL 540
+[2025-11-15 07:19:42,881] INFO: → Generating AI title...
+[2025-11-15 07:19:52,422] INFO: ✅ Title generated: Canon PG-540 Black Ink Cartridge... (AI Conf: 0.95, Match Conf: 0.90, Products: validated: 1, excluded: 0)
+[2025-11-15 07:19:52,423] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 07:19:52,423] INFO:   Searching for: Canon PG-540 Black Ink Cartridge
+[2025-11-15 07:19:54,778] INFO:   ✅ Found: Canon PG-540 Black Ink Cartridge - 5225B005... - 24.95 EUR x 1
+[2025-11-15 07:19:54,778] INFO:   ✅ Total Amazon Price: 24.95 EUR
+[2025-11-15 07:19:54,778] INFO: [4/10] Processing: Brand new canon printer and cartridges
+[2025-11-15 07:19:54,779] INFO: → Generating AI title...
+[2025-11-15 07:20:02,046] INFO: ✅ Title generated: Canon PIXMA MG3650S Printer and PG-540 & CL-541 Ink Cartridg... (AI Conf: 0.95, Match Conf: 0.90, Products: validated: 1, excluded: 1)
+[2025-11-15 07:20:02,049] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 07:20:02,049] INFO:   Searching for: Canon PG-540 & CL-541 Ink Cartridges - Black & Colour
+[2025-11-15 07:20:08,117] WARNING:   ❌ No Amazon match found
+[2025-11-15 07:20:08,117] INFO:   ✅ Total Amazon Price: 0.00 EUR
+[2025-11-15 07:20:08,118] INFO: [5/10] Processing: Canon Ink cartridges mixed bundle-open to offers
+[2025-11-15 07:20:08,118] INFO: → Generating AI title...
+[2025-11-15 07:20:21,705] INFO: ✅ Title generated: Canon 581 Yellow, 581 Magenta XXL, 581 Black XL/XXL, 580 Bla... (AI Conf: 0.95, Match Conf: 0.75, Products: validated: 6, excluded: 0)
+[2025-11-15 07:20:21,707] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 07:20:21,707] INFO:   Searching for: Canon 581 Yellow
+[2025-11-15 07:20:24,103] INFO:   ✅ Found: Canon CLI-581 Y Gelb Tintentank - 5,6 ml für PIXMA... - 13.47 EUR x 3
+[2025-11-15 07:20:24,103] INFO:   Searching for: Canon 581 Magenta XXL
+[2025-11-15 07:20:27,809] INFO:   ✅ Found: Canon Tintentank CLI-581 XXL - M Magenta, sehr hoh... - 24.7 EUR x 1
+[2025-11-15 07:20:27,810] INFO:   Searching for: Canon 581 Black XL
+[2025-11-15 07:20:30,847] INFO:   ✅ Found: Canon Originaltinte CLI-581XL BK, Größe XL, Schwar... - 14.9 EUR x 2
+[2025-11-15 07:20:30,847] INFO:   Searching for: Canon 581 Black XXL
+[2025-11-15 07:20:32,824] INFO:   ✅ Found: Canon Originaltinte CLI-581XL BK, Größe XL, Schwar... - 14.9 EUR x 17
+[2025-11-15 07:20:32,824] INFO:   Searching for: Canon 580 Black XL
+[2025-11-15 07:20:35,303] INFO:   ✅ Found: Canon Originaltinte PGI-580XL PGBK, Größe XL, Segm... - 16.99 EUR x 3
+[2025-11-15 07:20:35,304] INFO:   Searching for: Canon Mixed Pack
+[2025-11-15 07:20:37,359] WARNING:   ❌ No Amazon match found
+[2025-11-15 07:20:37,359] INFO:   ✅ Total Amazon Price: 399.18 EUR
+[2025-11-15 07:20:37,361] INFO: [6/10] Processing: Canon Printer Cartridges
+[2025-11-15 07:20:37,361] INFO: → Generating AI title...
+[2025-11-15 07:20:51,624] INFO: ✅ Title generated: Canon 525XL, 526XL, 570XL Kompatible Druckerpatronen... (AI Conf: 0.90, Match Conf: 0.70, Products: validated: 0, excluded: 3)
+[2025-11-15 07:20:51,631] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 07:20:51,632] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 07:20:51,635] INFO: [7/10] Processing: 5 x Canon Pixma multipack printer cartridges
+[2025-11-15 07:20:51,636] INFO: → Generating AI title...
+[2025-11-15 07:20:57,552] INFO: ✅ Title generated: 5 x Canon Pixma PG-545 CL-546 Multipack Printer Cartridges... (AI Conf: 0.95, Match Conf: 0.90, Products: validated: 1, excluded: 0)
+[2025-11-15 07:20:57,556] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 07:20:57,556] INFO:   Searching for: Canon Pixma PG-545 CL-546 Multipack Printer Cartridges
+[2025-11-15 07:21:01,344] INFO:   ✅ Found: Canon Tinte & Papier Multipack - PG-545/CL-546 Ori... - 38.99 EUR x 5
+[2025-11-15 07:21:01,345] INFO:   ✅ Total Amazon Price: 194.95 EUR
+[2025-11-15 07:21:01,345] INFO: [8/10] Processing: FS: Brand New Sealed Genuine Canon Cartridge 312 Printer Black Toner for LBP3050 LBP3100 LBP3150
+[2025-11-15 07:21:01,345] INFO: → Generating AI title...
+[2025-11-15 07:21:09,013] INFO: ✅ Title generated: Verkauf von Canon Cartridge 312 Toner für LBP3050, LBP3100, ... (AI Conf: 0.95, Match Conf: 1.00, Products: validated: 1, excluded: 0)
+[2025-11-15 07:21:09,015] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 07:21:09,015] INFO:   Searching for: Canon Cartridge 312 Printer Black Toner
+[2025-11-15 07:21:14,348] INFO:   ✅ Found: Canon 1246C002 Original Toner, Schwarz, 1-er Pack... - 81.85 EUR x 1
+[2025-11-15 07:21:14,348] INFO:   ✅ Total Amazon Price: 81.85 EUR
+[2025-11-15 07:21:14,350] INFO: [9/10] Processing: Canon Ink Cartridges
+[2025-11-15 07:21:14,350] INFO: → Generating AI title...
+[2025-11-15 07:21:23,900] INFO: ✅ Title generated: Canon PG-540L Black and CL-541XL Colour Ink Cartridges with ... (AI Conf: 0.95, Match Conf: 0.80, Products: validated: 2, excluded: 1)
+[2025-11-15 07:21:23,902] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 07:21:23,902] INFO:   Searching for: Canon PG-540L Black Ink Cartridge
+[2025-11-15 07:21:27,657] INFO:   ✅ Found: Canon PG-540L (2 x Schwarz) Original-Tintenpatrone... - 42.66 EUR x 1
+[2025-11-15 07:21:27,657] INFO:   Searching for: Canon CL-541XL Colour Ink Cartridge
+[2025-11-15 07:21:29,928] INFO:   ✅ Found: Canon Originaltinte CL-541, Größe Standard, Farbe,... - 23.99 EUR x 1
+[2025-11-15 07:21:29,928] INFO:   ✅ Total Amazon Price: 66.65 EUR
+[2025-11-15 07:21:29,929] INFO: [10/10] Processing: Canon imageprograf PRO-300 printer
+[2025-11-15 07:21:29,929] INFO: → Generating AI title...
+[2025-11-15 07:21:36,316] INFO: ✅ Title generated: Canon imagePROGRAF PRO-300 Printer... (AI Conf: 0.90, Match Conf: 1.00, Products: validated: 0, excluded: 1)
+[2025-11-15 07:21:36,318] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 07:21:36,318] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 07:21:36,327] INFO: 
+✅ Processing complete for all 10 products
+[2025-11-15 07:21:36,329] INFO: ✅ PIPELINE COMPLETED SUCCESSFULLY
+[2025-11-15 07:21:36,331] INFO: Task completed successfully

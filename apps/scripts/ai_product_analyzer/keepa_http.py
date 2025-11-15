@@ -5,7 +5,7 @@ import requests
 import logging
 from datetime import datetime, timezone
 from dotenv import load_dotenv
-from retry_with_backoff import retry_with_backoff
+from .retry_with_backoff import retry_with_backoff
 
 
 load_dotenv()

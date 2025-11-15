@@ -1,0 +1,24 @@
+[2025-11-14 18:45:52,698] INFO: Task received by worker
+[2025-11-14 18:45:52,699] INFO: Starting task: AI Product Analyzer
+[2025-11-14 18:45:52,700] DEBUG: Input data: {
+  "AI_MODEL": "claude"
+}
+[2025-11-14 18:45:52,810] INFO: CLI Processor initialized
+[2025-11-14 18:45:52,815] ERROR: Task failed: analyze_products() missing 5 required positional arguments: 'run', 'script', 'input_data', 'logger', and 'writer'
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 45, in execute_script_task
+    result = analyze_products(run, script, input_data, logger, writer)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/celery/local.py", line 182, in __call__
+    return self._get_current_object()(*a, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/celery/app/trace.py", line 737, in __protected_call__
+    return orig(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/celery/app/task.py", line 411, in __call__
+    return self.run(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 191, in analyze_products
+    analyze_products.run()
+TypeError: analyze_products() missing 5 required positional arguments: 'run', 'script', 'input_data', 'logger', and 'writer'
+

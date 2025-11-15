@@ -1,26 +1,24 @@
 import json
 import time
-import logging
+import copy
 import re
 from openai import OpenAI
-from retry_with_backoff import retry_with_backoff
-from ai_model_router import AIModelRouter
-from response_schema import schema
+from .retry_with_backoff import retry_with_backoff
+from .ai_model_router import AIModelRouter
+from .response_schema import schema
 
-logger = logging.getLogger()
 
 class TitleGenerator:
     """Handles AI title generation using OpenAI"""
     
-    def __init__(self, openai_api_key, max_images=15):
-        self.client = OpenAI(api_key=openai_api_key)
+    def __init__(self, logger, openai_api_key, max_images=15):
         self.max_images = max_images
         self.ai_router = AIModelRouter()
-
+        self.logger = logger
     
     def generate_title(self, product):
         """Generate AI title for a product"""
-        logger.info("→ Generating AI title...")
+        self.logger.info("→ Generating AI title...")
         
         try:
             description = product.get('description', '')
@@ -28,7 +26,7 @@ class TitleGenerator:
             image_urls = product.get('image_urls', [])[:self.max_images]
             
             if not description and not image_urls:
-                logger.warning("No description or images, skipping title generation")
+                self.logger.warning("No description or images, skipping title generation")
                 self._set_default_title(product, original_title, "No description or images, skipping title generation")
                 return
             
@@ -38,15 +36,16 @@ class TitleGenerator:
                 return self.ai_router.generate_title(prompt, image_urls, schema)
 
             success, response, error = retry_with_backoff(ai_call)
-
+            print(response)
             if not success or not response:
-                logger.error(f"OpenAI API call failed: {error}")
+                self.logger.error(f"OpenAI API call failed: {error}")
                 self._set_default_title(product, original_title, f"OpenAI API call failed: {error}")
+                return {}
             else:
-                self._parse_response(product, response, original_title)
+                return self._parse_response(product, response, original_title)
         
         except Exception as e:
-            logger.error(f"Error generating title: {str(e)}", exc_info=True)
+            self.logger.error(f"Error generating title: {str(e)}", exc_info=True)
             self._set_default_title(product, product.get('title', ''), f"Error generating title: {str(e)}")
     
     def _build_prompt(self, description, original_title):
@@ -59,15 +58,18 @@ class TitleGenerator:
 
             f"TASKS:\n"
             f"1. IDENTIFY ALL INDIVIDUAL/MULTIPACK PRODUCTS IN THIS LISTING\n"
-            f"- For EACH product, extract: exact model number, brand, the specific title(included the brand and model), quantity, confidence, and is_original, original_verification_reason.\n"
+            f"- For EACH product, extract: exact model number, brand, the specific title(included the brand and model), quantity, confidence, and is_original, original_verification_reason, is_cartridge.\n"
             f"- Avoid generic titles - use EXACT model numbers visible in images/description.\n"
             f"- Quantity: How many units of this product/multipack are in the listing (e.g., 1, 2, 5, etc.)\n\n"
             f"- Confidence: How confident are you in identifying this product\n\n"
+            f"- is_cartridge:  true, if this product is a cartridge. false if this product is not cartridge(for example, printer, camera, ...).\n\n"
+
             
             f"Example:\n"
             f'  "products": [\n'
-            f'    {{"title": "Specific product title", "brand": "Brand name", "model": "Exact model number", "quantity": 2, "confidence": 0.85, "is_original": true, "original_verification_reason": "Official packaging with brand logo and security hologram visible"}},\n'
-            f'    {{"title": "Another product title", "brand": "Brand name", "model": "Model number", "quantity": 1, "confidence": 0.7, "is_original": false, "original_verification_reason": "Labeled as compatible, no official brand packaging"}}\n'
+            f'    {{"title": "Specific product title", "brand": "Brand name", "model": "Exact model number", "quantity": 2, "confidence": 0.85, "is_original": true, "original_verification_reason": "Official packaging with brand logo and security hologram visible", "is_cartridge": true}},\n'
+            f'    {{"title": "Another product title", "brand": "Brand name", "model": "Model number", "quantity": 1, "confidence": 0.7, "is_original": false, "original_verification_reason": "Labeled as compatible, no official brand packaging", "is_cartridge": true}}\n'
+            f'    {{"title": "Another product title", "brand": "Brand name", "model": "Model number", "quantity": 1, "confidence": 0.7, "is_original": false, "original_verification_reason": "It is printer, not cartridge", "is_cartridge": false}}\n'
             f'  ]\n'
 
 
@@ -111,7 +113,14 @@ class TitleGenerator:
             f"  - Any indication of counterfeiting or non-authenticity\n"
             f"  - When in doubt, mark as false (be conservative)\n\n"
             
-            f"3. RESPONSE FORMAT EXAMPLE (JSON only, no markdown):\n"
+            f"3. CHECKING IF IT IS A CARTRIDGE:\n"
+            f"is_cartridge = true ONLY if:\n"
+            f"  - this product is exactly cartridge.\n"
+            f"is_cartridge = false if:\n"
+            f"  - this product is not a cartridge, for example: printer, camera, something else.\n"
+            
+
+            f"4. RESPONSE FORMAT EXAMPLE (JSON only, no markdown):\n"
             f"{{\n"
             f'  "ai_title": "Ankauf Ihrer leeren Canon und HP 305, HP 305XL, HP 307XL, HP 304, HP 304XL, HP 303, HP 303XL, HP 302, HP 302XL, HP 301, 301XL, 62, 62XL, 300, 300XL, 901 leere Patronen, volle überlagerte Druckerpatronen Toner",\n'
             f'  "ai_confidence": 0.85,\n'
@@ -119,8 +128,9 @@ class TitleGenerator:
             f'  "title_match_confidence": 0.60,\n'
             f'  "title_match_confidence_reason": "Seller title is generic, missing specific model info",\n'
             f'  "products": [\n'
-            f'    {{"title": "Specific product title", "brand": "Brand name", "model": "Exact model number", "quantity": 2, "confidence": 0.85, "is_original": true, "original_verification_reason": "Official packaging with brand logo and security hologram visible"}},\n'
-            f'    {{"title": "Another product title", "brand": "Brand name", "model": "Model number", "quantity": 1, "confidence": 0.7, "is_original": false, "original_verification_reason": "Labeled as compatible, no official brand packaging"}}\n'
+            f'    {{"title": "Specific product title", "brand": "Brand name", "model": "Exact model number", "quantity": 2, "confidence": 0.85, "is_original": true, "original_verification_reason": "Official packaging with brand logo and security hologram visible", "is_cartridge": true}},\n'
+            f'    {{"title": "Another product title", "brand": "Brand name", "model": "Model number", "quantity": 1, "confidence": 0.7, "is_original": false, "original_verification_reason": "Labeled as compatible, no official brand packaging", "is_cartridge": true}}\n'
+            f'    {{"title": "Another product title", "brand": "Brand name", "model": "Model number", "quantity": 1, "confidence": 0.7, "is_original": false, "original_verification_reason": "It is printer, not cartridge", "is_cartridge": false}}\n'
             f'  ]\n'
             f"}}\n\n"
             f"IMPORTANT: Return ONLY valid JSON. No explanations, no markdown code blocks."
@@ -139,7 +149,8 @@ class TitleGenerator:
             product["title_match_confidence_reason"] = response_json.get("title_match_confidence_reason", "")
             
             products_list = response_json.get("products", [])
-            validated_products = []
+            validated_subproducts = []
+            excluded_subproducts = []
             for p in products_list:
                 if isinstance(p, dict) and "title" in p:
                     try:
@@ -150,31 +161,51 @@ class TitleGenerator:
                         quantity = 1
                     
                     is_original = p.get("is_original", True)
+                    is_cartridge = p.get("is_cartridge", False)
                     if not isinstance(is_original, bool):
                         is_original = str(is_original).lower() in ['true', '1', 'yes']
+                    if not isinstance(is_cartridge, bool):
+                        is_cartridge = str(is_cartridge).lower() in ['true', '1', 'yes']
 
-                    if not is_original:
-                        logger.warning(f"Filtered out due to it is not ORIGINAL: {p.get('title')}\nREASON: {p.get("original_verification_reason", "N/A")}")
-                        continue
-                        
-                    validated_products.append({
+
+                    item = {
                         "title": p.get("title", ""),
                         "brand": p.get("brand", ""),
                         "model": p.get("model", ""),
                         "quantity": quantity,
-                        "confidence": max(0.0, min(1.0, float(p.get("confidence", 0))))
-                    })
+                        "confidence": max(0.0, min(1.0, float(p.get("confidence", 0)))),
+                        "is_original": is_original,
+                        "is_cartridge": is_cartridge,
+                        "original_verification_reason": p.get('original_verification_reason', ''),
+                        "amazon_title": "N/A",
+                        "amazon_price": 0,
+                        "amazon_url": "",
+                        "asin": "",
+                        "price_time": ""
+                    }
+                    if not is_original or not is_cartridge:
+                        excluded_subproducts.append(item)
+                        item['id'] = len(excluded_subproducts)
+                    else:
+                        validated_subproducts.append(item)
+                        item['id'] = len(validated_subproducts)
             
-            product["products"] = validated_products
+            excluded_product = None
+            if excluded_subproducts:
+                excluded_product = copy.deepcopy(product)
+                excluded_product.update({"products": excluded_subproducts})
             
-            logger.info(
+            product['products'] = validated_subproducts
+
+            self.logger.info(
                 f"✅ Title generated: {product['generated_title'][:60]}... "
                 f"(AI Conf: {product['ai_confidence']:.2f}, Match Conf: {product['title_match_confidence']:.2f}, "
-                f"Products: {len(validated_products)})"
+                f"Products: validated: {len(validated_subproducts)}, excluded: {len(excluded_subproducts)})"
             )
             
+            return excluded_product
         except json.JSONDecodeError as e:
-            logger.warning(f"JSON parsing failed: {e}")
+            self.logger.warning(f"JSON parsing failed: {e}")
             self._set_default_title(product, original_title, f"JSON parsing failed: {e}")
     
     @staticmethod

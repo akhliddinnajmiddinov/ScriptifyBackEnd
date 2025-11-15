@@ -1,0 +1,17 @@
+[2025-11-15 08:44:30,040] INFO: Task received by worker
+[2025-11-15 08:44:30,041] INFO: Starting task: Kleinanzeigen Product Scraper
+[2025-11-15 08:44:30,041] DEBUG: Input data: {
+  "searchQuery": "HP",
+  "brands": [],
+  "maxPages": 5
+}
+[2025-11-15 08:44:30,479] ERROR: No brands provided
+[2025-11-15 08:44:30,483] ERROR: Task failed: No brands provided
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 43, in execute_script_task
+    result = scrape_kleinanzeigen_brand_task(run_id, input_data, log_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 95, in scrape_kleinanzeigen_brand_task
+    raise ValueError("No brands provided")
+ValueError: No brands provided
+

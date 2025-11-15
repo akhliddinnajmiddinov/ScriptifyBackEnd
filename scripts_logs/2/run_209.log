@@ -1,0 +1,226 @@
+[2025-11-15 00:38:42,460] INFO: Task received by worker
+[2025-11-15 00:38:42,461] INFO: Starting task: AI Product Analyzer
+[2025-11-15 00:38:42,461] DEBUG: Input data: {
+  "AI_MODEL": "claude"
+}
+[2025-11-15 00:38:42,545] INFO: CLI Processor initialized
+[2025-11-15 00:38:42,545] INFO: STARTING PRODUCT PROCESSING PIPELINE
+[2025-11-15 00:38:42,545] INFO: ==============================
+[2025-11-15 00:38:42,545] INFO: STAGE 1: IMPORTING DATA
+[2025-11-15 00:38:42,545] INFO: ==============================
+[2025-11-15 00:38:42,546] INFO: ✅ Successfully imported 10 products from JSON
+[2025-11-15 00:38:42,546] INFO: STAGE 2-3: PROCESSING PRODUCTS (TITLE GENERATION + PRICE FETCHING)
+[2025-11-15 00:38:42,546] INFO: [1/10] Processing: Canon Printer Cartridge Pixma 561 XL
+[2025-11-15 00:38:42,546] INFO: → Generating AI title...
+[2025-11-15 00:38:44,502] ERROR: Error generating title: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/title_generator.py", line 38, in generate_title
+    success, response, error = retry_with_backoff(ai_call)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/retry_with_backoff.py", line 22, in retry_with_backoff
+    payload = json.loads(str(e).split(":", 1)[-1].strip())
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+[2025-11-15 00:38:44,516] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:38:44,517] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:38:44,517] INFO: [2/10] Processing: Two Empty Ink Canon Printer Cartridges . (Collect Brentford Tw8 0de)
+[2025-11-15 00:38:44,517] INFO: → Generating AI title...
+[2025-11-15 00:38:45,480] ERROR: Error generating title: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/title_generator.py", line 38, in generate_title
+    success, response, error = retry_with_backoff(ai_call)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/retry_with_backoff.py", line 22, in retry_with_backoff
+    payload = json.loads(str(e).split(":", 1)[-1].strip())
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+[2025-11-15 00:38:45,483] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:38:45,483] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:38:45,491] INFO: [3/10] Processing: Canon Printer Cartridge XL 540
+[2025-11-15 00:38:45,491] INFO: → Generating AI title...
+[2025-11-15 00:38:47,551] ERROR: Error generating title: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/title_generator.py", line 38, in generate_title
+    success, response, error = retry_with_backoff(ai_call)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/retry_with_backoff.py", line 22, in retry_with_backoff
+    payload = json.loads(str(e).split(":", 1)[-1].strip())
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+[2025-11-15 00:38:47,554] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:38:47,554] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:38:47,562] INFO: [4/10] Processing: Brand new canon printer and cartridges
+[2025-11-15 00:38:47,562] INFO: → Generating AI title...
+[2025-11-15 00:38:48,782] ERROR: Error generating title: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/title_generator.py", line 38, in generate_title
+    success, response, error = retry_with_backoff(ai_call)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/retry_with_backoff.py", line 22, in retry_with_backoff
+    payload = json.loads(str(e).split(":", 1)[-1].strip())
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+[2025-11-15 00:38:48,785] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:38:48,785] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:38:48,793] INFO: [5/10] Processing: Canon Ink cartridges mixed bundle-open to offers
+[2025-11-15 00:38:48,793] INFO: → Generating AI title...
+[2025-11-15 00:38:50,009] ERROR: Error generating title: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/title_generator.py", line 38, in generate_title
+    success, response, error = retry_with_backoff(ai_call)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/retry_with_backoff.py", line 22, in retry_with_backoff
+    payload = json.loads(str(e).split(":", 1)[-1].strip())
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+[2025-11-15 00:38:50,012] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:38:50,013] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:38:50,021] INFO: [6/10] Processing: Canon Printer Cartridges
+[2025-11-15 00:38:50,021] INFO: → Generating AI title...
+[2025-11-15 00:38:51,158] ERROR: Error generating title: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/title_generator.py", line 38, in generate_title
+    success, response, error = retry_with_backoff(ai_call)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/retry_with_backoff.py", line 22, in retry_with_backoff
+    payload = json.loads(str(e).split(":", 1)[-1].strip())
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+[2025-11-15 00:38:51,160] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:38:51,160] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:38:51,168] INFO: [7/10] Processing: 5 x Canon Pixma multipack printer cartridges
+[2025-11-15 00:38:51,168] INFO: → Generating AI title...
+[2025-11-15 00:38:52,263] ERROR: Error generating title: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/title_generator.py", line 38, in generate_title
+    success, response, error = retry_with_backoff(ai_call)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/retry_with_backoff.py", line 22, in retry_with_backoff
+    payload = json.loads(str(e).split(":", 1)[-1].strip())
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+[2025-11-15 00:38:52,266] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:38:52,266] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:38:52,274] INFO: [8/10] Processing: FS: Brand New Sealed Genuine Canon Cartridge 312 Printer Black Toner for LBP3050 LBP3100 LBP3150
+[2025-11-15 00:38:52,275] INFO: → Generating AI title...
+[2025-11-15 00:38:53,491] ERROR: Error generating title: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/title_generator.py", line 38, in generate_title
+    success, response, error = retry_with_backoff(ai_call)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/retry_with_backoff.py", line 22, in retry_with_backoff
+    payload = json.loads(str(e).split(":", 1)[-1].strip())
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+[2025-11-15 00:38:53,500] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:38:53,501] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:38:53,501] INFO: [9/10] Processing: Canon Ink Cartridges
+[2025-11-15 00:38:53,501] INFO: → Generating AI title...
+[2025-11-15 00:39:02,503] ERROR: Error generating title: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/title_generator.py", line 38, in generate_title
+    success, response, error = retry_with_backoff(ai_call)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/retry_with_backoff.py", line 22, in retry_with_backoff
+    payload = json.loads(str(e).split(":", 1)[-1].strip())
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+[2025-11-15 00:39:02,505] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:39:02,505] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:39:02,513] INFO: [10/10] Processing: Canon imageprograf PRO-300 printer
+[2025-11-15 00:39:02,513] INFO: → Generating AI title...
+[2025-11-15 00:39:07,215] ERROR: Error generating title: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/title_generator.py", line 38, in generate_title
+    success, response, error = retry_with_backoff(ai_call)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/ai_product_analyzer/retry_with_backoff.py", line 22, in retry_with_backoff
+    payload = json.loads(str(e).split(":", 1)[-1].strip())
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+[2025-11-15 00:39:07,219] INFO: → Fetching Amazon prices for sub-products...
+[2025-11-15 00:39:07,219] WARNING: No sub-products identified, skipping price fetch
+[2025-11-15 00:39:07,225] INFO: 
+✅ Processing complete for all 10 products
+[2025-11-15 00:39:07,226] INFO: ✅ PIPELINE COMPLETED SUCCESSFULLY
+[2025-11-15 00:39:07,229] INFO: Task completed successfully

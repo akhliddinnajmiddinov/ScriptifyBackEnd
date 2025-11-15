@@ -4,6 +4,7 @@ from .models import Run, Script
 from celery import shared_task
 from datetime import datetime
 from .facebook_scraper.facebook_scraper_main import FacebookMarketplaceScraper
+from .ai_product_analyzer.ai_product_analyzer import AIProductAnalyzer
 from .utils import get_run_logger, ResultWriter
 import traceback
 import logging
@@ -41,7 +42,7 @@ def execute_script_task(self, script_id, run_id, input_data, input_file_paths):
         if script.celery_task == "scrape_kleinanzeigen_brand_task":
             result = scrape_kleinanzeigen_brand_task(run_id, input_data, log_path)
         elif script.celery_task == "analyze_products":
-            result = analyze_products(run_id, input_data, log_path)
+            result = analyze_products(run, script, input_data, logger, writer)
         elif script.celery_task == "facebook_marketplace_scraper":
             result = scrape_facebook_marketplace(run, script, input_data, logger, writer)
 
@@ -181,21 +182,20 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
 
 
 @shared_task(bind=True)
-def analyze_products(self, script_id, run_id, input_data):
-    print("SALOM")
-    return {"salomlar": "olsun"}
+def analyze_products(self, run, script, input_data, logger, writer):
+    analyzer = AIProductAnalyzer(run, script, input_data, logger, writer)
+    analyzer.start_processing()
+    return analyzer.get_all_results()
 
 
 @shared_task(bind=True)
 def scrape_facebook_marketplace(self, run, script, input_data, logger, writer):
-    logger.info("AADSASDASDASDASDASSDFSDFSDKFHSDKJFHKDSHKJHkjhjhkjhkj")
     facebook_scraper = FacebookMarketplaceScraper(run, script, input_data, logger, writer)
     return facebook_scraper.start_scraping()
 
 @shared_task
 def stream_logs(run_id, log_path, channel):
     # Start from end
-    print("MANANAKU")
     position = 0
     if os.path.exists(log_path):
         try:

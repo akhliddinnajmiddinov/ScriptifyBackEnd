@@ -1,0 +1,60 @@
+[2025-11-15 00:29:41,576] INFO: Task received by worker
+[2025-11-15 00:29:41,577] INFO: Starting task: Facebook Marketplace Scraper
+[2025-11-15 00:29:41,578] DEBUG: Input data: {
+  "cities": [
+    "london"
+  ],
+  "query": "Canon Printer Cartridge",
+  "last_n_days": 7,
+  "listings_per_city": "10"
+}
+[2025-11-15 00:29:41,583] INFO: Scraping 1 city(s): london
+[2025-11-15 00:29:41,584] INFO: ================================================================================
+[2025-11-15 00:29:41,584] INFO: 🚀 FACEBOOK MARKETPLACE SCRAPER
+[2025-11-15 00:29:41,584] INFO: ================================================================================
+[2025-11-15 00:29:41,584] INFO: 📋 Configuration:
+[2025-11-15 00:29:41,584] INFO:    Query: "Canon Printer Cartridge"
+[2025-11-15 00:29:41,585] INFO:    Cities: london
+[2025-11-15 00:29:41,585] INFO:    Days: 7
+[2025-11-15 00:29:41,585] INFO:    Listings per city: 10
+[2025-11-15 00:29:41,585] INFO:    Cookies file: Facebook Marketplace Scraper - 204 (STARTED)
+[2025-11-15 00:29:41,585] INFO: ================================================================================
+[2025-11-15 00:29:42,170] INFO: 
+🔐 LOGIN PROCESS
+[2025-11-15 00:29:42,170] INFO: --------------------------------------------------------------------------------
+[2025-11-15 00:29:42,175] INFO: ✅ Cookies loaded. Checking session...
+[2025-11-15 00:29:55,616] INFO: ✅ Session is valid.
+[2025-11-15 00:29:55,616] INFO: 
+🌍 SCRAPING CITIES
+[2025-11-15 00:29:55,616] INFO: --------------------------------------------------------------------------------
+[2025-11-15 00:29:55,616] INFO: 
+📍 City 1/1: London
+[2025-11-15 00:29:55,616] INFO: --------------------------------------------------------------------------------
+[2025-11-15 00:29:55,616] INFO: 🔗 URL: https://www.facebook.com/marketplace/london/search?daysSinceListed=7&sortBy=best_match&query=Canon%20Printer%20Cartridge
+[2025-11-15 00:29:55,684] INFO: ⏳ Loading marketplace page...
+[2025-11-15 00:29:59,765] INFO:   ⏳ Scraping up to 10 listings...
+[2025-11-15 00:29:59,929] INFO:   📄 HTML → 24 items
+[2025-11-15 00:30:14,766] INFO:     🔄 Iteration 1
+[2025-11-15 00:30:14,766] INFO:     ✅ Found 24 new items. Total: 0/10 | Total unique: 0
+[2025-11-15 00:30:18,396] INFO:       [1/24] Processed 25439726585661717... (1/10)
+[2025-11-15 00:30:18,397] INFO:       Title: Canon Printer Cartridge Pixma 561 XL | Price: 15.00
+[2025-11-15 00:30:24,098] INFO:       [2/24] Processed 1802585840390656... (2/10)
+[2025-11-15 00:30:24,098] INFO:       Title: Two Empty Ink Canon Printer Cartridges . (Collect Brentford Tw8 0de) | Price: 3.00
+[2025-11-15 00:30:27,627] INFO:       [3/24] Processed 1554036418929335... (3/10)
+[2025-11-15 00:30:27,627] INFO:       Title: Canon Printer Cartridge XL 540 | Price: 15.00
+[2025-11-15 00:30:32,228] INFO:       [4/24] Processed 1360464982207719... (4/10)
+[2025-11-15 00:30:32,229] INFO:       Title: Brand new canon printer and cartridges | Price: 65.00
+[2025-11-15 00:30:37,796] INFO:       [5/24] Processed 1595795774739741... (5/10)
+[2025-11-15 00:30:37,797] INFO:       Title: Canon Ink cartridges mixed bundle-open to offers | Price: 350.00
+[2025-11-15 00:30:42,493] INFO:       [6/24] Processed 2634536553592425... (6/10)
+[2025-11-15 00:30:42,493] INFO:       Title: Canon Printer Cartridges | Price: 12.00
+[2025-11-15 00:30:46,045] INFO:       [7/24] Processed 821587960580790... (7/10)
+[2025-11-15 00:30:46,045] INFO:       Title: 5 x Canon Pixma multipack printer cartridges | Price: 100.00
+[2025-11-15 00:30:50,663] INFO:       [8/24] Processed 867863309009116... (8/10)
+[2025-11-15 00:30:50,663] INFO:       Title: FS: Brand New Sealed Genuine Canon Cartridge 312 Printer Black Toner for LBP3050 LBP3100 LBP3150 | Price: 20.00
+[2025-11-15 00:30:54,192] INFO:       [9/24] Processed 685557397665256... (9/10)
+[2025-11-15 00:30:54,192] INFO:       Title: Canon Ink Cartridges | Price: 40.00
+[2025-11-15 00:30:58,859] INFO:       [10/24] Processed 1996643580893125... (10/10)
+[2025-11-15 00:30:58,859] INFO:       Title: Canon imageprograf PRO-300 printer | Price: 200.00
+[2025-11-15 00:30:58,859] INFO:     ✅ Reached target of 10 listings.
+[2025-11-15 00:30:58,860] INFO:   ⏳ Final wait for responses...

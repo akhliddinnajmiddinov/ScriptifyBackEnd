@@ -22,6 +22,21 @@ class AIModelBase(ABC):
             Dictionary with response content and metadata
         """
         pass
+
+    @abstractmethod
+    def generate_title_from_urls_as_files(self, prompt: str, image_paths: List[str], schema: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate title and product analysis from prompt and image files.
+        
+        Args:
+            prompt: The analysis prompt
+            image_paths: List of local image file paths to analyze
+            schema: JSON schema for structured output
+            
+        Returns:
+            Dictionary with response content and metadata
+        """
+        pass
     
     @abstractmethod
     def validate_api_key(self) -> bool:

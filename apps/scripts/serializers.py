@@ -40,8 +40,8 @@ class RunSerializer(serializers.ModelSerializer):
     
     @extend_schema_field(OpenApiTypes.OBJECT)
     def get_input_file_paths(self, obj):
-        if obj.input_file_path:
-            return json.loads(obj.input_file_path)
+        if obj.input_file_paths:
+            return obj.input_file_paths
         return {}
 
     @extend_schema_field(OpenApiTypes.FLOAT)
@@ -204,7 +204,7 @@ class RunCreateSerializer(serializers.Serializer):
             script=validated_data['script'],
             started_by=self.context['request'].user,
             input_data=validated_data['input_data'],
-            input_file_path=json.dumps(validated_data['input_file_paths'])  # Store as JSON string
+            input_file_paths=validated_data['input_file_paths']  # Store as JSON
         )
         return run
 

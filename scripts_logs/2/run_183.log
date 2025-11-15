@@ -1,0 +1,24 @@
+[2025-11-14 18:46:45,725] INFO: Task received by worker
+[2025-11-14 18:46:45,725] INFO: Starting task: AI Product Analyzer
+[2025-11-14 18:46:45,725] DEBUG: Input data: {
+  "AI_MODEL": "claude"
+}
+[2025-11-14 18:46:45,815] INFO: CLI Processor initialized
+[2025-11-14 18:46:45,817] ERROR: Task failed: 'Run' object is not callable
+Traceback (most recent call last):
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 45, in execute_script_task
+    result = analyze_products(run, script, input_data, logger, writer)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/celery/local.py", line 182, in __call__
+    return self._get_current_object()(*a, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/celery/app/trace.py", line 737, in __protected_call__
+    return orig(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/venv/lib/python3.12/site-packages/celery/app/task.py", line 411, in __call__
+    return self.run(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/akhliddin/Desktop/ScriptifyBackend/apps/scripts/tasks.py", line 191, in analyze_products
+    analyzer.run()
+TypeError: 'Run' object is not callable
+

@@ -21,6 +21,8 @@ RUN touch /app/apps/user/migrations/__init__.py
 RUN mkdir -p  /app/apps/scripts/migrations
 RUN touch /app/apps/scripts/migrations/__init__.py
 
+RUN mkdir -p /app/media
+
 COPY . /app/
 RUN python manage.py collectstatic --noinput
 

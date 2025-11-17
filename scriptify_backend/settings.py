@@ -119,6 +119,13 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_SOFT_TIME_LIMIT = 60 * 120 # 120 minutes
 CELERY_TASK_TIME_LIMIT = 60 * 125  # 125 minutes
 
+CORS_ALLOWED_ORIGINS = [
+    "http://142.93.106.180:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    os.getenv("FRONTEND_URL", "").strip("/"),
+]
+
 EVENTSTREAM_REDIS = {  # For Celery workers
     'host': 'redis',  # Your Redis host
     'port': 6379,
@@ -204,14 +211,6 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 APPEND_SLASH=False
-
-CORS_ALLOWED_ORIGINS = [
-    "http://142.93.106.180:3000",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    os.getenv("FRONTEND_URL", "").strip("/"),
-]
-
 
 
 # OAUTH2_PROVIDER = {             

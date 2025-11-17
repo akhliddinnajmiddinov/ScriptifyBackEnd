@@ -23,6 +23,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - scriptify_backend_network
     ports:
@@ -55,9 +57,63 @@ services:
           cpus: '0.5'
           memory: 256M
 
+  redis:
+    image: redis:7.2-alpine
+    container_name: scriptify_redis
+    restart: unless-stopped
+    command:
+      - --save 60 1
+      - --loglevel warning
+      - --requirepass ${REDIS_PASSWORD}
+      - --maxmemory 256mb
+      - --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - scriptify_backend_network
+    deploy:
+      resources:
+        limits:
+          memory: 150M
+        reservations:
+          memory: 100M
+
+  celery:
+    image: ${DOCKER_USERNAME}/scriptify_backend:${IMAGE_TAG}
+    container_name: scriptify_celery
+    restart: unless-stopped
+    command:
+      - celery
+      - -A
+      - scriptify_backend
+      - worker
+      - --loglevel=info
+      - --concurrency=4
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    networks:
+      - scriptify_backend_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
 networks:
   scriptify_backend_network:
     driver: bridge
 
 volumes:
   scriptify_backend_data:
+  redis_data:

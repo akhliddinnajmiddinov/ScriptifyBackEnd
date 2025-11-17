@@ -109,8 +109,17 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20
 }
 
-CELERY_BROKER_URL = f"redis://:{os.getenv('REDIS_PASSWORD')}@redis:6379/0"
-CELERY_RESULT_BACKEND = f"redis://:{os.getenv('REDIS_PASSWORD')}@redis:6379/0"
+APP_ENV = os.getenv('APP_ENV', 'local')
+
+if APP_ENV == 'local':
+    REDIS_HOST = "localhost"
+elif APP_ENV == 'prod':
+    REDIS_HOST = 'redis'
+print("REDIS_HOST", REDIS_HOST)
+CELERY_BROKER_URL = f"redis://:{os.getenv('REDIS_PASSWORD')}@{REDIS_HOST}:6379/0"
+CELERY_RESULT_BACKEND = f"redis://:{os.getenv('REDIS_PASSWORD')}@{REDIS_HOST}:6379/0"
+print(CELERY_BROKER_URL)
+print(CELERY_RESULT_BACKEND)
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -127,7 +136,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 EVENTSTREAM_REDIS = {  # For Celery workers
-    'host': 'redis',  # Your Redis host
+    'host': REDIS_HOST,  # Your Redis host
     'port': 6379,
     'password': os.getenv('REDIS_PASSWORD'),
     'db': 3,
@@ -207,7 +216,7 @@ SPECTACULAR_SETTINGS = {
     "SECURITY": [{"OAuth2PasswordBearer": ["read", "write"]}],
 }
 
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 APPEND_SLASH=False

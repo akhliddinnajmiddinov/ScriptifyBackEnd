@@ -31,6 +31,9 @@ class AIProductAnalyzer:
         self.input_path = input_file_paths.get('products')
         print("self.input_path")
         print(self.input_path)
+        print(input_data)
+        self.ai_model = input_data.get('AI_MODEL')
+        print(self.ai_model)
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
         self.keepa_api_key = os.getenv('KEEPA_API_KEY')
         self.max_images = int(os.getenv('MAX_INPUT_IMAGES_TO_OPENAI', '15'))
@@ -41,7 +44,7 @@ class AIProductAnalyzer:
             raise ValueError("OPENAI_API_KEY environment variable not set")
         
         self.products = []
-        self.title_generator = TitleGenerator(logger, self.openai_api_key, self.max_images)
+        self.title_generator = TitleGenerator(logger, self.openai_api_key, self.max_images, self.ai_model)
         
         logger.info("CLI Processor initialized")
 
@@ -49,29 +52,19 @@ class AIProductAnalyzer:
         """Execute the complete workflow"""
         self.logger.info("STARTING PRODUCT PROCESSING PIPELINE")
         
-        try:
-            # Stage 1: Import
-            success, self.products = Importer.import_data(self.input_path, self.logger)
-            if not success:
-                self.logger.error("Import failed, aborting")
-                return False
-
-            # Stages 2-3: Process products (title generation + price fetching)
-            self._process_products()
-            
-            # Stage 4: Export
-            try:
-                self.writer.write(self.products)
-            except Exception as e:
-                self.logger.error("Export failed")
-                return False
-            
-            self.logger.info("✅ PIPELINE COMPLETED SUCCESSFULLY")
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Pipeline error: {str(e)}", exc_info=True)
+        # Stage 1: Import
+        success, self.products = Importer.import_data(self.input_path, self.logger)
+        if not success:
+            self.logger.error("Import failed, aborting")
             return False
+
+        # Stages 2-3: Process products (title generation + price fetching)
+        self._process_products()
+        
+        
+        self.logger.info("✅ PIPELINE COMPLETED SUCCESSFULLY")
+        return True
+
 
     def _process_products(self):
         """Process each product through title generation and price fetching"""
@@ -80,16 +73,15 @@ class AIProductAnalyzer:
         for i, product in enumerate(self.products):
             self.logger.info(f"[{i+1}/{len(self.products)}] Processing: {product['title']}")
             
-            
             # Generate title for this product
             excluded_product = self.title_generator.generate_title(product)
             
             if excluded_product:
                 self.all_results[self.excluded_group].append(excluded_product)
-            print("product")
-            print(product)
-            print("excluded_product")
-            print(excluded_product)
+            # print("product")
+            # print(product)
+            # print("excluded_product")
+            # print(excluded_product)
             if len(product.get('products', []) or []):
                 self.all_results[self.validated_group].append(product)
             

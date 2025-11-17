@@ -25,7 +25,7 @@ class PriceFetcher:
 
                 logger.info(f"  Searching for: {search_term}")
                 
-                amazon_match = get_first_priced_product(search_term)
+                amazon_match = get_first_priced_product(search_term, logger=logger)
 
                 if amazon_match:
                     sub_product["amazon_title"] = amazon_match.get("title", "")

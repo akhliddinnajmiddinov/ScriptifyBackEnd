@@ -18,10 +18,13 @@ def execute_script_task(self, script_id, run_id, input_data, input_file_paths):
     script = Script.objects.get(id=script_id)
 
     # Setup logging
-    log_path = run.logs_file_path
+    log_path = run.logs_file.path
     logger = get_run_logger(run.id, log_path)
 
-    output_path = run.result_file_path
+    output_path = run.result_file.path
+    print("output_path")
+    print(output_path)
+    print(log_path)
     writer = ResultWriter(output_path, logger)
 
     try:
@@ -47,12 +50,11 @@ def execute_script_task(self, script_id, run_id, input_data, input_file_paths):
             result = scrape_facebook_marketplace(run, script, input_data, logger, writer)
 
         # Save final result
-        result_path = run.result_file_path
+        result_path = run.result_file.path
         os.makedirs(os.path.dirname(result_path), exist_ok=True)
         with open(result_path, 'w') as f:
             json.dump(result, f, indent=2)
 
-        run.result_data = result
         run.status = 'SUCCESS'
         run.finished_at = timezone.now()
         run.save()
@@ -85,9 +87,9 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
 
     brands = [item['brand'] for item in input_data.get('brands', []) if item.get('brand')]
     try:
-        max_pages = int(input_data.get('maxPages', 5))
+        max_listings = int(input_data.get('maxListings', 100))
     except:
-        max_pages = 5
+        max_listings = 100
     search_query = input_data.get('searchQuery', 'Druckerpatrone')
 
     if not brands:
@@ -96,7 +98,7 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
 
     all_results = {}
     run = Run.objects.get(id=run_id)
-    result_path = run.result_file_path
+    result_path = run.result_file.path
     os.makedirs(os.path.dirname(result_path), exist_ok=True)
 
     logger.info(f"Scraping {len(brands)} brand(s): {', '.join(brands)}")
@@ -107,10 +109,12 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
             logger.info(f"Processing brand: {brand}")
             page = browser.new_page()
             page_num = 1
+            listings_count = 0
+            all_listings_count = 0
             results = []
 
             try:
-                while page_num <= max_pages:
+                while listings_count < max_listings:
                     search_term = f"{search_query} {brand}"
                     encoded = urllib.parse.quote(search_term.replace(" ", "-"))
                     url = f"https://www.kleinanzeigen.de/s-{encoded}/k0" if page_num == 1 else f"https://www.kleinanzeigen.de/s-seite:{page_num}/{encoded}/k0"
@@ -132,11 +136,11 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
                     logger.debug(f"Found {len(ads)} product in the page: {page_num}")
                     for ad in ads:
                         try:
-                            link_el = ad.select_one(".ellipsis")
-                            link = "https://www.kleinanzeigen.de" + link_el.get('href') if link_el else ""
+                            link_el = ad.select_one(".ellipsis") or {}
+                            link = "https://www.kleinanzeigen.de" + link_el.get('href') if link_el and link_el.get('href') else ""
                             title = ad.select_one("h2").get_text(strip=True).replace(",", "") if ad.select_one("h2") else ""
                             price = ad.select_one("p.aditem-main--middle--price-shipping--price")
-                            price = price.get_text(strip=True).split()[0] if price else ""
+                            price = price.get_text(strip=True).split()[0] if price.get_text(strip=True) else ""
 
                             product = {"link": link, "brand": brand, "title": title, "price": price, "image_urls": [], "description": ""}
 
@@ -155,15 +159,17 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
                                     product["description"] = desc.inner_text().strip().replace(",", " ") if desc else ""
                                 except: pass
 
+                            listings_count += 1
+                            all_listings_count += 1
                             results.append(product)
 
                             all_results[brand] = results
                             # SAVE AFTER EACH PRODUCT
                             with open(result_path, 'w') as f:
                                 json.dump(all_results, f, indent=2)
-                            
-                            # run.result_data = partial
-                            # run.save(update_fields=['result_data'])
+
+                            if listings_count >= max_listings:
+                                break
 
                             logger.info(f"Product saved: {title[:50]}...")
 
@@ -177,7 +183,7 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
                 page.close()
         browser.close()
 
-    logger.info(f"Scraping complete: {len(all_results)} products")
+    logger.info(f"Scraping complete: {all_listings_count} products")
     return all_results
 
 
@@ -195,6 +201,7 @@ def scrape_facebook_marketplace(self, run, script, input_data, logger, writer):
 
 @shared_task
 def stream_logs(run_id, log_path, channel):
+    print(run_id, log_path, channel)
     # Start from end
     position = 0
     if os.path.exists(log_path):

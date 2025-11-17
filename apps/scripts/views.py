@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from .renderers import EventStreamRenderer
 from django.http import StreamingHttpResponse
+from django.core.files.base import ContentFile
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
 from rest_framework.pagination import PageNumberPagination
@@ -152,17 +153,18 @@ class RunViewSet(viewsets.ModelViewSet):
             started_by=request.user,
             input_data=input_data,
             input_file_paths=input_file_paths,  # Store file paths
+            input_schema_snapshot=script.input_schema,
+            output_schema_snapshot=script.output_schema,
             status='PENDING'
         )
 
-        # Create directories
-        logs_dir = os.path.join('scripts_logs', str(script.id))
-        result_dir = os.path.join('scripts_results', str(script.id))
-        os.makedirs(logs_dir, exist_ok=True)
-        os.makedirs(result_dir, exist_ok=True)
+        log_filename = f"run_{run.id}.log"
+        result_filename = f"run_{run.id}.json"
 
-        run.logs_file_path = os.path.join(logs_dir, f'run_{run.id}.log')
-        run.result_file_path = os.path.join(result_dir, f'run_{run.id}.json')
+        # Create empty files so Celery can append
+        run.logs_file.save(log_filename, ContentFile(""))
+        run.result_file.save(result_filename, ContentFile("{}"))
+
         run.save()
 
         try:
@@ -173,7 +175,7 @@ class RunViewSet(viewsets.ModelViewSet):
                 input_file_paths=input_file_paths  # Pass file paths to Celery
             )
             channel = f"run-{run.id}"
-            stream_logs.delay(run_id=run.id, log_path=run.logs_file_path, channel=channel)
+            stream_logs.delay(run_id=run.id, log_path=run.logs_file.path, channel=channel)
 
             run.celery_task_id = task.id
             run.save()
@@ -262,8 +264,8 @@ class RunViewSet(viewsets.ModelViewSet):
     def logs(self, request, pk=None):
         run = self.get_object()
         try:
-            if os.path.exists(run.logs_file_path):
-                with open(run.logs_file_path, 'r') as f:
+            if os.path.exists(run.logs_file.path):
+                with open(run.logs_file.path, 'r') as f:
                     logs = f.read()
                 return Response({'logs': logs})
             return Response({'logs': ''})
@@ -284,7 +286,9 @@ class RunViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='logs-stream')
     def logs_stream(self, request, pk=None):
         run = self.get_object()
-        log_path = run.logs_file_path
+        if not run.logs_file:
+            return Response({'logs': ""}, status=404)
+        log_path = run.logs_file.path
         channel = f"run-{run.id}"
 
         # === 1. Read existing logs ===
@@ -301,8 +305,6 @@ class RunViewSet(viewsets.ModelViewSet):
 
         # === 2. Return SSE URL + existing logs ===
         sse_url = f"events/?channel={channel}"
-        if request.GET.get('access_token'):
-            sse_url += f"&access_token={request.GET['access_token']}"
 
         return Response({
             'sse_url': sse_url,
@@ -321,8 +323,8 @@ class RunViewSet(viewsets.ModelViewSet):
     def results(self, request, pk=None):
         run = self.get_object()
         try:
-            if os.path.exists(run.result_file_path):
-                with open(run.result_file_path, 'r') as f:
+            if os.path.exists(run.result_file.path):
+                with open(run.result_file.path, 'r') as f:
                     results = json.load(f)
                     print("results")
                     print(str(results)[:100])

@@ -70,12 +70,12 @@ class Run(models.Model):
     input_data = models.JSONField()
     input_file_paths = models.JSONField(blank=True, null=True)
     
-    # Output results (captured from script output_schema)
-    result_data = models.JSONField(null=True, blank=True)
-    
+    input_schema_snapshot  = models.JSONField(null=True, blank=True, help_text="input_schema at the time of run creation")
+    output_schema_snapshot = models.JSONField(null=True, blank=True, help_text="output_schema at the time of run creation")
+
     # File paths for logs and results
-    logs_file_path = models.CharField(max_length=500, blank=True)
-    result_file_path = models.CharField(max_length=500, blank=True)
+    logs_file = models.FileField(upload_to="runs/logs/", blank=True, null=True)
+    result_file = models.FileField(upload_to="runs/results/", blank=True, null=True)
     
     # Error information
     error_message = models.TextField(blank=True)

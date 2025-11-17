@@ -41,7 +41,7 @@ class FacebookMarketplaceScraper:
             listings_per_city = LISTINGS_PER_CITY
         
 
-        result_path = run.result_file_path
+        result_path = run.result_file.path
         os.makedirs(os.path.dirname(result_path), exist_ok=True)
 
         logger.info(f"Scraping {len(cities)} city(s): {', '.join(cities)}")
@@ -102,11 +102,12 @@ class FacebookMarketplaceScraper:
                 if await is_logged_in(page):
                     self.logger.info("✅ Session is valid.")
                 else:
-                    self.logger.info("⚠️  Session expired. Contact with your Technical support!")
-                    return
+                    self.logger.info("⚠️  Cookies expired. Contact with your Technical support!")
+                    raise Exception("⚠️  Cookies expired. Contact with your Technical support!")
+
             else:
-                self.logger.info("📝 No cookies found.  Contact with your Technical support!")
-                return
+                self.logger.info("📝 No cookies found or cookies expired.  Contact with your Technical support!")
+                raise Exception("📝 No cookies found or cookies expired.  Contact with your Technical support!")
                 
             # ---------- SCRAPE EACH CITY ----------
             self.logger.info("\n🌍 SCRAPING CITIES")

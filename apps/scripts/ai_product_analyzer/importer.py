@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+import io
 from django.conf import settings
 
 class Importer:
@@ -24,6 +25,28 @@ class Importer:
             return False, []
     
     @staticmethod
+    def _parse_cell_value(value):
+        """Parse cell value - detect arrays and nested CSV"""
+        if not value or not isinstance(value, str):
+            return value
+        
+        value = value.strip()
+        
+        # Detect nested CSV (contains newlines)
+        if '\n' in value:
+            try:
+                nested_reader = csv.DictReader(io.StringIO(value))
+                return list(nested_reader)
+            except:
+                pass
+        
+        # Detect semicolon-separated array
+        if ';' in value:
+            return [v.strip() for v in value.split(';')]
+        
+        return [value]
+    
+    @staticmethod
     def _import_csv(input_csv_path):
         """Import CSV data"""
         logger = Importer.logger
@@ -40,26 +63,32 @@ class Importer:
                 missing = [h for h in required_headers if h not in headers_map]
                 if missing:
                     raise ValueError(f"Missing columns: {', '.join(missing)}")
-                
+            
+                def get_item(row, key):
+                    return row.get(headers_map.get(key, key), "")
+
                 for i, row in enumerate(reader):
                     product = {
                         'id': i + 1,
-                        'link': row.get('link', ''),
-                        'description': row.get('description', ''),
-                        'title': row.get('title', ''),
-                        'price': row.get('price', ''),
-                        'image_urls': [
-                            u.strip() for u in (row.get('image_urls', '') or "").split(';') if u.strip()
-                        ]
+                        'link': get_item(row, 'link'),
+                        'description': get_item(row, 'description'),
+                        'title': get_item(row, 'title'),
+                        'price': get_item(row, 'price'),
+                        'image_urls': Importer._parse_cell_value(get_item(row, 'image_urls'))
                     }
+                    
+                    # Parse any additional columns not in required_headers
+                    for header in reader.fieldnames:
+                        if header.lower() not in required_headers:
+                            product[header] = Importer._parse_cell_value(row.get(header, ''))
+                    
                     products.append(product)
-                
             logger.info(f"✅ Successfully imported {len(products)} products from CSV")
             return True, products
         except Exception as e:
             logger.error(f"❌ CSV import error: {str(e)}", exc_info=True)
-            return False, []
-    
+            raise Exception(f"❌ CSV import error: {str(e)}")
+
     @staticmethod
     def _import_json(input_json_path):
         """Import JSON data"""
@@ -86,6 +115,7 @@ class Importer:
                     missing = [f for f in required_fields if f not in keys_map]
                     if missing:
                         logger.warning(f"[{i+1}] Missing fields: {', '.join(missing)}")
+                        raise Exception(f"[{i+1}] Missing fields: {', '.join(missing)}")
                     
                     product = {
                         'id': i + 1,
@@ -101,4 +131,5 @@ class Importer:
             return True, products
         except Exception as e:
             logger.error(f"❌ JSON import error: {str(e)}", exc_info=True)
-            return False, []
+            raise Exception(f"❌ JSON import error: {str(e)}")
+            

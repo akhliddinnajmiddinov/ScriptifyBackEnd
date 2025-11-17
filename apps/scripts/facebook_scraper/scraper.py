@@ -189,7 +189,7 @@ async def scrape_city(
                 continue
 
             try:
-                await element.wait_for_element_state("stable", timeout=5000)
+                await element.wait_for_element_state("stable", timeout=10000)
                 await element.scroll_into_view_if_needed()
             except:
                 logger.info(f"      ⏭️  Skipped {link_id}: not stable")

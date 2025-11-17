@@ -20,13 +20,14 @@ def retry_with_backoff(func: Callable[[], T]) -> Tuple[bool, Optional[T], Option
             print(e)
             error = str(e)
 
-            payload = json.loads(str(e).split(":", 1)[-1].strip())
-            refill_ms = payload.get("refillIn")
-            
+            payload = {}
+            refill_ms = None
             try:
+                payload = json.loads(str(e).split(":", 1)[-1].strip())
+                refill_ms = payload.get("refillIn")
                 refill_ms = float(refill_ms) + 5000
             except:
-                refill_ms = None
+                pass
 
             if refill_ms is not None:
                 wait = refill_ms / 1000  # convert milliseconds to seconds

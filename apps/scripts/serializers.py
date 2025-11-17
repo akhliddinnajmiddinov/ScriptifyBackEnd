@@ -23,20 +23,23 @@ class ScriptSerializer(serializers.ModelSerializer):
 
 
 class RunSerializer(serializers.ModelSerializer):
-    script_name = serializers.CharField(source='script.name', read_only=True)
+    script_data = ScriptSerializer(source='script', read_only=True)
     started_by_email = serializers.CharField(source='started_by.email', read_only=True)
     duration = serializers.SerializerMethodField()
     input_file_paths = serializers.SerializerMethodField()
 
+    input_schema  = serializers.SerializerMethodField()
+    output_schema = serializers.SerializerMethodField()
+
     class Meta:
         model = Run
         fields = [
-            'id', 'script', 'script_name', 'started_by', 'started_by_email',
+            'id', 'script', 'script_data', 'started_by', 'started_by_email',
             'started_at', 'finished_at', 'status', 'celery_task_id',
-            'input_data', 'result_data', 'logs_file_path', 'result_file_path',
-            'error_message', 'duration', 'input_file_paths'
+            'input_data', 'logs_file', 'result_file',
+            'error_message', 'duration', 'input_file_paths', 'input_schema', 'output_schema'
         ]
-        read_only_fields = ['started_at', 'finished_at', 'celery_task_id', 'result_data', 'logs_file_path', 'result_file_path', 'error_message', 'duration']
+        read_only_fields = ['started_at', 'finished_at', 'celery_task_id', 'logs_file', 'result_file', 'error_message', 'duration']
     
     @extend_schema_field(OpenApiTypes.OBJECT)
     def get_input_file_paths(self, obj):
@@ -47,6 +50,12 @@ class RunSerializer(serializers.ModelSerializer):
     @extend_schema_field(OpenApiTypes.FLOAT)
     def get_duration(self, obj):
         return obj.get_duration()
+
+    def get_input_schema(self, obj):
+        return obj.input_schema_snapshot or {}
+
+    def get_output_schema(self, obj):
+        return obj.output_schema_snapshot or {}
 
 
 class RunCreateSerializer(serializers.Serializer):
@@ -204,7 +213,9 @@ class RunCreateSerializer(serializers.Serializer):
             script=validated_data['script'],
             started_by=self.context['request'].user,
             input_data=validated_data['input_data'],
-            input_file_paths=validated_data['input_file_paths']  # Store as JSON
+            input_file_paths=validated_data['input_file_paths'],  # Store as JSON
+            input_schema_snapshot=validated_data['script'].input_schema,
+            output_schema_snapshot=validated_data['script'].output_schema,
         )
         return run
 

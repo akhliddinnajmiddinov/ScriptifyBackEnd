@@ -9,12 +9,13 @@ from .response_schema import schema
 
 
 class TitleGenerator:
-    """Handles AI title generation using OpenAI"""
+    """Handles AI title generation using OpenAI/Claude"""
     
-    def __init__(self, logger, openai_api_key, max_images=15):
+    def __init__(self, logger, openai_api_key, max_images=15, ai_model="claude"):
         self.max_images = max_images
-        self.ai_router = AIModelRouter()
+        self.ai_router = AIModelRouter(logger, ai_model)
         self.logger = logger
+        self.ai_model = ai_model
     
     def generate_title(self, product):
         """Generate AI title for a product"""
@@ -38,8 +39,8 @@ class TitleGenerator:
             success, response, error = retry_with_backoff(ai_call)
             print(response)
             if not success or not response:
-                self.logger.error(f"OpenAI API call failed: {error}")
-                self._set_default_title(product, original_title, f"OpenAI API call failed: {error}")
+                self.logger.error(f"{self.ai_model} API call failed: {error}")
+                self._set_default_title(product, original_title, f"{self.ai_model} API call failed: {error}")
                 return {}
             else:
                 return self._parse_response(product, response, original_title)

@@ -65,11 +65,10 @@ class OpenAIModel(AIModelBase):
                 timeout=120
             )
         
-        success, response, error = retry_with_backoff(call_openai)
-        print(response)
+        response = call_openai()
         
-        if not success or not response:
-            raise Exception(f"OpenAI API call failed: {error}")
+        if not response:
+            raise Exception(f"OpenAI API call failed")
         
         return {
             "content": response.choices[0].message.content,

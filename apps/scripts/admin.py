@@ -38,11 +38,11 @@ class RunAdmin(admin.ModelAdmin):
             'fields': ('started_at', 'finished_at', 'get_duration')
         }),
         ('Input/Output', {
-            'fields': ('input_data', 'result_data'),
+            'fields': ('input_data', "input_schema_snapshot", "output_schema_snapshot"),
             'classes': ('collapse',)
         }),
         ('File Paths', {
-            'fields': ('logs_file_path', 'result_file_path'),
+            'fields': ('logs_file', 'result_file'),
             'classes': ('collapse',)
         }),
         ('Error Information', {

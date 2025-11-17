@@ -1,6 +1,0 @@
-[2025-11-10 15:04:10,698] INFO: Task received by worker
-[2025-11-10 15:04:10,699] INFO: Starting task: AI Product Analyzer
-[2025-11-10 15:04:10,700] DEBUG: Input data: {
-  "AI_MODEL": "claude"
-}
-[2025-11-10 15:04:10,708] INFO: Task completed successfully

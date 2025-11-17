@@ -9,7 +9,6 @@ from .retry_with_backoff import retry_with_backoff
 
 
 load_dotenv()
-logger = logging.getLogger()
 
 API_KEY = os.getenv("KEEPA_API_KEY")
 DOMAIN = 3  # DE = 3, US = 1
@@ -27,6 +26,12 @@ def keepa_time_to_utc(minutes_since_2011):
     base_timestamp = 1293840000  # 2011-01-01 00:00:00 UTC
     return datetime.fromtimestamp(base_timestamp + minutes_since_2011 * 60, tz=timezone.utc)
 
+def get_logger_or_null(logger):
+    if logger is None:
+        null_logger = logging.getLogger("null_logger")
+        null_logger.addHandler(logging.NullHandler())  # swallow all logs
+        return null_logger
+    return logger
 
 def extract_latest_price(csv_data, field_name):
     """
@@ -51,7 +56,7 @@ def extract_latest_price(csv_data, field_name):
             return price_eur, price_time
     return None, None
 
-def print_token_data(data):
+def print_token_data(data, logger):
     # 'refillIn': 54592, 'refillRate': 21, 'timestamp': 1761054169548, 'tokenFlowReduction': 0.0, 'tokensConsumed': 1, 'tokensLeft': 0
     logger.info(f"Refill: {data.get('refillIn')}")
     logger.info(f"Refill rate: {data.get('refillRate')}")
@@ -59,8 +64,10 @@ def print_token_data(data):
     logger.info(f"Tokens left: {data.get('tokensLeft')}")
 
 
-def get_first_priced_product(search_term: str, limit: int = int(os.getenv("TOP_N_KEEPA_PRODUCTS", 5))):
+def get_first_priced_product(search_term: str, limit: int = int(os.getenv("TOP_N_KEEPA_PRODUCTS", 5)), logger = None):
     """Search for a product on Amazon via Keepa HTTP API, return first valid price or fallback first product."""
+    logger = get_logger_or_null(logger)
+
     if not search_term or not search_term.strip():
         logger.info("Empty search term, skipping")
         return None
@@ -74,7 +81,7 @@ def get_first_priced_product(search_term: str, limit: int = int(os.getenv("TOP_N
             if r.status_code != 200:
                 raise Exception(f"HTTP {r.status_code}: {r.text}")
             data = r.json()
-            print_token_data(data)
+            print_token_data(data, logger)
             return data.get("asinList", [])
 
         success, asins, error = retry_with_backoff(search_asins)
@@ -95,7 +102,7 @@ def get_first_priced_product(search_term: str, limit: int = int(os.getenv("TOP_N
                     
                     # 'refillIn': 54592, 'refillRate': 21, 'timestamp': 1761054169548, 'tokenFlowReduction': 0.0, 'tokensConsumed': 1, 'tokensLeft': 0
                     data = r.json()
-                    print_token_data(data)
+                    print_token_data(data, logger)
                     return data
 
                 success, response, error = retry_with_backoff(query_product)
@@ -122,7 +129,6 @@ def get_first_priced_product(search_term: str, limit: int = int(os.getenv("TOP_N
                         "title": title,
                         "price": 0,
                         "currency": "EUR",
-                        "source": None,
                         "price_time": None,
                         "url": product_url,
                     }
@@ -136,7 +142,6 @@ def get_first_priced_product(search_term: str, limit: int = int(os.getenv("TOP_N
                             "title": title,
                             "price": price_value,
                             "currency": "EUR",
-                            "source": price_type,
                             "price_time": price_time.strftime("%Y-%m-%d %H:%M:%S UTC"),
                             "url": product_url,
                         }
@@ -158,8 +163,3 @@ def get_first_priced_product(search_term: str, limit: int = int(os.getenv("TOP_N
     except Exception as e:
         logger.info(f"Error in get_first_priced_product: {e}")
         return None
-
-# 🔹 Example Run
-if __name__ == "__main__":
-    product = get_first_priced_product("HP 305 Black Ink Cartridge")
-    logger.info(f"\nFinal result: {product}")

@@ -6,8 +6,6 @@ from .openai_model import OpenAIModel
 from .claude_model import ClaudeModel
 from .config import get_ai_model_config
 
-logger = logging.getLogger()
-
 class AIModelRouter:
     """
     Factory class to route AI requests to the appropriate model based on environment configuration.
@@ -17,32 +15,33 @@ class AIModelRouter:
     _instance = None
     _model = None
     
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         """Singleton pattern to ensure only one router instance"""
         if cls._instance is None:
             cls._instance = super(AIModelRouter, cls).__new__(cls)
         return cls._instance
     
-    def __init__(self):
+    def __init__(self, logger, ai_model="claude"):
         """Initialize the router and load the configured model"""
+        self.logger = logger
+        self.ai_model = ai_model
         if self._model is None:
-            self._load_model()
+            self._load_model(self.ai_model)
     
-    def _load_model(self) -> None:
+    def _load_model(self, ai_model="claude") -> None:
         """Load the AI model based on AI_MODEL environment variable"""
-        ai_model_env = os.environ.get('AI_MODEL', 'openai').lower().strip()
         
-        logger.info(f"Loading AI model: {ai_model_env}")
+        self.logger.info(f"Loading AI model: {ai_model}")
         
-        if ai_model_env == 'claude':
+        if ai_model == 'claude':
             self._model = ClaudeModel()
-            logger.info("Using Claude Sonnet 4.5 model")
-        elif ai_model_env == 'openai':
+            self.logger.info("Using Claude Sonnet 4.5 model")
+        elif ai_model == 'openai':
             self._model = OpenAIModel()
-            logger.info("Using OpenAI GPT-4o model")
+            self.logger.info("Using OpenAI GPT-4o model")
         else:
-            logger.warning(f"Unknown AI_MODEL value: {ai_model_env}. Defaulting to OpenAI")
-            self._model = OpenAIModel()
+            self.logger.warning(f"Unknown AI_MODEL value: {ai_model}. Defaulting to Claude")
+            self._model = ClaudeModel()
         
         # Validate API key
         if not self._model.validate_api_key():
@@ -51,7 +50,7 @@ class AIModelRouter:
     def get_model(self) -> AIModelBase:
         """Get the currently loaded AI model"""
         if self._model is None:
-            self._load_model()
+            self._load_model(self.ai_model)
         return self._model
     
     def generate_title(self, prompt: str, image_urls: List[str], schema: Dict[str, Any]) -> Dict[str, Any]:
@@ -70,10 +69,10 @@ class AIModelRouter:
         ai_config = get_ai_model_config()
         
         if ai_config.use_file_based_images:
-            logger.info("Using file-based image upload method")
+            self.logger.info("Using file-based image upload method")
             return model.generate_title_from_urls_as_files(prompt, image_urls, schema)
         else:
-            logger.info("Using direct URL image method")
+            self.logger.info("Using direct URL image method")
             return model.generate_title(prompt, image_urls, schema)
     
     def get_model_name(self) -> str:

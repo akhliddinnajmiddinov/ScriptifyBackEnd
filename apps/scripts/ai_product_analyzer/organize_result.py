@@ -9,4 +9,7 @@ def organize_result(product):
         orig_price = "N/A"
         difference = "N/A"
 
-    product["difference"] = round(difference, 2)
+    if isinstance(difference, (int, float)):
+        product["difference"] = round(difference, 2)
+    else:
+        product["difference"] = None

@@ -33,7 +33,12 @@ SECRET_KEY = os.getenv("SECRET_KEY", "")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "142.93.106.180",
+    os.getenv("BACKEND_URL", "").strip("/"),
+]
 
 # Application definition
 
@@ -104,8 +109,8 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20
 }
 
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_BROKER_URL = f"redis://:{os.getenv('REDIS_PASSWORD')}@redis:6379/0"
+CELERY_RESULT_BACKEND = f"redis://:{os.getenv('REDIS_PASSWORD')}@redis:6379/0"
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -114,17 +119,21 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_SOFT_TIME_LIMIT = 60 * 120 # 120 minutes
 CELERY_TASK_TIME_LIMIT = 60 * 125  # 125 minutes
 
-# EventStream settings
-EVENTSTREAM_STORAGE_CLASS = 'django_eventstream.storage.DjangoModelStorage'  # Reliable delivery
 EVENTSTREAM_REDIS = {  # For Celery workers
-    'host': 'localhost',  # Your Redis host
+    'host': 'redis',  # Your Redis host
     'port': 6379,
-    'db': 0,
+    'password': os.getenv('REDIS_PASSWORD'),
+    'db': 3,
+    'socket_connect_timeout': 5,
+    'socket_timeout': 5,
+    'retry_on_timeout': True,
 }
 
-EVENTSTREAM_ALLOW_ORIGINS = ['http://localhost:3000']  # Your Next.js
+EVENTSTREAM_STORAGE_CLASS = "django_eventstream.storage.DjangoModelStorage"
+EVENTSTREAM_ALLOW_ORIGINS = CORS_ALLOWED_ORIGINS
 EVENTSTREAM_ALLOW_CREDENTIALS = True
-EVENTSTREAM_ALLOW_HEADERS = 'Authorization'
+
+EVENTSTREAM_MAX_AGE = 60 * 60 * 24 * 7
 
 OAUTH2_PROVIDER = {
     'ACCESS_TOKEN_EXPIRE_SECONDS': 86400,
@@ -156,6 +165,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://142.93.106.180:3000",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    os.getenv("FRONTEND_URL", "").strip("/"),
 ]
 
 SPECTACULAR_SETTINGS = {
@@ -190,7 +200,7 @@ SPECTACULAR_SETTINGS = {
     "SECURITY": [{"OAuth2PasswordBearer": ["read", "write"]}],
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 APPEND_SLASH=False
@@ -199,6 +209,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://142.93.106.180:3000",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    os.getenv("FRONTEND_URL", "").strip("/"),
 ]
 
 

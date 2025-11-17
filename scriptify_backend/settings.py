@@ -33,12 +33,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "142.93.106.180",
-    os.getenv("BACKEND_URL", "").strip("/"),
-]
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -128,12 +123,14 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_SOFT_TIME_LIMIT = 60 * 120 # 120 minutes
 CELERY_TASK_TIME_LIMIT = 60 * 125  # 125 minutes
 
-CORS_ALLOWED_ORIGINS = [
-    "http://142.93.106.180:3000",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    os.getenv("FRONTEND_URL", "").strip("/"),
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://142.93.106.180:3000",
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+#     os.getenv("FRONTEND_URL", "").strip("/"),
+# ]
+
+CORS_ALLOWED_ORIGINS = ['*']
 
 EVENTSTREAM_REDIS = {  # For Celery workers
     'host': REDIS_HOST,  # Your Redis host

@@ -23,7 +23,7 @@ env:
   AWS_STORAGE_BUCKET_NAME: ${{ secrets.AWS_STORAGE_BUCKET_NAME }}
   AWS_S3_SIGNATURE_VERSION: ${{ secrets.AWS_S3_SIGNATURE_VERSION }}
   AWS_S3_ENDPOINT_URL: ${{ secrets.AWS_S3_ENDPOINT_URL }}
-  EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+  EMAIL_HOST_USERALLOWED_HOSTS: ${{ secrets.EMAIL_HOST_USER }}
   EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
   EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
   EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
@@ -31,10 +31,20 @@ env:
   DADATA_SECRET_KEY: ${{ secrets.DADATA_SECRET_KEY }}
   DADATA_API_KEY: ${{ secrets.DADATA_API_KEY }}
   DB_DEVELOPMENT: ${{ secrets.DB_DEVELOPMENT }}
-  FRONTEND_URL: ${{ secrets.FRONTEND_URL_PROD }}
+  FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
   BACKEND_URL: ${{ secrets.BACKEND_URL }}
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   IMAGE_TAG: ${{ github.sha }}
+  MAX_INPUT_IMAGES_TO_MODEL: ${{ secrets.MAX_INPUT_IMAGES_TO_MODEL }}
+  OPENAI_MODEL_NAME: ${{ secrets.OPENAI_MODEL_NAME }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  CLAUDE_MODEL_NAME: ${{ secrets.CLAUDE_MODEL_NAME }}
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+  KEEPA_API_KEY: ${{ secrets.KEEPA_API_KEY }}
+  TOP_N_KEEPA_PRODUCTS: ${{ secrets.TOP_N_KEEPA_PRODUCTS }}
+  HEADLESS: ${{ secrets.HEADLESS }}
+  USE_FILE_BASED_IMAGES: ${{ secrets.USE_FILE_BASED_IMAGES }}
+
 
 jobs:
   build_and_deploy:
@@ -88,6 +98,15 @@ jobs:
           envkey_BACKEND_URL: ${{ env.BACKEND_URL }}
           envkey_DOCKER_USERNAME: ${{ env.DOCKER_USERNAME }}
           envkey_IMAGE_TAG: ${{ github.sha }}
+          envkey_MAX_INPUT_IMAGES_TO_MODEL: ${{ env.MAX_INPUT_IMAGES_TO_MODEL }}
+          envkey_OPENAI_MODEL_NAME: ${{ env.OPENAI_MODEL_NAME }}
+          envkey_OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
+          envkey_CLAUDE_MODEL_NAME: ${{ env.CLAUDE_MODEL_NAME }}
+          envkey_ANTHROPIC_API_KEY: ${{ env.ANTHROPIC_API_KEY }}
+          envkey_KEEPA_API_KEY: ${{ env.KEEPA_API_KEY }}
+          envkey_TOP_N_KEEPA_PRODUCTS: ${{ env.TOP_N_KEEPA_PRODUCTS }}
+          envkey_HEADLESS: ${{ env.HEADLESS }}
+          envkey_USE_FILE_BASED_IMAGES: ${{ env.USE_FILE_BASED_IMAGES }}
           file_name: .env
           fail_on_empty: false
           sort_keys: false

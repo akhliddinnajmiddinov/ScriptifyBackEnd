@@ -18,6 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN mkdir -p  /app/apps/user/migrations
 RUN touch /app/apps/user/migrations/__init__.py
 
+RUN mkdir -p  /app/apps/scripts/migrations
+RUN touch /app/apps/scripts/migrations/__init__.py
+
 COPY . /app/
 RUN python manage.py collectstatic --noinput
 

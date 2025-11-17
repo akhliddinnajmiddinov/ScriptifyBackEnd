@@ -14,7 +14,7 @@ env:
   DB_NAME: ${{ secrets.DB_NAME }}
   DB_USER: ${{ secrets.DB_USER }}
   DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-  REDIS_PASS: ${{ secrets.REDIS_PASS }}
+  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
   REDIS_USER: ${{ secrets.REDIS_USER }}
   REDIS_HOST: ${{ secrets.REDIS_HOST }}
   REDIS_PORT: ${{ secrets.REDIS_PORT }}
@@ -77,7 +77,7 @@ jobs:
           envkey_DB_NAME: ${{ env.DB_NAME }}
           envkey_DB_USER: ${{ env.DB_USER }}
           envkey_DB_PASSWORD: ${{ env.DB_PASSWORD }}
-          envkey_REDIS_PASS: ${{ env.REDIS_PASS }}
+          envkey_REDIS_PASSWORD: ${{ env.REDIS_PASSWORD }}
           envkey_REDIS_USER: ${{ env.REDIS_USER }}
           envkey_REDIS_HOST: ${{ env.REDIS_HOST }}
           envkey_REDIS_PORT: ${{ env.REDIS_PORT }}

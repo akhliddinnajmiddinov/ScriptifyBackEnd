@@ -83,8 +83,8 @@ jobs:
           envkey_REDIS_USER: ${{ env.REDIS_USER }}
           envkey_REDIS_HOST: ${{ env.REDIS_HOST }}
           envkey_REDIS_PORT: ${{ env.REDIS_PORT }}
-          envkey_CELERY_BROKER_URL: env.CELERY_BROKER_URL
-          envkey_CELERY_RESULT_BACKEND: env.CELERY_RESULT_BACKEND
+          envkey_CELERY_BROKER_URL: ${{ env.CELERY_BROKER_URL }}
+          envkey_CELERY_RESULT_BACKEND: ${{ env.CELERY_RESULT_BACKEND }}
           envkey_AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
           envkey_AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
           envkey_AWS_STORAGE_BUCKET_NAME: ${{ env.AWS_STORAGE_BUCKET_NAME }}

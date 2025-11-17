@@ -18,7 +18,7 @@ services:
     volumes:
       - media_data:/app/media
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -64,6 +64,7 @@ services:
     container_name: scriptify_redis
     restart: unless-stopped
     command:
+      - redis-server
       - --save 60 1
       - --loglevel warning
       - --requirepass ${REDIS_PASSWORD}
@@ -96,6 +97,8 @@ services:
       - worker
       - --loglevel=info
       - --concurrency=4
+    volumes:
+      - media_data:/app/media
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379

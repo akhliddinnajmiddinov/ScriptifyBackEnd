@@ -10,6 +10,7 @@ services:
         python manage.py migrate --noinput --verbosity=2
 
         python manage.py migrate user
+        python manage.py migrate scripts
         echo "Checking for any issues..."
         python manage.py check
         python manage.py runserver 0.0.0.0:8000

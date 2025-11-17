@@ -43,14 +43,18 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    "daphne",
+    'django_eventstream',
     'django.contrib.staticfiles',
     'rest_framework',
-    'apps.user',
+    'django_filters',
     'oauth2_provider',
     'drf_spectacular',
     'drf_spectacular_sidecar',
     'corsheaders',
-    'api'
+    'api',
+    'apps.user',
+    'apps.scripts',  # Add scripts app
 ]
 
 MIDDLEWARE = [
@@ -84,13 +88,43 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'scriptify_backend.wsgi.application'
+ASGI_APPLICATION = 'scriptify_backend.asgi.application'
 
 REST_FRAMEWORK = {             
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema', 
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': ('oauth2_provider.contrib.rest_framework.OAuth2Authentication',),
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+        'django_eventstream.renderers.SSEEventRenderer',  # ← SSE
+        'django_eventstream.renderers.BrowsableAPIEventStreamRenderer',  # ← Browsable SSE
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20
 }
 
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_SOFT_TIME_LIMIT = 60 * 120 # 120 minutes
+CELERY_TASK_TIME_LIMIT = 60 * 125  # 125 minutes
+
+# EventStream settings
+EVENTSTREAM_STORAGE_CLASS = 'django_eventstream.storage.DjangoModelStorage'  # Reliable delivery
+EVENTSTREAM_REDIS = {  # For Celery workers
+    'host': 'localhost',  # Your Redis host
+    'port': 6379,
+    'db': 0,
+}
+
+EVENTSTREAM_ALLOW_ORIGINS = ['http://localhost:3000']  # Your Next.js
+EVENTSTREAM_ALLOW_CREDENTIALS = True
+EVENTSTREAM_ALLOW_HEADERS = 'Authorization'
 
 OAUTH2_PROVIDER = {
     'ACCESS_TOKEN_EXPIRE_SECONDS': 86400,
@@ -158,6 +192,8 @@ SPECTACULAR_SETTINGS = {
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+APPEND_SLASH=False
 
 CORS_ALLOWED_ORIGINS = [
     "http://142.93.106.180:3000",
@@ -247,7 +283,6 @@ STATICFILES_DIRS = [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

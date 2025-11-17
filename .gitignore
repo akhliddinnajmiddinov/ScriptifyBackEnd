@@ -1,7 +1,7 @@
 .env
 venv
-apps/book/migrations
 apps/user/migrations
+apps/scripts/migrations
 **/__pycache__/
 __pycache__/
 *.py[cod]

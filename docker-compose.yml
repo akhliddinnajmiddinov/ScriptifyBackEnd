@@ -83,9 +83,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 150M
+          memory: 256M
         reservations:
-          memory: 100M
+          memory: 128M
 
   celery:
     image: ${DOCKER_USERNAME}/scriptify_backend:${IMAGE_TAG}
@@ -97,7 +97,7 @@ services:
       - scriptify_backend
       - worker
       - --loglevel=info
-      - --concurrency=4
+      - --concurrency=3
     volumes:
       - media_data:/app/media
     environment:
@@ -105,8 +105,15 @@ services:
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
       - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
     depends_on:
       redis:
+        condition: service_healthy
+      db:
         condition: service_healthy
       # backend:
       #   condition: service_healthy
@@ -116,7 +123,7 @@ services:
       resources:
         limits:
           cpus: '1'
-          memory: 512M
+          memory: 1024M
 
 networks:
   scriptify_backend_network:

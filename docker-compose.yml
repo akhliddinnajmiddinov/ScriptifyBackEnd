@@ -108,8 +108,8 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      backend:
-        condition: service_healthy
+      # backend:
+      #   condition: service_healthy
     networks:
       - scriptify_backend_network
     deploy:

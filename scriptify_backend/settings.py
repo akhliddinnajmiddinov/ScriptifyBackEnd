@@ -130,11 +130,16 @@ CELERY_TASK_TIME_LIMIT = 60 * 125  # 125 minutes
 #     os.getenv("FRONTEND_URL", "").strip("/"),
 # ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://142.93.106.180:8080",
+]
+
 CORS_ALLOW_CREDENTIALS = True
 
 APPEND_SLASH=False
-
 
 EVENTSTREAM_REDIS = {  # For Celery workers
     'host': REDIS_HOST,  # Your Redis host

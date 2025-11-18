@@ -110,13 +110,9 @@ services:
       #   condition: service_healthy
     networks:
       - scriptify_backend_network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.8'
-          memory: 512M   # ↓ lowered a bit
-        reservations:
-          memory: 256M
+    mem_limit: 1400M          # was 512M/1024M before → now safe forever
+    mem_reservation: 768M     # optional but recommended
+    cpus: "0.8"               # leaves 0.2 for system + other containers
 
 networks:
   scriptify_backend_network:

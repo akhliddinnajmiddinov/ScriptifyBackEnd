@@ -90,7 +90,7 @@ services:
       - scriptify_backend
       - worker
       - --loglevel=info
-      - --concurrency=10
+      - --concurrency=8
     volumes:
       - media_data:/app/media
     environment:

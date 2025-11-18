@@ -185,8 +185,8 @@ jobs:
             export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
             export IMAGE_TAG=${{ github.sha }}
             export REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-            export CELERY_RESULT_BACKEND=${{ env.CELERY_RESULT_BACKEND }}
             export CELERY_BROKER_URL=${{ env.CELERY_BROKER_URL }}
+            export CELERY_RESULT_BACKEND=${{ env.CELERY_RESULT_BACKEND }}
 
             docker compose down
             docker compose up -d --build --pull always

@@ -111,8 +111,8 @@ if APP_ENV == 'local':
 elif APP_ENV == 'prod':
     REDIS_HOST = 'redis'
 print("REDIS_HOST", REDIS_HOST)
-CELERY_BROKER_URL = f"redis://:{os.getenv('REDIS_PASSWORD')}@{REDIS_HOST}:6379/0"
-CELERY_RESULT_BACKEND = f"redis://:{os.getenv('REDIS_PASSWORD')}@{REDIS_HOST}:6379/0"
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', f"redis://:{os.getenv('REDIS_PASSWORD')}@{REDIS_HOST}:6379/0")
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', f"redis://:{os.getenv('REDIS_PASSWORD')}@{REDIS_HOST}:6379/0")
 print(CELERY_BROKER_URL)
 print(CELERY_RESULT_BACKEND)
 CELERY_ACCEPT_CONTENT = ['json']

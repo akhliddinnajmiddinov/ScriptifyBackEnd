@@ -25,7 +25,7 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
-    path('health/', health_check, name='health'),
+    path('healthy/', health_check, name='healthy'),
     path('events/', include('django_eventstream.urls')),
 ]
 

@@ -60,7 +60,7 @@ class Run(models.Model):
     
     # Execution metadata
     started_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    started_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
     
     status = models.CharField(max_length=20, choices=CELERY_STATUS_CHOICES, default='PENDING')
@@ -81,14 +81,14 @@ class Run(models.Model):
     error_message = models.TextField(blank=True)
     
     class Meta:
-        ordering = ['-started_at']
+        ordering = ['-id']
     
     def __str__(self):
         return f"{self.script.name} - {self.id} ({self.status})"
     
     def get_duration(self):
         """Calculate run duration in seconds"""
-        if self.finished_at:
+        if self.finished_at and self.started_at:
             return (self.finished_at - self.started_at).total_seconds()
         return None
     

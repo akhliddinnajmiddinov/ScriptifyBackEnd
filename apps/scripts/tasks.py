@@ -17,9 +17,15 @@ def execute_script_task(self, script_id, run_id, input_data, input_file_paths):
     run = Run.objects.select_related('script').get(id=run_id)
     script = Script.objects.get(id=script_id)
 
+    run.started_at = timezone.now()
+    run.save()
+
     # Setup logging
     log_path = run.logs_file.path
     logger = get_run_logger(run.id, log_path)
+
+    channel = f"run-{run_id}"
+    stream_logs.delay(run_id=run_id, log_path=log_path, channel=channel)
 
     output_path = run.result_file.path
     print("output_path")
@@ -41,7 +47,6 @@ def execute_script_task(self, script_id, run_id, input_data, input_file_paths):
 
         # Call as regular function
         result = None
-        print(script.celery_task)
         if script.celery_task == "scrape_kleinanzeigen_brand_task":
             result = scrape_kleinanzeigen_brand_task(run_id, input_data, log_path)
         elif script.celery_task == "analyze_products":
@@ -201,7 +206,6 @@ def scrape_facebook_marketplace(self, run, script, input_data, logger, writer):
 
 @shared_task
 def stream_logs(run_id, log_path, channel):
-    print(run_id, log_path, channel)
     # Start from end
     position = 0
     if os.path.exists(log_path):
@@ -245,3 +249,4 @@ def stream_logs(run_id, log_path, channel):
             break
 
         time.sleep(1)
+    

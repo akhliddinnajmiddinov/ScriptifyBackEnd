@@ -167,30 +167,28 @@ class RunViewSet(viewsets.ModelViewSet):
 
         run.save()
 
-        # try:
-        task = execute_script_task.delay(
-            script_id=script.id,
-            run_id=run.id,
-            input_data=input_data,
-            input_file_paths=input_file_paths  # Pass file paths to Celery
-        )
-        channel = f"run-{run.id}"
-        stream_logs.delay(run_id=run.id, log_path=run.logs_file.path, channel=channel)
+        try:
+            task = execute_script_task.delay(
+                script_id=script.id,
+                run_id=run.id,
+                input_data=input_data,
+                input_file_paths=input_file_paths  # Pass file paths to Celery
+            )
+        
+            run.celery_task_id = task.id
+            run.save()
 
-        run.celery_task_id = task.id
-        run.save()
+            return Response(RunSerializer(run).data, status=status.HTTP_201_CREATED)
 
-        return Response(RunSerializer(run).data, status=status.HTTP_201_CREATED)
-
-        # except Exception as e:
-        #     run.status = 'FAILURE'
-        #     run.error_message = f"Task failed to start: {str(e)}"
-        #     run.finished_at = timezone.now()
-        #     run.save()
-        #     return Response(
-        #         {'error': f'Failed to start task: {str(e)}'},
-        #         status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        #     )
+        except Exception as e:
+            run.status = 'FAILURE'
+            run.error_message = f"Task failed to start: {str(e)}"
+            run.finished_at = timezone.now()
+            run.save()
+            return Response(
+                {'error': f'Failed to start task: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
         
     @extend_schema(
         operation_id="runs_by_script",

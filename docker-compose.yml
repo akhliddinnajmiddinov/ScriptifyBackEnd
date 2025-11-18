@@ -6,6 +6,8 @@ services:
       - -c
       - |
         python manage.py makemigrations
+        python manage.py makemigrations user
+        python manage.py makemigrations scripts
         echo "Running database migrations..."
         python manage.py migrate --noinput --verbosity=2
 

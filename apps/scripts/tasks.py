@@ -29,8 +29,6 @@ def execute_script_task(self, script_id, run_id, input_data, input_file_paths):
 
     output_path = run.result_file.path
     print("output_path")
-    print(output_path)
-    print(log_path)
     writer = ResultWriter(output_path, logger)
 
     try:

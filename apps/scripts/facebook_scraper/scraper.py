@@ -121,7 +121,7 @@ def clear_items(items: List[Dict]) -> None:
         and item.get('image_urls')
     ]
     if not complete_items:
-        return
+        return []
     
     return complete_items
 

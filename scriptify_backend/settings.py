@@ -112,7 +112,7 @@ elif APP_ENV == 'prod':
     REDIS_HOST = 'redis'
 print("REDIS_HOST", REDIS_HOST)
 CELERY_BROKER_URL = f"redis://:{os.getenv('REDIS_PASSWORD')}@{REDIS_HOST}:6379/0"
-CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:6379/0"
+CELERY_RESULT_BACKEND = f"redis://:{os.getenv('REDIS_PASSWORD')}@{REDIS_HOST}:6379/0"
 print(CELERY_BROKER_URL)
 print(CELERY_RESULT_BACKEND)
 CELERY_ACCEPT_CONTENT = ['json']
@@ -140,10 +140,7 @@ EVENTSTREAM_REDIS = {  # For Celery workers
     'host': REDIS_HOST,  # Your Redis host
     'port': 6379,
     'password': os.getenv('REDIS_PASSWORD'),
-    'db': 3,
-    'socket_connect_timeout': 5,
-    'socket_timeout': 5,
-    'retry_on_timeout': True,
+    'db': 3
 }
 
 EVENTSTREAM_STORAGE_CLASS = "django_eventstream.storage.DjangoModelStorage"

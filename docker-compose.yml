@@ -73,8 +73,8 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
-    mem_limit: 200M
-    mem_reservation: 128M
+    mem_limit: 640M          # ← container limit (higher than maxmemory = safe)
+    mem_reservation: 512M
     networks:
       - scriptify_backend_network
 

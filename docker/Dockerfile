@@ -14,6 +14,8 @@ RUN apt-get update && \
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN playwright install --with-deps chromium
+
 # Ensure migrations directories exist
 RUN mkdir -p  /app/apps/user/migrations
 RUN touch /app/apps/user/migrations/__init__.py

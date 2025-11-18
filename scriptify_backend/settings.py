@@ -144,11 +144,7 @@ EVENTSTREAM_REDIS = {  # For Celery workers
 }
 
 EVENTSTREAM_STORAGE_CLASS = "django_eventstream.storage.DjangoModelStorage"
-EVENTSTREAM_ALLOW_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://142.93.106.180:8080",
-]
+EVENTSTREAM_ALLOW_ORIGINS = None
 EVENTSTREAM_ALLOW_CREDENTIALS = True
 
 EVENTSTREAM_MAX_AGE = 60 * 60 * 24 * 7

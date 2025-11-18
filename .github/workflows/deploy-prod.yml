@@ -16,7 +16,7 @@ env:
   DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
   REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
   CELERY_BROKER_URL: redis://:${{ secrets.REDIS_PASSWORD }}@redis:6379/0
-  CELERY_RESULT_BACKEND: redis://redis:6379/0
+  CELERY_RESULT_BACKEND: redis://:${{ secrets.REDIS_PASSWORD }}@redis:6379/0
   REDIS_USER: ${{ secrets.REDIS_USER }}
   REDIS_HOST: ${{ secrets.REDIS_HOST }}
   REDIS_PORT: ${{ secrets.REDIS_PORT }}

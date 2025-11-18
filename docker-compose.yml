@@ -13,7 +13,7 @@ services:
         python manage.py migrate scripts
         echo "Checking for any issues..."
         python manage.py check
-        python manage.py runserver 0.0.0.0:8000
+        daphne -b 0.0.0.0 -p 8000 scriptify_backend.asgi:application
     restart: always
     volumes:
       - media_data:/app/media
@@ -32,11 +32,8 @@ services:
       - scriptify_backend_network
     ports:
       - "8000:8000"
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 512M
+    mem_limit: 768M
+    mem_reservation: 512M
 
   db:
     image: postgres:14
@@ -52,14 +49,12 @@ services:
     volumes:
       - scriptify_backend_data:/var/lib/postgresql/data
     restart: always
+    mem_limit: 640M      # ↑ this is the critical one on low-RAM boxes
+    mem_reservation: 384M
+    cpus: '0.6'
     networks:
       - scriptify_backend_network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
-
+  
   redis:
     image: redis:7.2-alpine
     container_name: scriptify_redis
@@ -78,14 +73,10 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
+    mem_limit: 200M
+    mem_reservation: 128M
     networks:
       - scriptify_backend_network
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
 
   celery:
     image: ${DOCKER_USERNAME}/scriptify_backend:${IMAGE_TAG}
@@ -97,7 +88,7 @@ services:
       - scriptify_backend
       - worker
       - --loglevel=info
-      - --concurrency=3
+      - --concurrency=1
     volumes:
       - media_data:/app/media
     environment:
@@ -122,8 +113,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1024M
+          cpus: '0.8'
+          memory: 512M   # ↓ lowered a bit
+        reservations:
+          memory: 256M
 
 networks:
   scriptify_backend_network:

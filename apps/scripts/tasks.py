@@ -115,9 +115,10 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
             listings_count = 0
             all_listings_count = 0
             results = []
+            max_pages = 50
 
             try:
-                while listings_count < max_listings:
+                while listings_count < max_listings and page_num <= max_pages:
                     search_term = f"{search_query} {brand}"
                     encoded = urllib.parse.quote(search_term.replace(" ", "-"))
                     url = f"https://www.kleinanzeigen.de/s-{encoded}/k0" if page_num == 1 else f"https://www.kleinanzeigen.de/s-seite:{page_num}/{encoded}/k0"

@@ -190,7 +190,7 @@ jobs:
 
             docker compose down
             docker compose up -d --build --pull always
-            docker image prune -f
+            docker image prune -af
 
             echo "Deployment complete"
             docker ps -a

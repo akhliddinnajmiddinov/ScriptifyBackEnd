@@ -159,7 +159,9 @@ async def scrape_city(
     no_new_items_count = 0
     city_scraped_count = 0
     await asyncio.sleep(15)  # Give page time to load
-
+    
+    scraper.all_results[city.title()] = []
+    scraper.writer.write(scraper.all_results)
 
     while city_scraped_count < listings_per_city:
         iteration += 1
@@ -170,8 +172,6 @@ async def scrape_city(
             no_new_items_count += 1
             
             if no_new_items_count >= MAX_NO_NEW_ITEMS_ATTEMPTS:
-                scraper.all_results[city.title()] = []
-                scraper.writer.write(scraper.all_results)
                 logger.info(f"    ❌ No new items after {MAX_NO_NEW_ITEMS_ATTEMPTS} attempts. Stopping.")
                 break
             
@@ -213,9 +213,6 @@ async def scrape_city(
             city_scraped_count = len(items_to_add)
             if items_to_add:
                 scraper.all_results[city.title()] = items_to_add
-                scraper.writer.write(scraper.all_results)
-            else:
-                scraper.all_results[city.title()] = []
                 scraper.writer.write(scraper.all_results)
 
             items_dict[link_id] = {

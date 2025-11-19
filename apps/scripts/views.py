@@ -91,10 +91,6 @@ class RunViewSet(viewsets.ModelViewSet):
             return RunCreateSerializer
         return RunSerializer
 
-    def get_queryset(self):
-        # Remove manual script_id filtering - now handled by django-filter
-        return Run.objects.all().order_by('-started_at')
-    
     @extend_schema(
         operation_id="runs_list",
         description="List all runs with filtering and pagination",
@@ -214,7 +210,7 @@ class RunViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         script = get_object_or_404(Script, id=script_id)
-        runs = Run.objects.filter(script=script).order_by('-started_at')
+        runs = Run.objects.filter(script=script).order_by('-id')
         
         # Apply pagination
         page = self.paginate_queryset(runs)

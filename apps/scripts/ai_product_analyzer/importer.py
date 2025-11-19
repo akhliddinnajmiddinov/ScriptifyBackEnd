@@ -53,7 +53,7 @@ class Importer:
         products = []
         try:
             file_path = os.path.join(settings.MEDIA_ROOT, input_csv_path)
-            with open(file_path, 'r', encoding='utf-8') as csvfile:
+            with open(file_path, 'r', encoding='utf-8-sig') as csvfile:
                 reader = csv.DictReader(csvfile)
 
                 headers_map = {header.lower(): header for header in reader.fieldnames}
@@ -61,6 +61,8 @@ class Importer:
                 
                 # Check required headers (case-insensitive)
                 missing = [h for h in required_headers if h not in headers_map]
+                print(headers_map)
+                print(required_headers)
                 if missing:
                     raise ValueError(f"Missing columns: {', '.join(missing)}")
             

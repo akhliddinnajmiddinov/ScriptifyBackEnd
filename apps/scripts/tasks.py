@@ -183,6 +183,10 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
                     page_num += 1
                     time.sleep(1)
             finally:
+                if len(results) == 0:
+                    all_results[brand] = []
+                    with open(result_path, 'w') as f:
+                        json.dump(all_results, f, indent=2)
                 page.close()
         browser.close()
 

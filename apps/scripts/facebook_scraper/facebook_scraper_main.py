@@ -18,7 +18,6 @@ from .utils import create_browser_args, build_search_url, save_cookies, load_coo
 from .scraper import setup_response_handlers, scrape_city
 from apps.scripts.utils import ResultWriter
 
-seen_links: set = set()
 
 class FacebookMarketplaceScraper:
     def __init__(self, run, script, input_data, logger, writer):
@@ -55,6 +54,7 @@ class FacebookMarketplaceScraper:
         self.logger = logger
         self.writer = writer
         self.script = script
+        self.seen_links: set = set()
         self.all_results = {}
 
 
@@ -133,7 +133,7 @@ class FacebookMarketplaceScraper:
                         lambda: scrape_city(
                             page=page,
                             city=city,
-                            seen_links=seen_links,
+                            seen_links=self.seen_links,
                             scraper=self
                         )
                     )
@@ -141,7 +141,7 @@ class FacebookMarketplaceScraper:
                     if success and city_items:
                         self.logger.info(f"✅ Scraped {len(city_items)} items from {city.title()}")
                     else:
-                        self.logger.info(f"❌ Failed to scrape {city.title()} after retries. Error: {error}")
+                        self.logger.info(f"❌ Failed to scrape {city.title()} after retries. Error: {error or "Maybe, there are not listings in that city in the marketplace. Please check it!"}")
                         
                 except Exception as e:
                     self.logger.info(f"❌ Error scraping {city.title()}: {e}")
@@ -150,7 +150,7 @@ class FacebookMarketplaceScraper:
             # ---------- FINAL SUMMARY ----------
             self.logger.info("\n" + "=" * 80)
             self.logger.info("✅ SCRAPING COMPLETE!")
-            self.logger.info(f"📊 Total unique listings scraped: {len(seen_links)}")
+            self.logger.info(f"📊 Total unique listings scraped: {len(self.seen_links)}")
             self.logger.info("=" * 80)
 
             await browser.close()

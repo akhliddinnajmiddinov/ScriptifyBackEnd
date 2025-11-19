@@ -105,7 +105,7 @@ async def scroll_to_bottom(page):
     await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
     await asyncio.sleep(1.5)
 
-def clear_items(items: List[Dict]) -> None:
+def clear_items(items: List[Dict], seen_links) -> None:
     """
     Append items to CSV file after each city to prevent data loss
     """
@@ -123,6 +123,14 @@ def clear_items(items: List[Dict]) -> None:
     if not complete_items:
         return []
     
+    for item in complete_items:
+        link = item.get('link')
+        print(seen_links)
+        print("=" * 20)
+        print(link)
+        if link not in seen_links:
+            seen_links.add(link)
+
     return complete_items
 
 async def scrape_city(
@@ -162,6 +170,8 @@ async def scrape_city(
             no_new_items_count += 1
             
             if no_new_items_count >= MAX_NO_NEW_ITEMS_ATTEMPTS:
+                scraper.all_results[city.title()] = []
+                scraper.writer.write(scraper.all_results)
                 logger.info(f"    ❌ No new items after {MAX_NO_NEW_ITEMS_ATTEMPTS} attempts. Stopping.")
                 break
             
@@ -198,13 +208,14 @@ async def scrape_city(
             if link_id in seen_links:
                 logger.info(f"      ⏭️  Skipped {link_id}: Duplicate")
                 continue
-            
-            seen_links.add(link_id)
 
-            items_to_add = clear_items(list(items_dict.values()))
+            items_to_add = clear_items(list(items_dict.values()), seen_links)
             city_scraped_count = len(items_to_add)
             if items_to_add:
                 scraper.all_results[city.title()] = items_to_add
+                scraper.writer.write(scraper.all_results)
+            else:
+                scraper.all_results[city.title()] = []
                 scraper.writer.write(scraper.all_results)
 
             items_dict[link_id] = {

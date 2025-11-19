@@ -115,9 +115,10 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
             listings_count = 0
             all_listings_count = 0
             results = []
+            max_pages = 50
 
             try:
-                while listings_count < max_listings:
+                while listings_count < max_listings and page_num <= max_pages:
                     search_term = f"{search_query} {brand}"
                     encoded = urllib.parse.quote(search_term.replace(" ", "-"))
                     url = f"https://www.kleinanzeigen.de/s-{encoded}/k0" if page_num == 1 else f"https://www.kleinanzeigen.de/s-seite:{page_num}/{encoded}/k0"
@@ -143,7 +144,7 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
                             link = "https://www.kleinanzeigen.de" + link_el.get('href') if link_el and link_el.get('href') else ""
                             title = ad.select_one("h2").get_text(strip=True).replace(",", "") if ad.select_one("h2") else ""
                             price = ad.select_one("p.aditem-main--middle--price-shipping--price")
-                            price = price.get_text(strip=True).split()[0] if price.get_text(strip=True) else ""
+                            price = price.get_text(strip=True).split()[0] if price and price.get_text(strip=True) else ""
 
                             product = {"link": link, "brand": brand, "title": title, "price": price, "image_urls": [], "description": ""}
 

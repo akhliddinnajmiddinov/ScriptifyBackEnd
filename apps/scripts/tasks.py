@@ -100,6 +100,9 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
         raise ValueError("No brands provided")
 
     all_results = {}
+    all_listings_count = 0
+    max_pages = 50
+    
     run = Run.objects.get(id=run_id)
     result_path = run.result_file.path
     os.makedirs(os.path.dirname(result_path), exist_ok=True)
@@ -113,9 +116,7 @@ def scrape_kleinanzeigen_brand_task(run_id, input_data, log_path):
             page = browser.new_page()
             page_num = 1
             listings_count = 0
-            all_listings_count = 0
             results = []
-            max_pages = 50
 
             try:
                 while listings_count < max_listings and page_num <= max_pages:

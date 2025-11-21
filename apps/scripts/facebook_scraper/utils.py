@@ -91,6 +91,8 @@ async def is_logged_in(page: Page) -> bool:
         bool: True if logged in, False otherwise
     """
     try:
+        html = await page.content()
+        print(html)
         # Check for multiple login indicators
         if (await page.locator('text="See more on Facebook"').is_visible() or
             await page.locator('text="Log in or sign up for Facebook"').is_visible() or

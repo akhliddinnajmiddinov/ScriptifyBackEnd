@@ -80,24 +80,37 @@ async def scroll_to_bottom(page) -> None:
     await asyncio.sleep(1.5)
 
 
+import re
+
 async def is_logged_in(page: Page) -> bool:
     """
-    Check if user is logged in to Facebook by checking for login prompts.
-    
-    Args:
-        page: Playwright Page object
-    
-    Returns:
-        bool: True if logged in, False otherwise
+    Check if user is logged in to Facebook by detecting common login indicators.
+    Handles multiple languages and case-insensitive partial text matches.
     """
     try:
-        html = await page.content()
-        print(html)
-        # Check for multiple login indicators
-        if (await page.locator('text="See more on Facebook"').is_visible() or
-            await page.locator('text="Log in or sign up for Facebook"').is_visible() or
-            await page.locator('input[name="email"][placeholder*="Email"]').is_visible()):
+        patterns = [
+            r"see more on facebook",
+            r"bei facebook anmelden",
+            r"log\s*in",
+            r"sign\s*in",
+            r"anmelden",
+            r"e-mail-adresse oder telefonnummer",
+            r"email",
+        ]
+
+        # Check input fields
+        if await page.locator('input[name="email"]').is_visible() or \
+           await page.locator('input[name="pass"]').is_visible():
             return False
-        return True
-    except:
+
+        # Check for login-related texts anywhere on page
+        for pattern in patterns:
+            locator = page.locator("*", has_text=re.compile(pattern, re.I))
+            if await locator.is_visible():
+                return False
+
+        return True  # No login elements found → user is logged in
+
+    except Exception as e:
+        print(f"Error in is_logged_in: {e}")
         return False

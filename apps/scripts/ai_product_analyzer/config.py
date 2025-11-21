@@ -23,6 +23,13 @@ class AIModelConfig:
         self.openai_model = os.getenv('OPENAI_MODEL_NAME', 'gpt-4o')
         self.claude_model = os.getenv('CLAUDE_MODEL_NAME', 'claude-sonnet-4-20250514')
         self.use_file_based_images = os.getenv('USE_FILE_BASED_IMAGES', 'false').lower() in ['true', '1', 'yes']
+        self.claude_quota_limit_error_texts = [
+            "low credit balance"
+        ]
+        self.openai_quota_limit_error_texts = [
+            "you exceeded your current quota",
+            "insufficient_quota"
+        ]
 
 def get_ai_model_config() -> AIModelConfig:
     """Get AI model configuration from environment or defaults"""

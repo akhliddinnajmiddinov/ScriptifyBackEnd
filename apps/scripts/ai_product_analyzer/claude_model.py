@@ -149,11 +149,11 @@ class ClaudeModel(AIModelBase):
                 ]
             )
         
-        response = call_claude()
+        success, response, error = retry_with_backoff(call_claude)
         
-        if not response:
-            raise Exception(f"Claude API call failed")
-        
+        if not success or not response:
+            raise Exception(error)
+
         return {
             "content": response.content[0].text,
             "model": self.model_name,

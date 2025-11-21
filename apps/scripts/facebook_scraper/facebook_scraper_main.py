@@ -97,7 +97,7 @@ class FacebookMarketplaceScraper:
             if cookies_loaded:
                 self.logger.info("✅ Cookies loaded. Checking session...")
                 await page.goto(login_check_url, wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT)
-                await asyncio.sleep(10)  # Give page time to load
+                await asyncio.sleep(20)  # Give page time to load
                 
                 if await is_logged_in(page):
                     self.logger.info("✅ Session is valid.")

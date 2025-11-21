@@ -146,7 +146,7 @@ class OpenAIModel(AIModelBase):
         success, response, error = retry_with_backoff(call_openai)
         
         if not success or not response:
-            raise Exception(f"OpenAI API call failed: {error}")
+            raise Exception(error)
         
         return {
             "content": response.choices[0].message.content,

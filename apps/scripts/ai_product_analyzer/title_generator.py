@@ -6,7 +6,7 @@ from openai import OpenAI
 from .retry_with_backoff import retry_with_backoff
 from .ai_model_router import AIModelRouter
 from .response_schema import schema
-
+from .config import get_ai_model_config
 
 class TitleGenerator:
     """Handles AI title generation using OpenAI/Claude"""
@@ -16,6 +16,7 @@ class TitleGenerator:
         self.ai_router = AIModelRouter(logger, ai_model)
         self.logger = logger
         self.ai_model = ai_model
+        self.ai_model_config = get_ai_model_config()
     
     def generate_title(self, product):
         """Generate AI title for a product"""
@@ -40,6 +41,16 @@ class TitleGenerator:
             print(response)
             if not success or not response:
                 self.logger.error(f"{self.ai_model} API call failed: {error}")
+                
+                for pattern in self.ai_model_config.claude_quota_limit_error_texts:
+                    if re.search(pattern, error, re.IGNORECASE):
+                        raise Exception(f"Claude API quota limit exceeded. Please refill your balance! Error text: {error}")
+
+                # Check OpenAI quota limit
+                for pattern in self.ai_model_config.openai_quota_limit_error_texts:
+                    if re.search(pattern, error, re.IGNORECASE):
+                        raise Exception(f"OpenAI API quota limit exceeded. Please refill your balance! Error text: {error}")
+
                 self._set_default_title(product, original_title, f"{self.ai_model} API call failed: {error}")
                 return {}
             else:
@@ -47,6 +58,18 @@ class TitleGenerator:
         
         except Exception as e:
             self.logger.error(f"Error generating title: {str(e)}", exc_info=True)
+            error = str(e)
+            print(error)
+
+            for pattern in self.ai_model_config.claude_quota_limit_error_texts:
+                if re.search(pattern, error, re.IGNORECASE):
+                    raise
+
+            # Check OpenAI quota limit
+            for pattern in self.ai_model_config.openai_quota_limit_error_texts:
+                if re.search(pattern, error, re.IGNORECASE):
+                    raise
+
             self._set_default_title(product, product.get('title', ''), f"Error generating title: {str(e)}")
     
     def _build_prompt(self, description, original_title):

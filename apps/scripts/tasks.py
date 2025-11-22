@@ -8,11 +8,13 @@ from copy import deepcopy
 from .facebook_scraper.facebook_scraper_main import FacebookMarketplaceScraper
 from .ai_product_analyzer.ai_product_analyzer import AIProductAnalyzer
 from .utils import get_run_logger, ResultWriter
+from dotenv import load_dotenv
 import traceback
 import logging
 import json
 import time
 import os
+
 
 @shared_task(bind=True)
 def execute_script_task(self, script_id, run_id, input_data, input_file_paths):
@@ -80,6 +82,7 @@ def scrape_kleinanzeigen_task(run_id, input_data, log_path):
     import time
     import urllib.parse
 
+    load_dotenv()
     # Setup logger
     logger = logging.getLogger(f"scrape_{run_id}")
     logger.setLevel(logging.DEBUG)
@@ -136,7 +139,7 @@ def scrape_kleinanzeigen_task(run_id, input_data, log_path):
         return new_items
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=os.getenv('HEADLESS', 'True').lower() in ['true', '1', 'yes'])
         logger.info(f"Processing query: {search_query}")
         page = browser.new_page()
         page_num = 1

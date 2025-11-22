@@ -138,8 +138,6 @@ class FacebookMarketplaceScraper:
                         )
                     )
 
-                    print("city_items")
-                    print(city_items)
                     if success and city_items:
                         self.logger.info(f"✅ Scraped {len(city_items)} complete items from {city.title()}")
                     else:

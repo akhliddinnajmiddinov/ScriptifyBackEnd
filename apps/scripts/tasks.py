@@ -121,11 +121,11 @@ def scrape_kleinanzeigen_task(run_id, input_data, log_path):
         
         complete_items = [
             item for item in items 
-            if item.get('link') 
-            and item.get('title') 
-            and item.get('description')
-            and item.get('price')
-            and item.get('image_urls')
+            if item.get('link') is not None
+            and item.get('title') is not None
+            and item.get('description') is not None
+            and item.get('price') is not None
+            and item.get('image_urls') is not None
         ]
         if not complete_items:
             return []

@@ -112,14 +112,13 @@ def clear_items(items: List[Dict], seen_links) -> None:
     """
     if not items:
         return []
-    
     complete_items = [
         item for item in items 
-        if item.get('link') 
-        and item.get('title') 
-        and item.get('description')
-        and item.get('price')
-        and item.get('image_urls')
+        if item.get('link') is not None
+        and item.get('title') is not None
+        and item.get('description') is not None
+        and item.get('price') is not None
+        and item.get('image_urls') is not None
     ]
     if not complete_items:
         return []
@@ -242,7 +241,12 @@ async def scrape_city(
     
     logger.info("  ⏳ Final wait for responses...")
     await asyncio.sleep(15)
-    items_list = list(items_dict.values())
+    items_to_add = clear_items(list(items_dict.values()), seen_links)
+    if items_to_add:
+        scraper.all_results[city.title()] = items_to_add
+        scraper.writer.write(scraper.all_results)
+
     items_dict.clear()
     api_buffer.clear()
-    return items_list
+
+    return items_to_add

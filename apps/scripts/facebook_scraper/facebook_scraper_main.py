@@ -139,7 +139,7 @@ class FacebookMarketplaceScraper:
                     )
 
                     if success and city_items:
-                        self.logger.info(f"✅ Scraped {len(city_items)} items from {city.title()}")
+                        self.logger.info(f"✅ Scraped {len(city_items)} complete items from {city.title()}")
                     else:
                         if error:
                             self.logger.info(f"❌ Failed to scrape {city.title()} after retries. Maybe, session has expired. Error: {error}")

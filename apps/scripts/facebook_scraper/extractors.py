@@ -170,7 +170,6 @@ def setup_response_handlers(page: Page):
             return
         try:
             payload = await response.json()
-            print(payload)
             item_id = get_id_from_payload(payload)
             if not item_id or item_id not in items_dict:
                 return

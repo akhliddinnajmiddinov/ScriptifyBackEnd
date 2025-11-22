@@ -3,6 +3,7 @@ import random
 import json
 import csv
 import pandas as pd
+from copy import deepcopy
 from typing import Dict, List, Set, Optional
 from .config import LISTINGS_PER_CITY, MAX_NO_NEW_ITEMS_ATTEMPTS
 from .extractors import (
@@ -123,15 +124,17 @@ def clear_items(items: List[Dict], seen_links) -> None:
     if not complete_items:
         return []
     
-    for item in complete_items:
+    new_items = []
+    for idx, item in enumerate(complete_items):
         link = item.get('link')
-        print(seen_links)
-        print("=" * 20)
-        print(link)
         if link not in seen_links:
             seen_links.add(link)
+            # Deepcopy and update the id
+            new_item = deepcopy(item)
+            new_item['id'] = idx
+            new_items.append(new_item)
 
-    return complete_items
+    return new_items
 
 async def scrape_city(
     page,

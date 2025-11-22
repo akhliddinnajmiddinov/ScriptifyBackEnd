@@ -28,7 +28,6 @@ def execute_script_task(self, script_id, run_id, input_data, input_file_paths):
     stream_logs.delay(run_id=run_id, log_path=log_path, channel=channel)
 
     output_path = run.result_file.path
-    print("output_path")
     writer = ResultWriter(output_path, logger)
 
     try:
@@ -74,7 +73,6 @@ def execute_script_task(self, script_id, run_id, input_data, input_file_paths):
         raise
 
 def scrape_kleinanzeigen_task(run_id, input_data, log_path):
-    print("SALOM")
     from playwright.sync_api import sync_playwright
     from bs4 import BeautifulSoup
     import time
@@ -110,7 +108,7 @@ def scrape_kleinanzeigen_task(run_id, input_data, log_path):
     logger.info(f"Scraping query: {search_query}")
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=True)
         logger.info(f"Processing query: {search_query}")
         page = browser.new_page()
         page_num = 1

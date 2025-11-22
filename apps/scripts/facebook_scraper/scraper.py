@@ -125,14 +125,15 @@ def clear_items(items: List[Dict], seen_links) -> None:
         return []
     
     new_items = []
-    for idx, item in enumerate(complete_items):
+    for idx, item in enumerate(complete_items, start=1):
         link = item.get('link')
         if link not in seen_links:
             seen_links.add(link)
             # Deepcopy and update the id
-            new_item = deepcopy(item)
-            new_item['id'] = idx
-            new_items.append(new_item)
+        
+        new_item = deepcopy(item)
+        new_item['id'] = idx
+        new_items.append(new_item)
 
     return new_items
 

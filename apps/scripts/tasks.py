@@ -3,6 +3,8 @@ from django.utils import timezone
 from .models import Run, Script
 from celery import shared_task
 from datetime import datetime
+from typing import List, Dict
+from copy import deepcopy
 from .facebook_scraper.facebook_scraper_main import FacebookMarketplaceScraper
 from .ai_product_analyzer.ai_product_analyzer import AIProductAnalyzer
 from .utils import get_run_logger, ResultWriter
@@ -98,7 +100,6 @@ def scrape_kleinanzeigen_task(run_id, input_data, log_path):
         raise ValueError("No search query provided")
 
     all_results = {}
-    all_listings_count = 0
     max_pages = 50
     
     run = Run.objects.get(id=run_id)
@@ -107,8 +108,35 @@ def scrape_kleinanzeigen_task(run_id, input_data, log_path):
 
     logger.info(f"Scraping query: {search_query}")
 
+
+    def clear_items(items: List[Dict]) -> None:
+        """
+        Append items to CSV file after each city to prevent data loss
+        """
+        if not items:
+            return []
+        
+        complete_items = [
+            item for item in items 
+            if item.get('link') 
+            and item.get('title') 
+            and item.get('description')
+            and item.get('price')
+            and item.get('image_urls')
+        ]
+        if not complete_items:
+            return []
+        
+        new_items = []
+        for idx, item in enumerate(complete_items, start=1):
+            new_item = deepcopy(item)
+            new_item['id'] = idx
+            new_items.append(new_item)
+
+        return new_items
+
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=False)
         logger.info(f"Processing query: {search_query}")
         page = browser.new_page()
         page_num = 1
@@ -155,21 +183,25 @@ def scrape_kleinanzeigen_task(run_id, input_data, log_path):
                             page.goto(link, timeout=30000)
                             # Images
                             try:
-                                page.wait_for_selector("#viewad-image", timeout=10000)
+                                page.wait_for_selector("#viewad-image", timeout=30000)
                                 product["image_urls"] = [img.get_attribute("src") for img in page.query_selector_all("#viewad-image") if img.get_attribute("src")]
                             except: pass
                             # Description
                             try:
-                                page.wait_for_selector("#viewad-description-text", timeout=10000)
+                                page.wait_for_selector("#viewad-description-text", timeout=30000)
                                 desc = page.query_selector("#viewad-description-text")
                                 product["description"] = desc.inner_text().strip().replace(",", " ") if desc else ""
                             except: pass
 
-                        listings_count += 1
-                        all_listings_count += 1
                         results.append(product)
 
-                        all_results[search_query] = results
+                        items_to_add = clear_items(results)
+                        all_results[search_query] = items_to_add
+                        
+                        listings_count = len(items_to_add)
+                        print("len(items_to_add)")
+                        print(listings_count)
+
                         # SAVE AFTER EACH PRODUCT
                         with open(result_path, 'w') as f:
                             json.dump(all_results, f, indent=2)
@@ -189,7 +221,7 @@ def scrape_kleinanzeigen_task(run_id, input_data, log_path):
             page.close()
         browser.close()
 
-    logger.info(f"Scraping complete: {all_listings_count} products")
+    logger.info(f"Scraping complete: {listings_count} products")
     return all_results
 
 

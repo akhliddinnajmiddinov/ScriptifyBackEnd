@@ -121,11 +121,11 @@ def scrape_kleinanzeigen_task(run_id, input_data, log_path):
         
         complete_items = [
             item for item in items 
-            if item.get('link') is not None
-            and item.get('title') is not None
-            and item.get('description') is not None
+            if item.get('link')
+            and item.get('title')
+            and item.get('description')
             and item.get('price') is not None
-            and item.get('image_urls') is not None
+            and item.get('image_urls')
         ]
         if not complete_items:
             return []
@@ -177,7 +177,7 @@ def scrape_kleinanzeigen_task(run_id, input_data, log_path):
                         link = "https://www.kleinanzeigen.de" + link_el.get('href') if link_el and link_el.get('href') else ""
                         title = ad.select_one("h2").get_text(strip=True).replace(",", "") if ad.select_one("h2") else ""
                         price = ad.select_one("p.aditem-main--middle--price-shipping--price")
-                        price = price.get_text(strip=True).split()[0] if price and price.get_text(strip=True) else ""
+                        price = price.get_text(strip=True).split()[0] if price and price.get_text(strip=True) else None
 
                         product = {"link": link, "title": title, "price": price, "image_urls": [], "description": ""}
 

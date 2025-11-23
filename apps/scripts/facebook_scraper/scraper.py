@@ -114,11 +114,11 @@ def clear_items(items: List[Dict], seen_links) -> None:
         return []
     complete_items = [
         item for item in items 
-        if item.get('link') is not None
-        and item.get('title') is not None
-        and item.get('description') is not None
+        if item.get('link')
+        and item.get('title')
+        and item.get('description')
         and item.get('price') is not None
-        and item.get('image_urls') is not None
+        and item.get('image_urls')
     ]
     if not complete_items:
         return []

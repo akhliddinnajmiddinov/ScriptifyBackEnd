@@ -250,7 +250,7 @@ def extract_details(payload: dict) -> Optional[Dict]:
         title = target.get("marketplace_listing_title", "")
         description = target.get("redacted_description", {}).get("text", "")
         price_obj = target.get("listing_price", {})
-        price = price_obj.get("amount", "")
+        price = price_obj.get("amount")
         currency = price_obj.get("currency", "UNKNOWN")
 
         description += "\nAttributes:\n" + "\n".join([

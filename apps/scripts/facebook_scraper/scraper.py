@@ -215,7 +215,7 @@ async def scrape_city(
             items_to_add = clear_items(list(items_dict.values()), seen_links)
             city_scraped_count = len(items_to_add)
             if items_to_add:
-                scraper.all_results[city.title()] = items_to_add
+                scraper.all_results[city.title()] = items_to_add[:listings_per_city]
                 scraper.writer.write(scraper.all_results)
 
             items_dict[link_id] = {
@@ -243,6 +243,7 @@ async def scrape_city(
     await asyncio.sleep(15)
     items_to_add = clear_items(list(items_dict.values()), seen_links)
     if items_to_add:
+        items_to_add = items_to_add[:listings_per_city]
         scraper.all_results[city.title()] = items_to_add
         scraper.writer.write(scraper.all_results)
 

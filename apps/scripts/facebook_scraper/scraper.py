@@ -223,7 +223,7 @@ async def scrape_city(
                 "link": "",
                 "title": "",
                 "description": "",
-                "price": "",
+                "price": None,
                 "currency": "",
                 "image_urls": [],
                 "listed_date": None

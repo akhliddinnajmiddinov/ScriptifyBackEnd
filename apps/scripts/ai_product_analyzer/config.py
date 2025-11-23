@@ -24,7 +24,7 @@ class AIModelConfig:
         self.claude_model = os.getenv('CLAUDE_MODEL_NAME', 'claude-sonnet-4-20250514')
         self.use_file_based_images = os.getenv('USE_FILE_BASED_IMAGES', 'false').lower() in ['true', '1', 'yes']
         self.claude_quota_limit_error_texts = [
-            "low credit balance"
+            "Your credit balance is too low to access the Anthropic API"
         ]
         self.openai_quota_limit_error_texts = [
             "you exceeded your current quota",

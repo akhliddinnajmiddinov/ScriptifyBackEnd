@@ -16,6 +16,13 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
+# Configure PyMySQL to work with Django's MySQL backend
+try:
+    import pymysql
+    pymysql.install_as_MySQLdb()
+except ImportError:
+    pass
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -54,7 +61,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'api',
     'apps.user',
-    'apps.scripts',  # Add scripts app
+    'apps.scripts',
+    'apps.transactions',
+    'apps.listings',
 ]
 
 MIDDLEWARE = [
@@ -110,11 +119,11 @@ if APP_ENV == 'local':
     REDIS_HOST = "localhost"
 elif APP_ENV == 'prod':
     REDIS_HOST = 'redis'
-print("REDIS_HOST", REDIS_HOST)
+# print("REDIS_HOST", REDIS_HOST)
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', f"redis://:{os.getenv('REDIS_PASSWORD')}@{REDIS_HOST}:6379/0")
 CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', f"redis://:{os.getenv('REDIS_PASSWORD')}@{REDIS_HOST}:6379/0")
-print(CELERY_BROKER_URL)
-print(CELERY_RESULT_BACKEND)
+# print(CELERY_BROKER_URL)
+# print(CELERY_RESULT_BACKEND)
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -233,21 +242,53 @@ DB_PORT = os.getenv('DB_PORT', None)
 DB_NAME = os.getenv('DB_NAME', None)
 CLIENT_ID = os.getenv('CLIENT_ID', None)
 CLIENT_SECRET = os.getenv('CLIENT_SECRET', None)
+CA_CERT_PATH = os.path.join(BASE_DIR, 'certs', 'ca-certificate.crt')
 
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': DB_NAME,
-        'USER': DB_USER,
-        'PASSWORD': DB_PASS,
-        'HOST': DB_HOST,
-        'PORT': DB_PORT,
-        'TEST': {
-            'NAME': f'{DB_NAME}_test',  # This creates a dedicated test database
+# Database configuration based on environment
+if APP_ENV == 'local':
+    # Use PostgreSQL for local development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': DB_NAME,
+            'USER': DB_USER,
+            'PASSWORD': DB_PASS,
+            'HOST': DB_HOST,
+            'PORT': DB_PORT,
+            'TEST': {
+                'NAME': f'{DB_NAME}_test',  # This creates a dedicated test database
+            },
         },
-    },
-}
+    }
+else:
+    # Use MySQL for production/other environments
+    # Check if CA certificate file exists
+    ssl_options = {}
+    if os.path.exists(CA_CERT_PATH):
+        ssl_options = {
+            'ssl': {
+                'ca': CA_CERT_PATH,
+            }
+        }
+    
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': DB_NAME,
+            'USER': DB_USER,
+            'PASSWORD': DB_PASS,
+            'HOST': DB_HOST,
+            'PORT': DB_PORT,
+            'OPTIONS': {
+                **ssl_options,
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+                'charset': 'utf8mb4',
+            },
+            'TEST': {
+                'NAME': f'{DB_NAME}_test',  # This creates a dedicated test database
+            },
+        },
+    }
 
 
 AUTH_USER_MODEL = 'user.MyUser'

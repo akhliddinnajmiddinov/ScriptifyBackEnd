@@ -57,6 +57,7 @@ pillow==11.1.0
 playwright==1.55.0
 prompt_toolkit==3.0.52
 psycopg2-binary==2.9.10
+PyMySQL==1.1.1
 pubcontrol==3.5.0
 pyasn1==0.6.1
 pyasn1_modules==0.4.2

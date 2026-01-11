@@ -1,8 +1,5 @@
 #!/bin/bash
 set -e
-until nc -z db 5432; do
-    echo "Waiting for PostgreSQL..."
-    sleep 2
-done
-echo "PostgreSQL is up!"
+# Database is on external server, connection will be handled by Django
+# No need to wait for local database service
 exec "$@"

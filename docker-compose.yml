@@ -19,15 +19,18 @@ services:
         python manage.py migrate transactions
         echo "Checking for any issues..."
         python manage.py check
-        gunicorn scriptify_backend.wsgi:application \
-        --bind 0.0.0.0:8000 \
-        --workers 2 \
-        --threads 4 \
-        --worker-class gthread \
-        --timeout 120 \
-        --keep-alive 5 \
-        --max-requests 1000 \
-        --max-requests-jitter 50
+        
+        exec python manage.py runserver 0.0.0.0:8000
+
+        # gunicorn scriptify_backend.wsgi:application \
+        # --bind 0.0.0.0:8000 \
+        # --workers 2 \
+        # --threads 4 \
+        # --worker-class gthread \
+        # --timeout 120 \
+        # --keep-alive 5 \
+        # --max-requests 1000 \
+        # --max-requests-jitter 50
 
     restart: always
     volumes:

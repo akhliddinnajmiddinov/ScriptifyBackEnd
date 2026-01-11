@@ -65,10 +65,16 @@ class ListingSerializer(serializers.ModelSerializer):
     def get_error_status_text(self, obj):
         """
         Return error status text if listing does not have connected asins.
+        Optimized: Uses prefetched listings_asins to avoid additional query.
         """
         # Check if listing has any connected ASINs through ListingAsin relationship
+        # Use prefetched data if available, otherwise fall back to count()
         if hasattr(obj, 'listings_asins'):
-            asin_count = obj.listings_asins.count()
+            # If prefetched, use len() to avoid query; otherwise use count()
+            if hasattr(obj, '_prefetched_objects_cache') and 'listings_asins' in obj._prefetched_objects_cache:
+                asin_count = len(obj.listings_asins.all())
+            else:
+                asin_count = obj.listings_asins.count()
             if asin_count == 0:
                 return "No connected ASINs found for this listing"
         

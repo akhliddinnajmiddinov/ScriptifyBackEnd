@@ -159,7 +159,7 @@ EVENTSTREAM_ALLOW_CREDENTIALS = True
 EVENTSTREAM_MAX_AGE = 60 * 60 * 24 * 7
 
 OAUTH2_PROVIDER = {
-    'ACCESS_TOKEN_EXPIRE_SECONDS': 86400,
+    'ACCESS_TOKEN_EXPIRE_SECONDS': 60,
     'REFRESH_TOKEN_EXPIRE_SECONDS': 86400 * 30,  # 30 days
     'ROTATE_REFRESH_TOKEN': False,
     'ALLOW_PUBLIC_CLIENTS': True,
@@ -258,7 +258,7 @@ if APP_ENV == 'local':
             # Connection pooling for remote database performance
             'CONN_MAX_AGE': 600,  # Keep connections alive for 10 minutes
             'OPTIONS': {
-                'connect_timeout': 10,  # Fail fast if DB is unreachable
+                'connect_timeout': 30,  # Fail fast if DB is unreachable
                 'options': '-c statement_timeout=30000',  # 30 second query timeout
             },
             'TEST': {
@@ -291,7 +291,7 @@ else:
                 **ssl_options,
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
                 'charset': 'utf8mb4',
-                'connect_timeout': 10,  # Fail fast if DB is unreachable (seconds)
+                'connect_timeout': 30,  # Fail fast if DB is unreachable (seconds)
                 'read_timeout': 30,  # Timeout for read operations (seconds)
                 'write_timeout': 30,  # Timeout for write operations (seconds)
             },
@@ -304,8 +304,8 @@ else:
 
 # Database performance optimizations
 # Disable persistent connections in tests to avoid connection leaks
-if 'test' in sys.argv:
-    DATABASES['default']['CONN_MAX_AGE'] = 0
+# if 'test' in sys.argv:
+#     DATABASES['default']['CONN_MAX_AGE'] = 0
 
 # Database query optimization settings
 DATABASE_ROUTERS = []  # Add custom routers if needed

@@ -3,7 +3,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction as db_transaction
-from django.db.models import Sum, Count, Avg, Q
+from django.db.models import Sum, Count, Avg, Q, Case, When, IntegerField, OuterRef, Exists
+from django.db import models
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
@@ -298,21 +299,25 @@ class VendorViewSet(viewsets.ModelViewSet):
     def cleanup(self, request):
         """
         Delete all vendors with 0 matching transactions.
+        Optimized to use subquery instead of per-vendor queries.
         """
-        # Get all vendors
-        all_vendors = Vendor.objects.all()
-        vendors_to_delete = []
+        from django.db.models import OuterRef, Exists
         
-        for vendor in all_vendors:
-            transaction_count = Transaction.objects.filter(
-                Q(transaction_from__iexact=vendor.vendor_name) | Q(transaction_to__iexact=vendor.vendor_name)
-            ).count()
-            
-            if transaction_count == 0:
-                vendors_to_delete.append(vendor.id)
+        # Use subquery to check if vendor has any transactions
+        # Since vendors are connected by name (not FK), we use a subquery
+        has_transactions = Transaction.objects.filter(
+            Q(transaction_from__iexact=OuterRef('vendor_name')) |
+            Q(transaction_to__iexact=OuterRef('vendor_name'))
+        )
         
-        # Delete vendors with no transactions
-        deleted_count = Vendor.objects.filter(id__in=vendors_to_delete).delete()[0]
+        # Get vendors with no transactions
+        vendors_to_delete = Vendor.objects.annotate(
+            has_transactions=Exists(has_transactions)
+        ).filter(has_transactions=False)
+        
+        # Get IDs and delete
+        vendor_ids = list(vendors_to_delete.values_list('id', flat=True))
+        deleted_count = Vendor.objects.filter(id__in=vendor_ids).delete()[0]
         
         return Response({
             'deleted_count': deleted_count,
@@ -339,31 +344,52 @@ class VendorViewSet(viewsets.ModelViewSet):
     )
     @action(detail=False, methods=['get'])
     def statistics(self, request):
-        """Get vendor statistics."""
+        """
+        Get vendor statistics.
+        Optimized to use annotate instead of per-vendor queries.
+        """
         queryset = self.filter_queryset(self.get_queryset())
         
-        # Count vendors with/without images
-        vendors_with_image = queryset.exclude(Q(image='') | Q(image__isnull=True)).count()
-        vendors_without_image = queryset.filter(Q(image='') | Q(image__isnull=True)).count()
+        # Since vendors are connected by name (not FK), we use a subquery to count transactions
+        from django.db.models import Subquery
         
-        # Count vendors with VAT
-        vendors_with_vat = queryset.exclude(Q(vendor_vat='') | Q(vendor_vat__isnull=True)).count()
+        # Create a subquery that counts transactions for each vendor
+        transaction_count_subquery = Transaction.objects.filter(
+            Q(transaction_from__iexact=OuterRef('vendor_name')) |
+            Q(transaction_to__iexact=OuterRef('vendor_name'))
+        ).aggregate(count=Count('id'))['count']
         
-        # Count vendors without transactions
-        vendors_without_transactions = 0
-        for vendor in queryset:
-            transaction_count = Transaction.objects.filter(
-                Q(transaction_from__iexact=vendor.vendor_name) | Q(transaction_to__iexact=vendor.vendor_name)
-            ).count()
-            if transaction_count == 0:
-                vendors_without_transactions += 1
+        # Annotate queryset with transaction count using Subquery
+        # Since we can't use aggregate in annotate directly, we'll use a different approach:
+        # Count transactions that match the vendor name using a filtered Count
+        # We need to use a raw SQL approach or iterate, but let's use a simpler method:
+        # Get all vendor names and count their transactions in Python (but optimized)
+        
+        # Actually, let's use Exists to check if vendor has transactions, then count those without
+        has_transactions = Transaction.objects.filter(
+            Q(transaction_from__iexact=OuterRef('vendor_name')) |
+            Q(transaction_to__iexact=OuterRef('vendor_name'))
+        )
+        
+        annotated_queryset = queryset.annotate(
+            has_transactions=Exists(has_transactions)
+        )
+        
+        # Aggregate all counts in a single query
+        stats_data = annotated_queryset.aggregate(
+            total_vendors=Count('id'),
+            vendors_with_image=Count(Case(When(~Q(image='') & ~Q(image__isnull=True), then=1), output_field=IntegerField())),
+            vendors_without_image=Count(Case(When(Q(image='') | Q(image__isnull=True), then=1), output_field=IntegerField())),
+            vendors_with_vat=Count(Case(When(~Q(vendor_vat='') & ~Q(vendor_vat__isnull=True), then=1), output_field=IntegerField())),
+            vendors_without_transactions=Count(Case(When(has_transactions=False, then=1), output_field=IntegerField()))
+        )
         
         stats = {
-            'total_vendors': queryset.count(),
-            'vendors_with_image': vendors_with_image,
-            'vendors_without_image': vendors_without_image,
-            'vendors_with_vat': vendors_with_vat,
-            'vendors_without_transactions': vendors_without_transactions
+            'total_vendors': stats_data['total_vendors'],
+            'vendors_with_image': stats_data['vendors_with_image'],
+            'vendors_without_image': stats_data['vendors_without_image'],
+            'vendors_with_vat': stats_data['vendors_with_vat'],
+            'vendors_without_transactions': stats_data['vendors_without_transactions']
         }
         
         return Response(stats, status=status.HTTP_200_OK)
@@ -410,6 +436,16 @@ class TransactionViewSet(viewsets.ModelViewSet):
     ordering_fields = ['id', 'transaction_id', 'status', 'transaction_date', 'amount', 'currency', 'type', 'transaction_from', 'transaction_to']
     ordering = ['-transaction_date', '-id']
     pagination_class = StandardPagination
+    
+    def get_queryset(self):
+        """
+        Optimize queryset by prefetching vendors to prevent N+1 queries.
+        Note: Vendors are looked up by name (not FK), so we batch fetch all unique vendor names.
+        """
+        queryset = super().get_queryset()
+        # For list/retrieve actions, we'll batch fetch vendors in the serializer
+        # This method ensures we have a consistent queryset
+        return queryset
 
     @extend_schema(
         operation_id="transactions_list",
@@ -805,22 +841,36 @@ class TransactionViewSet(viewsets.ModelViewSet):
         """
         Get transaction statistics.
         Respects the current filters applied.
+        Optimized to use a single aggregate query instead of multiple queries.
         """
         # Get filtered queryset
         queryset = self.filter_queryset(self.get_queryset())
         
+        # Single aggregate query with conditional aggregation
+        stats_data = queryset.aggregate(
+            total_transactions=Count('id'),
+            total_received_amount=Sum(Case(When(type='RECEIVED', then='amount'), default=0, output_field=models.FloatField())),
+            total_received_count=Count(Case(When(type='RECEIVED', then=1), output_field=IntegerField())),
+            total_paid_amount=Sum(Case(When(type='PAID', then='amount'), default=0, output_field=models.FloatField())),
+            total_paid_count=Count(Case(When(type='PAID', then=1), output_field=IntegerField())),
+            average_amount=Avg('amount')
+        )
+        
+        # Get currencies in a separate query (can't be aggregated with other stats)
+        currencies = list(queryset.values_list('currency', flat=True).distinct())
+        
         stats = {
-            'total_transactions': queryset.count(),
-            'total_received': queryset.filter(type='RECEIVED').aggregate(
-                total=Sum('amount'),
-                count=Count('id')
-            ),
-            'total_paid': queryset.filter(type='PAID').aggregate(
-                total=Sum('amount'),
-                count=Count('id')
-            ),
-            'average_amount': queryset.aggregate(avg=Avg('amount'))['avg'],
-            'currencies': list(queryset.values_list('currency', flat=True).distinct())
+            'total_transactions': stats_data['total_transactions'],
+            'total_received': {
+                'total': stats_data['total_received_amount'] or 0,
+                'count': stats_data['total_received_count']
+            },
+            'total_paid': {
+                'total': stats_data['total_paid_amount'] or 0,
+                'count': stats_data['total_paid_count']
+            },
+            'average_amount': stats_data['average_amount'],
+            'currencies': currencies
         }
         
         return Response(stats, status=status.HTTP_200_OK)

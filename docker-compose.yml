@@ -21,8 +21,12 @@ services:
         python manage.py check
         gunicorn scriptify_backend.wsgi:application \
         --bind 0.0.0.0:8000 \
-        --workers 3 \
-        --timeout 60
+        --workers 2 \
+        --threads 2 \
+        --worker-class gthread \
+        --timeout 60 \
+        --max-requests 1000 \
+        --max-requests-jitter 50
 
     restart: always
     volumes:
@@ -46,8 +50,9 @@ services:
       - scriptify_backend_network
     ports:
       - "8000:8000"
-    mem_limit: 768M
-    mem_reservation: 512M
+    mem_limit: 512M
+    mem_reservation: 384M
+    cpus: '0.5'
 
   redis:
     image: redis:7.2-alpine
@@ -55,11 +60,13 @@ services:
     restart: unless-stopped
     command:
       - redis-server
-      - --save 60 1
+      - --save 300 10
       - --loglevel warning
       - --requirepass ${REDIS_PASSWORD}
-      - --maxmemory 256mb
+      - --maxmemory 192mb
       - --maxmemory-policy allkeys-lru
+      - --maxclients 100
+      - --tcp-backlog 128
     volumes:
       - redis_data:/data
     healthcheck:
@@ -67,8 +74,9 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
-    mem_limit: 640M          # ← container limit (higher than maxmemory = safe)
-    mem_reservation: 512M
+    mem_limit: 256M
+    mem_reservation: 192M
+    cpus: '0.2'
     networks:
       - scriptify_backend_network
 
@@ -82,7 +90,8 @@ services:
       - scriptify_backend
       - worker
       - --loglevel=info
-      - --concurrency=8
+      - --concurrency=2
+      - --max-tasks-per-child=50
     volumes:
       - media_data:/app/media
     environment:
@@ -102,9 +111,9 @@ services:
       #   condition: service_healthy
     networks:
       - scriptify_backend_network
-    mem_limit: 1400M          # was 512M/1024M before → now safe forever
-    mem_reservation: 768M     # optional but recommended
-    cpus: "0.8"               # leaves 0.2 for system + other containers
+    mem_limit: 768M
+    mem_reservation: 512M
+    cpus: '0.3'
 
 networks:
   scriptify_backend_network:

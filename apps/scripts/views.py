@@ -259,6 +259,9 @@ class RunViewSet(viewsets.ModelViewSet):
             run.celery_task_id = task.id
             run.save()
 
+            # Refresh run with select_related to avoid N+1 queries when serializing
+            run = Run.objects.select_related('script', 'started_by').get(id=run.id)
+            
             return Response(RunSerializer(run).data, status=status.HTTP_201_CREATED)
 
         except Exception as e:

@@ -60,7 +60,31 @@ class ScriptViewSet(viewsets.ReadOnlyModelViewSet):
     )
     @action(detail=False, methods=['get'], url_path='stats')
     def stats_list(self, request):
+        """
+        Get statistics for all scripts.
+        Optimized to use annotate instead of multiple count queries per script.
+        """
+        from django.db.models import Count, Case, When, IntegerField, Avg, F, ExpressionWrapper, DurationField, Q
+        
         scripts = self.get_queryset()
+        
+        # Annotate all counts and average time in a single query per script
+        scripts = scripts.annotate(
+            total_runs_annotated=Count('runs'),
+            success_count_annotated=Count(Case(When(runs__status='SUCCESS', then=1), output_field=IntegerField())),
+            failed_count_annotated=Count(Case(When(runs__status='FAILURE', then=1), output_field=IntegerField())),
+            aborted_count_annotated=Count(Case(When(runs__status='REVOKED', then=1), output_field=IntegerField())),
+            running_count_annotated=Count(Case(When(runs__status='STARTED', then=1), output_field=IntegerField())),
+            pending_count_annotated=Count(Case(When(runs__status='PENDING', then=1), output_field=IntegerField())),
+            average_time_annotated=Avg(
+                ExpressionWrapper(
+                    F('runs__finished_at') - F('runs__started_at'),
+                    output_field=DurationField()
+                ),
+                filter=Q(runs__status__in=['SUCCESS', 'FAILURE']) & Q(runs__finished_at__isnull=False)
+            )
+        ).distinct()
+        
         serializer = ScriptStatsSerializer(scripts, many=True)
         return Response(serializer.data)
 
@@ -72,7 +96,31 @@ class ScriptViewSet(viewsets.ReadOnlyModelViewSet):
     )
     @action(detail=True, methods=['get'], url_path='stats')
     def stats_detail(self, request, pk=None):
+        """
+        Get statistics for a specific script.
+        Optimized to use annotate instead of multiple count queries.
+        """
+        from django.db.models import Count, Case, When, IntegerField, Avg, F, ExpressionWrapper, DurationField, Q
+        
         script = self.get_object()
+        
+        # Annotate all counts and average time in a single query
+        script = Script.objects.filter(id=script.id).annotate(
+            total_runs_annotated=Count('runs'),
+            success_count_annotated=Count(Case(When(runs__status='SUCCESS', then=1), output_field=IntegerField())),
+            failed_count_annotated=Count(Case(When(runs__status='FAILURE', then=1), output_field=IntegerField())),
+            aborted_count_annotated=Count(Case(When(runs__status='REVOKED', then=1), output_field=IntegerField())),
+            running_count_annotated=Count(Case(When(runs__status='STARTED', then=1), output_field=IntegerField())),
+            pending_count_annotated=Count(Case(When(runs__status='PENDING', then=1), output_field=IntegerField())),
+            average_time_annotated=Avg(
+                ExpressionWrapper(
+                    F('runs__finished_at') - F('runs__started_at'),
+                    output_field=DurationField()
+                ),
+                filter=Q(runs__status__in=['SUCCESS', 'FAILURE']) & Q(runs__finished_at__isnull=False)
+            )
+        ).first()
+        
         serializer = ScriptStatsSerializer(script)
         return Response(serializer.data)
 
@@ -84,6 +132,15 @@ class RunViewSet(viewsets.ModelViewSet):
     pagination_class = StandardPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = RunFilter
+    
+    def get_queryset(self):
+        """
+        Optimize queryset by using select_related to prevent N+1 queries.
+        """
+        queryset = super().get_queryset()
+        # Use select_related for ForeignKey relationships
+        queryset = queryset.select_related('script', 'started_by')
+        return queryset
 
 
     def get_serializer_class(self):

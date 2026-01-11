@@ -3,7 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction as db_transaction
-from django.db.models import Sum, Count, Avg, Q
+from django.db.models import Sum, Count, Avg, Q, Prefetch
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
@@ -26,6 +26,18 @@ class ListingViewSet(viewsets.ModelViewSet):
     ordering_fields = ['id', 'listing_url', 'price', 'timestamp', 'tracking_number']
     ordering = ['-timestamp', '-id']
     pagination_class = StandardPagination
+    
+    def get_queryset(self):
+        """
+        Optimize queryset by prefetching listings_asins to prevent N+1 queries.
+        """
+        queryset = super().get_queryset()
+        # Prefetch listings_asins to avoid N+1 queries when counting ASINs
+        from .models import ListingAsin
+        queryset = queryset.prefetch_related(
+            Prefetch('listings_asins', queryset=ListingAsin.objects.select_related('asin'))
+        )
+        return queryset
     
     @extend_schema(
         operation_id="listings_list",
@@ -293,17 +305,26 @@ class ListingViewSet(viewsets.ModelViewSet):
         """
         Get listing statistics.
         Respects the current filters applied.
+        Optimized to combine all aggregates into a single query.
         """
         from django.db.models import Min, Max
         
         # Get filtered queryset
         queryset = self.filter_queryset(self.get_queryset())
         
+        # Combine all aggregates into a single query
+        stats_data = queryset.aggregate(
+            total_listings=Count('id'),
+            average_price=Avg('price'),
+            min_price=Min('price'),
+            max_price=Max('price')
+        )
+        
         stats = {
-            'total_listings': queryset.count(),
-            'average_price': queryset.aggregate(avg=Avg('price'))['avg'],
-            'min_price': queryset.aggregate(min=Min('price'))['min'],
-            'max_price': queryset.aggregate(max=Max('price'))['max']
+            'total_listings': stats_data['total_listings'],
+            'average_price': stats_data['average_price'],
+            'min_price': stats_data['min_price'],
+            'max_price': stats_data['max_price']
         }
         
         return Response(stats, status=status.HTTP_200_OK)

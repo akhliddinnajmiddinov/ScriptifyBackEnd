@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import Script, Run
 from django.conf import settings
+from django.db.models import Count, Case, When, IntegerField, Avg, F, ExpressionWrapper, DurationField, Q
 import uuid
 import json
 import os
@@ -236,39 +237,53 @@ class ScriptStatsSerializer(serializers.ModelSerializer):
     
     @extend_schema_field(OpenApiTypes.INT)
     def get_total_runs(self, obj):
+        # Use annotated value if available, otherwise fall back to count
+        if hasattr(obj, 'total_runs_annotated'):
+            return obj.total_runs_annotated
         return obj.runs.count()
     
     @extend_schema_field(OpenApiTypes.INT)
     def get_success_count(self, obj):
+        if hasattr(obj, 'success_count_annotated'):
+            return obj.success_count_annotated
         return obj.runs.filter(status='SUCCESS').count()
     
     @extend_schema_field(OpenApiTypes.INT)
     def get_failed_count(self, obj):
+        if hasattr(obj, 'failed_count_annotated'):
+            return obj.failed_count_annotated
         return obj.runs.filter(status='FAILURE').count()
     
     @extend_schema_field(OpenApiTypes.INT)
     def get_aborted_count(self, obj):
+        if hasattr(obj, 'aborted_count_annotated'):
+            return obj.aborted_count_annotated
         return obj.runs.filter(status='REVOKED').count()
     
     @extend_schema_field(OpenApiTypes.INT)
     def get_running_count(self, obj):
+        if hasattr(obj, 'running_count_annotated'):
+            return obj.running_count_annotated
         return obj.runs.filter(status='STARTED').count()
     
     @extend_schema_field(OpenApiTypes.INT)
     def get_pending_count(self, obj):
+        if hasattr(obj, 'pending_count_annotated'):
+            return obj.pending_count_annotated
         return obj.runs.filter(status='PENDING').count()
 
     @extend_schema_field(OpenApiTypes.FLOAT)
     def get_success_rate(self, obj):
-        total = obj.runs.count()
+        total = self.get_total_runs(obj)
         if total == 0:
             return 0
-        success = obj.runs.filter(status='SUCCESS').count()
+        success = self.get_success_count(obj)
         return round((success / total) * 100, 2)
     
     @extend_schema_field(OpenApiTypes.FLOAT)
     def get_average_time(self, obj):
-        from django.db.models import Avg, F, ExpressionWrapper, DurationField
+        if hasattr(obj, 'average_time_annotated'):
+            return obj.average_time_annotated
         
         completed_runs = obj.runs.filter(status__in=['SUCCESS', 'FAILURE'], finished_at__isnull=False)
         if not completed_runs.exists():

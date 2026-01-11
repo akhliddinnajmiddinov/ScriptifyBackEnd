@@ -135,8 +135,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             timestamp__lte=transaction_date + time_range,
             price__gte=obj.amount - amount_threshold,
             price__lte=obj.amount + amount_threshold
-        )
-        
+        ).order_by('timestamp')
         if not potential_listings.exists():
             setattr(self, cache_key, None)
             return None
@@ -152,8 +151,8 @@ class TransactionSerializer(serializers.ModelSerializer):
             # Calculate amount difference
             amount_diff = abs(listing.price - obj.amount)
             
-            # Calculate distance: sqrt((time_diff)^2 + (amount_diff)^2)
-            time_weight = 0.1  # Weight for time difference
+            # Calculate distance: sqrt((time_weight * time_diff)^2 + (amount_weight * amount_diff)^2)
+            time_weight = 0.8  # Weight for time difference
             amount_weight = 1.0  # Weight for amount difference
             
             distance = math.sqrt(
@@ -213,8 +212,12 @@ class TransactionSerializer(serializers.ModelSerializer):
             return "No matching listing found for this transaction"
         
         # Check if the found listing has connected ASINs
+        # Use prefetched data if available to avoid additional query
         if hasattr(closest_listing, 'listings_asins'):
-            asin_count = closest_listing.listings_asins.count()
+            if hasattr(closest_listing, '_prefetched_objects_cache') and 'listings_asins' in closest_listing._prefetched_objects_cache:
+                asin_count = len(closest_listing.listings_asins.all())
+            else:
+                asin_count = closest_listing.listings_asins.count()
             if asin_count == 0:
                 return "Matching listing found but has no connected ASINs"
         

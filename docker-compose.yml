@@ -24,7 +24,8 @@ services:
         --workers 2 \
         --threads 2 \
         --worker-class gthread \
-        --timeout 60 \
+        --timeout 120 \
+        --keep-alive 5 \
         --max-requests 1000 \
         --max-requests-jitter 50
 
@@ -50,9 +51,9 @@ services:
       - scriptify_backend_network
     ports:
       - "8000:8000"
-    mem_limit: 512M
-    mem_reservation: 384M
-    cpus: '0.5'
+    mem_limit: 600M
+    mem_reservation: 400M
+    cpus: '0.3'
 
   redis:
     image: redis:7.2-alpine
@@ -63,10 +64,11 @@ services:
       - --save 300 10
       - --loglevel warning
       - --requirepass ${REDIS_PASSWORD}
-      - --maxmemory 192mb
+      - --maxmemory 240mb
       - --maxmemory-policy allkeys-lru
-      - --maxclients 100
-      - --tcp-backlog 128
+      - --maxclients 200
+      - --tcp-backlog 256
+      - --tcp-keepalive 300
     volumes:
       - redis_data:/data
     healthcheck:
@@ -74,9 +76,9 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
-    mem_limit: 256M
-    mem_reservation: 192M
-    cpus: '0.2'
+    mem_limit: 300M
+    mem_reservation: 200M
+    cpus: '0.1'
     networks:
       - scriptify_backend_network
 
@@ -90,8 +92,11 @@ services:
       - scriptify_backend
       - worker
       - --loglevel=info
-      - --concurrency=2
-      - --max-tasks-per-child=50
+      - --concurrency=6
+      - --max-tasks-per-child=200
+      - --prefetch-multiplier=4
+      - --pool=prefork
+      - --optimization=fair
     volumes:
       - media_data:/app/media
     environment:
@@ -111,9 +116,9 @@ services:
       #   condition: service_healthy
     networks:
       - scriptify_backend_network
-    mem_limit: 768M
-    mem_reservation: 512M
-    cpus: '0.3'
+    mem_limit: 1100M
+    mem_reservation: 900M
+    cpus: '0.6'
 
 networks:
   scriptify_backend_network:

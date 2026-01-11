@@ -45,6 +45,10 @@ class Script(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['is_active'], name='script_is_active_idx'),
+            models.Index(fields=['created_at'], name='script_created_at_idx'),
+        ]
     
     def __str__(self):
         return self.name
@@ -82,6 +86,14 @@ class Run(models.Model):
     
     class Meta:
         ordering = ['-id']
+        indexes = [
+            models.Index(fields=['status'], name='run_status_idx'),
+            models.Index(fields=['started_at'], name='run_started_at_idx'),
+            models.Index(fields=['finished_at'], name='run_finished_at_idx'),
+            models.Index(fields=['script', 'status'], name='run_script_status_idx'),
+            models.Index(fields=['script', 'started_at'], name='run_script_started_at_idx'),
+            models.Index(fields=['started_by', 'started_at'], name='run_started_by_started_at_idx'),
+        ]
     
     def __str__(self):
         return f"{self.script.name} - {self.id} ({self.status})"

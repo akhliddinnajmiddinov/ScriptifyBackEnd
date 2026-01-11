@@ -48,6 +48,13 @@ class MyUser(AbstractUser):
     def __str__(self):
         return self.email
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['email'], name='user_email_idx'),
+            models.Index(fields=['first_name'], name='user_first_name_idx'),
+            models.Index(fields=['last_name'], name='user_last_name_idx'),
+        ]
+    
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()

@@ -27,6 +27,10 @@ class Vendor(models.Model):
     
     class Meta:
         ordering = ['vendor_name', '-id']
+        indexes = [
+            models.Index(fields=['vendor_name'], name='vendor_name_idx'),
+            models.Index(fields=['vendor_vat'], name='vendor_vat_idx'),
+        ]
 
 class Transaction(models.Model):
     """
@@ -63,3 +67,15 @@ class Transaction(models.Model):
 
     class Meta:
         ordering = ['-transaction_date', '-id']
+        indexes = [
+            models.Index(fields=['transaction_id'], name='transaction_id_idx'),
+            models.Index(fields=['transaction_date'], name='transaction_date_idx'),
+            models.Index(fields=['transaction_from'], name='transaction_from_idx'),
+            models.Index(fields=['transaction_to'], name='transaction_to_idx'),
+            models.Index(fields=['type'], name='transaction_type_idx'),
+            models.Index(fields=['status'], name='transaction_status_idx'),
+            models.Index(fields=['amount'], name='transaction_amount_idx'),
+            models.Index(fields=['currency'], name='transaction_currency_idx'),
+            models.Index(fields=['transaction_date', 'type'], name='transaction_date_type_idx'),
+            models.Index(fields=['transaction_from', 'transaction_to'], name='transaction_from_to_idx'),
+        ]

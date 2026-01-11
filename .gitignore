@@ -2,6 +2,8 @@
 venv
 apps/user/migrations
 apps/scripts/migrations
+apps/listings/migrations
+apps/transactions/migrations
 **/__pycache__/
 __pycache__/
 *.py[cod]

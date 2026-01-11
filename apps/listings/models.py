@@ -25,6 +25,13 @@ class Listing(models.Model):
         ordering = ['-timestamp', '-id']
         managed = False
         db_table = 'listing'
+        indexes = [
+            models.Index(fields=['listing_url'], name='listing_url_idx'),
+            models.Index(fields=['timestamp'], name='listing_timestamp_idx'),
+            models.Index(fields=['price'], name='listing_price_idx'),
+            models.Index(fields=['tracking_number'], name='listing_tracking_number_idx'),
+            models.Index(fields=['timestamp', 'price'], name='listing_timestamp_price_idx'),
+        ]
 
 
 class Asin(models.Model):
@@ -41,6 +48,9 @@ class Asin(models.Model):
         ordering = ['-id']
         managed = False
         db_table = 'asin'
+        indexes = [
+            models.Index(fields=['value'], name='asin_value_idx'),
+        ]
 
 class ListingAsin(models.Model):
     """
@@ -57,3 +67,8 @@ class ListingAsin(models.Model):
         ordering = ['-id']
         managed = False
         db_table = 'listing_asin'
+        indexes = [
+            models.Index(fields=['listing', 'asin'], name='listing_asin_composite_idx'),
+            models.Index(fields=['listing'], name='listing_asin_listing_idx'),
+            models.Index(fields=['asin'], name='listing_asin_asin_idx'),
+        ]

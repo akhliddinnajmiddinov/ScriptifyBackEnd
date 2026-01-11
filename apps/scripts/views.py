@@ -120,6 +120,34 @@ class RunViewSet(viewsets.ModelViewSet):
         return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
+        operation_id="run_update",
+        description="Update the run",
+        tags=["Runs"],
+        responses=RunSerializer,
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @extend_schema(
+        operation_id="run_patch_update",
+        description="Partial update the run",
+        tags=["Runs"],
+        responses=RunSerializer,
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
+    @extend_schema(
+        operation_id="destroy_run",
+        description="Delete the run",
+        tags=["Runs"],
+        responses=RunSerializer,
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
+
+    @extend_schema(
         operation_id="runs_create",
         description="Create and immediately queue a new run for a script. Input data is validated against the script's input_schema.",
         tags=["Runs"],
@@ -330,6 +358,12 @@ class RunViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+    @extend_schema(
+        operation_id="download_file",
+        description="Download the file.",
+        tags=["Runs"],
+        responses={200: OpenApiTypes.OBJECT},
+    )
     @action(detail=True, methods=['get'], url_path='download/(?P<field_name>[^/.]+)')
     def download_file(self, request, pk=None, field_name=None):
         run = self.get_object()

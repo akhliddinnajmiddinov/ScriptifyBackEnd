@@ -8,17 +8,31 @@ services:
         python manage.py makemigrations
         python manage.py makemigrations user
         python manage.py makemigrations scripts
+        python manage.py makemigrations listings
+        python manage.py makemigrations transactions
         echo "Running database migrations..."
         python manage.py migrate --noinput --verbosity=2
 
         python manage.py migrate user
         python manage.py migrate scripts
+        python manage.py migrate listings
+        python manage.py migrate transactions
         echo "Checking for any issues..."
         python manage.py check
-        python manage.py runserver 0.0.0.0:8000
+        gunicorn scriptify_backend.wsgi:application \
+        --bind 0.0.0.0:8000 \
+        --workers 3 \
+        --timeout 60
+
     restart: always
     volumes:
       - media_data:/app/media
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/healthy/"]
       interval: 30s
@@ -26,37 +40,15 @@ services:
       retries: 3
       start_period: 60s
     depends_on:
-      db:
-        condition: service_healthy
       redis:
         condition: service_healthy
     networks:
       - scriptify_backend_network
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     mem_limit: 768M
     mem_reservation: 512M
 
-  db:
-    image: postgres:14
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${DB_USER}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - scriptify_backend_data:/var/lib/postgresql/data
-    restart: always
-    mem_limit: 640M      # ↑ this is the critical one on low-RAM boxes
-    mem_reservation: 384M
-    cpus: '0.6'
-    networks:
-      - scriptify_backend_network
-  
   redis:
     image: redis:7.2-alpine
     container_name: scriptify_redis
@@ -101,12 +93,10 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-      - DB_HOST=db
-      - DB_PORT=5432
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
     depends_on:
       redis:
-        condition: service_healthy
-      db:
         condition: service_healthy
       # backend:
       #   condition: service_healthy
@@ -121,6 +111,5 @@ networks:
     driver: bridge
 
 volumes:
-  scriptify_backend_data:
   redis_data:
   media_data:

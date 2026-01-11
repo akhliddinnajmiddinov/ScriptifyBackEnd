@@ -255,6 +255,12 @@ if APP_ENV == 'local':
             'PASSWORD': DB_PASS,
             'HOST': DB_HOST,
             'PORT': DB_PORT,
+            # Connection pooling for remote database performance
+            'CONN_MAX_AGE': 600,  # Keep connections alive for 10 minutes
+            'OPTIONS': {
+                'connect_timeout': 10,  # Fail fast if DB is unreachable
+                'options': '-c statement_timeout=30000',  # 30 second query timeout
+            },
             'TEST': {
                 'NAME': f'{DB_NAME}_test',  # This creates a dedicated test database
             },
@@ -279,10 +285,15 @@ else:
             'PASSWORD': DB_PASS,
             'HOST': DB_HOST,
             'PORT': DB_PORT,
+            # Connection pooling for remote database performance
+            'CONN_MAX_AGE': 600,  # Keep connections alive for 10 minutes (reduces connection overhead)
             'OPTIONS': {
                 **ssl_options,
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
                 'charset': 'utf8mb4',
+                'connect_timeout': 10,  # Fail fast if DB is unreachable (seconds)
+                'read_timeout': 30,  # Timeout for read operations (seconds)
+                'write_timeout': 30,  # Timeout for write operations (seconds)
             },
             'TEST': {
                 'NAME': f'{DB_NAME}_test',  # This creates a dedicated test database
@@ -290,6 +301,18 @@ else:
         },
     }
 
+
+# Database performance optimizations
+# Disable persistent connections in tests to avoid connection leaks
+if 'test' in sys.argv:
+    DATABASES['default']['CONN_MAX_AGE'] = 0
+
+# Database query optimization settings
+DATABASE_ROUTERS = []  # Add custom routers if needed
+
+# Optimize database queries
+# This helps reduce the number of queries by keeping connections alive
+# CONN_MAX_AGE is set per database above (600 seconds = 10 minutes)
 
 AUTH_USER_MODEL = 'user.MyUser'
 
@@ -342,3 +365,21 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Logging configuration for database query monitoring
+# Enable this to identify slow queries (uncomment to enable)
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django.db.backends': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG' if DEBUG else 'INFO',
+#         },
+#     },
+# }

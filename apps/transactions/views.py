@@ -535,9 +535,48 @@ class TransactionViewSet(viewsets.ModelViewSet):
         tags=["Transactions"],
         responses={204: None},
     )
+    @extend_schema(
+        operation_id="transactions_destroy",
+        description="Delete a transaction. Automatically deletes vendors that have zero transactions "
+                    "after this transaction is removed (checks both transaction_from and transaction_to).",
+        tags=["Transactions"],
+        responses={204: OpenApiResponse(description='Transaction deleted successfully')},
+    )
     def destroy(self, request, *args, **kwargs):
-        """Delete a single transaction."""
-        return super().destroy(request, *args, **kwargs)
+        """
+        Delete a transaction and clean up vendors that have zero transactions.
+        Similar logic to transaction update - checks both transaction_from and transaction_to.
+        """
+        instance = self.get_object()
+        
+        # Store vendor names before deletion
+        transaction_from = instance.transaction_from
+        transaction_to = instance.transaction_to
+        
+        # Delete the transaction
+        self.perform_destroy(instance)
+        
+        # Check and delete vendors if they have no transactions
+        vendors_to_check = set()
+        
+        if transaction_from:
+            vendors_to_check.add(transaction_from)
+        
+        if transaction_to:
+            vendors_to_check.add(transaction_to)
+        
+        for vendor_name in vendors_to_check:
+            if vendor_name:
+                # Count transactions with this vendor name in either transaction_from or transaction_to
+                transaction_count = Transaction.objects.filter(
+                    Q(transaction_from__iexact=vendor_name) | Q(transaction_to__iexact=vendor_name)
+                ).count()
+                
+                # Delete vendor if no transactions reference it
+                if transaction_count == 0:
+                    Vendor.objects.filter(vendor_name__iexact=vendor_name).delete()
+        
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
     @extend_schema(
         operation_id="transactions_preview",

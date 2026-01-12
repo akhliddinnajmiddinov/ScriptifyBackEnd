@@ -160,6 +160,15 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/scriptify_backend:${{ github.sha }}
           no-cache: true  # Disable cache to ensure latest code
 
+      - name: Clean up existing docker-compose.yml on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            rm -f /home/scriptify_backend/docker-compose.yml || true
+
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@master
         with:

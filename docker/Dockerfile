@@ -34,5 +34,5 @@ RUN apt-get remove -y gcc && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-EXPOSE 8000
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "scriptify_backend.wsgi:application"]
+EXPOSE 8080
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "scriptify_backend.wsgi:application"]

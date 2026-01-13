@@ -156,12 +156,14 @@ CORS_ALLOWED_ORIGINS = [
     "https://104.248.33.182",
     "http://104.248.33.182:80",
     "https://104.248.33.182:443",
+    "http://104.248.33.182:8000",  # External nginx port
+    "https://104.248.33.182:8000",  # External nginx port (if using HTTPS)
     "http://104.248.33.182:3000",
     "https://104.248.33.182:3000",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://localhost:8080",
-    "http://127.0.0.1:8080",
+    "http://localhost:8000",  # For local development with nginx
+    "http://127.0.0.1:8000",  # For local development with nginx
 ]
 
 # Add FRONTEND_URL from environment if it exists
@@ -215,11 +217,18 @@ OAUTH2_PROVIDER = {
 }
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://142.93.106.180:8080",
+    "http://104.248.33.182:8000",  # External nginx port
+    "https://104.248.33.182:8000",  # External nginx port (if using HTTPS)
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    os.getenv("FRONTEND_URL", "").strip("/"),
+    "http://localhost:8000",  # For local development with nginx
+    "http://127.0.0.1:8000",  # For local development with nginx
 ]
+
+# Add FRONTEND_URL from environment if it exists
+frontend_url_csrf = os.getenv("FRONTEND_URL", "").strip("/")
+if frontend_url_csrf:
+    CSRF_TRUSTED_ORIGINS.append(frontend_url_csrf)
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Scriptify API",

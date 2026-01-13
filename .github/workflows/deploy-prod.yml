@@ -188,6 +188,8 @@ jobs:
           script: |
             cd /home/deployuser/scriptify_backend || { echo "Directory /home/deployuser/scriptify_backend not found"; exit 1; }
             
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
             export DB_NAME=${{ secrets.DB_NAME }}
             export DB_USER=${{ secrets.DB_USER }}
             export DB_PASSWORD=${{ secrets.DB_PASSWORD }}

@@ -40,7 +40,26 @@ SECRET_KEY = os.getenv("SECRET_KEY", "")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS: List of allowed host/domain names
+# Can be set via environment variable (comma-separated) or defaults to server IP and localhost
+ALLOWED_HOSTS_ENV = os.getenv("ALLOWED_HOSTS", "")
+if ALLOWED_HOSTS_ENV:
+    ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_ENV.split(",") if host.strip()]
+else:
+    # Default allowed hosts: server IP and localhost for development
+    ALLOWED_HOSTS = [
+        "104.248.33.182",
+        "localhost",
+        "127.0.0.1",
+    ]
+    # Add BACKEND_URL if it exists
+    backend_url = os.getenv("BACKEND_URL", "").strip("/")
+    if backend_url:
+        # Extract hostname from URL (remove protocol and path)
+        from urllib.parse import urlparse
+        parsed = urlparse(backend_url)
+        if parsed.hostname:
+            ALLOWED_HOSTS.append(parsed.hostname)
 
 # Application definition
 
@@ -132,14 +151,25 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_SOFT_TIME_LIMIT = 60 * 300 # 300 minutes
 CELERY_TASK_TIME_LIMIT = 60 * 325  # 325 minutes
 
-# CORS_ALLOWED_ORIGINS = [
-#     "http://142.93.106.180:3000",
-#     "http://localhost:3000",
-#     "http://127.0.0.1:3000",
-#     os.getenv("FRONTEND_URL", "").strip("/"),
-# ]
+CORS_ALLOWED_ORIGINS = [
+    "http://104.248.33.182",
+    "https://104.248.33.182",
+    "http://104.248.33.182:80",
+    "https://104.248.33.182:443",
+    "http://104.248.33.182:3000",
+    "https://104.248.33.182:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+]
 
-CORS_ALLOW_ALL_ORIGINS = True
+# Add FRONTEND_URL from environment if it exists
+frontend_url = os.getenv("FRONTEND_URL", "").strip("/")
+if frontend_url:
+    CORS_ALLOWED_ORIGINS.append(frontend_url)
+
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 APPEND_SLASH=False

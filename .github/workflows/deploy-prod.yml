@@ -160,6 +160,25 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/scriptify_backend:${{ github.sha }}
           no-cache: true  # Disable cache to ensure latest code
 
+      # Trivy - Filesystem scan
+      - name: Run Trivy vulnerability scanner in fs mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+        continue-on-error: true
+
+      # Upload security results to GitHub
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-fs-results.sarif'
+        continue-on-error: true
+
       - name: SSH into production server and deploy
         uses: appleboy/ssh-action@master
         with:

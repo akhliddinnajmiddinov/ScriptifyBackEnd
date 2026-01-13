@@ -38,7 +38,7 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY", "")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True if os.getenv("APP_ENV", "local") == "local" else False
 
 # ALLOWED_HOSTS: List of allowed host/domain names
 # Can be set via environment variable (comma-separated) or defaults to server IP and localhost

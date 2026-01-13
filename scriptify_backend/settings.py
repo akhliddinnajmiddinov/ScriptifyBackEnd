@@ -162,8 +162,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://104.248.33.182:3000",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://localhost:8000",  # For local development with nginx
-    "http://127.0.0.1:8000",  # For local development with nginx
+    "http://localhost:8080",  # For local development with nginx
+    "http://127.0.0.1:8080",  # For local development with nginx
 ]
 
 # Add FRONTEND_URL from environment if it exists
@@ -221,8 +221,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://104.248.33.182:8000",  # External nginx port (if using HTTPS)
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://localhost:8000",  # For local development with nginx
-    "http://127.0.0.1:8000",  # For local development with nginx
+    "http://localhost:8080",  # For local development with nginx
+    "http://127.0.0.1:8080",  # For local development with nginx
 ]
 
 # Add FRONTEND_URL from environment if it exists

@@ -8,14 +8,9 @@ from django.conf import settings
 
 
 class VendorSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
-
     class Meta:
         model = Vendor
         fields = ['id', 'vendor_name', 'image', 'vendor_vat']
-
-    def get_image(self, obj):
-        return obj.image.url if obj.image else None
 
 class TransactionSerializer(serializers.ModelSerializer):
     listing_data = serializers.SerializerMethodField()

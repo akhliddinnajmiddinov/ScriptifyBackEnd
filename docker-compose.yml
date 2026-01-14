@@ -5,15 +5,15 @@ services:
       - /bin/bash
       - -c
       - |
-        # python manage.py makemigrations
-        # python manage.py makemigrations user
+        python manage.py makemigrations
+        python manage.py makemigrations user
         # python manage.py makemigrations scripts
         # python manage.py makemigrations listings
         # python manage.py makemigrations transactions
         # echo "Running database migrations..."
-        # python manage.py migrate --noinput --verbosity=2
+        python manage.py migrate --noinput --verbosity=2
 
-        # python manage.py migrate user
+        python manage.py migrate user
         # python manage.py migrate scripts
         # python manage.py migrate listings
         # python manage.py migrate transactions

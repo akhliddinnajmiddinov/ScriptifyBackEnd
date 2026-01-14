@@ -5,6 +5,7 @@ from apps.listings.models import Listing
 from apps.listings.serializers import ListingSerializer
 from django.utils import timezone
 from django.conf import settings
+from datetime import datetime
 
 
 class VendorSerializer(serializers.ModelSerializer):
@@ -119,11 +120,16 @@ class TransactionSerializer(serializers.ModelSerializer):
         # Thresholds
         amount_threshold = 10  # Price difference threshold
         time_threshold_seconds = 10  # Time difference threshold in seconds
-        
-        if not (obj.amount and isinstance(obj.amount, (int, float)) and obj.transaction_date):
+        try:
+            amount = float(obj.amount)
+        except:
             setattr(self, cache_key, None)
             return None
-        
+
+        if not isinstance(obj.transaction_date, datetime):
+            print("MANANA", amount, obj.transaction_date)
+            setattr(self, cache_key, None)
+            return None
         transaction_date = obj.transaction_date
         if timezone.is_naive(transaction_date):
             transaction_date = timezone.make_aware(transaction_date)
@@ -133,8 +139,8 @@ class TransactionSerializer(serializers.ModelSerializer):
         potential_listings = Listing.objects.filter(
             timestamp__gte=transaction_date - time_range,
             timestamp__lte=transaction_date + time_range,
-            price__gte=obj.amount - amount_threshold,
-            price__lte=obj.amount + amount_threshold
+            price__gte=amount - amount_threshold,
+            price__lte=amount + amount_threshold
         ).order_by('timestamp')
         if not potential_listings.exists():
             setattr(self, cache_key, None)
@@ -149,7 +155,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             time_diff = abs((listing.timestamp - transaction_date).total_seconds())
             
             # Calculate amount difference
-            amount_diff = abs(listing.price - obj.amount)
+            amount_diff = abs(listing.price - amount)
             
             # Calculate distance: sqrt((time_weight * time_diff)^2 + (amount_weight * amount_diff)^2)
             time_weight = 0.8  # Weight for time difference

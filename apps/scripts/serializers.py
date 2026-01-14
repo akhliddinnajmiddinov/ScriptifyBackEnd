@@ -17,11 +17,16 @@ User = get_user_model()
 
 
 class ScriptSerializer(serializers.ModelSerializer):
+    pic = serializers.SerializerMethodField()
+
     class Meta:
         model = Script
         fields = ['id', 'name', 'description', 'pic', 'celery_task', 'input_schema', 'output_schema', 'created_at', 'updated_at', 'is_active']
         read_only_fields = ['created_at', 'updated_at']
 
+    def get_pic(self, obj):
+        return obj.pic.url if obj.pic else None
+    
 
 class RunSerializer(serializers.ModelSerializer):
     script_data = ScriptSerializer(source='script', read_only=True)

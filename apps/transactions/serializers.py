@@ -127,7 +127,6 @@ class TransactionSerializer(serializers.ModelSerializer):
             return None
 
         if not isinstance(obj.transaction_date, datetime):
-            print("MANANA", amount, obj.transaction_date)
             setattr(self, cache_key, None)
             return None
         transaction_date = obj.transaction_date

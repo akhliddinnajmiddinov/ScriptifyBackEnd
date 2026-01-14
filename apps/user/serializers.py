@@ -9,7 +9,8 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.ReadOnlyField()
-    
+    photo = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = [
@@ -17,6 +18,9 @@ class UserSerializer(serializers.ModelSerializer):
             'photo', 'date_joined'
         ]
         read_only_fields = ['id', 'date_joined']
+
+    def get_photo(self, obj):
+        return obj.photo.url if obj.photo else None
 
     @extend_schema_field(serializers.CharField())
     def full_name(self, obj):

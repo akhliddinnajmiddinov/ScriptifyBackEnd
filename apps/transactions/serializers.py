@@ -140,7 +140,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             # timestamp__lte=transaction_date + time_range,
             price__gte=amount - amount_threshold,
             price__lte=amount + amount_threshold
-        ).order_by('timestamp')
+        ) #.order_by('timestamp')
         if not potential_listings.exists():
             setattr(self, cache_key, None)
             return None

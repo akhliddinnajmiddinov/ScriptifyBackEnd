@@ -132,7 +132,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             transaction_date = timezone.make_aware(transaction_date)
 
         # Get all listings within reasonable range
-        epsilon = 0.009
+        epsilon = 0.005
         time_range = timedelta(seconds=time_threshold_seconds)
         potential_listings = Listing.objects.filter(
             timestamp__gte=transaction_date,

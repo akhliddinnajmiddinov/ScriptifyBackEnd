@@ -5,7 +5,8 @@ from apps.listings.models import Listing
 from apps.listings.serializers import ListingSerializer
 from django.utils import timezone
 from django.conf import settings
-from datetime import datetime
+from datetime import datetime, timedelta
+import math
 
 
 class VendorSerializer(serializers.ModelSerializer):
@@ -114,12 +115,8 @@ class TransactionSerializer(serializers.ModelSerializer):
         if hasattr(self, cache_key):
             return getattr(self, cache_key)
         
-        from datetime import timedelta
-        import math
-        
         # Thresholds
-        # amount_threshold = 0  # Price difference threshold
-        time_threshold_seconds = 2*60*60  # Time difference threshold in seconds
+        time_threshold_seconds = 30 * 24 * 60 * 60  # Time difference threshold in seconds
         try:
             amount = float(obj.amount)
         except:
@@ -129,16 +126,19 @@ class TransactionSerializer(serializers.ModelSerializer):
         if not isinstance(obj.transaction_date, datetime):
             setattr(self, cache_key, None)
             return None
+        
         transaction_date = obj.transaction_date
         if timezone.is_naive(transaction_date):
             transaction_date = timezone.make_aware(transaction_date)
-            
+
         # Get all listings within reasonable range
+        epsilon = 0.009
         time_range = timedelta(seconds=time_threshold_seconds)
         potential_listings = Listing.objects.filter(
-            timestamp__gte=transaction_date - time_range,
+            timestamp__gte=transaction_date,
             timestamp__lte=transaction_date + time_range,
-            price=amount
+            price__gt=amount - epsilon,
+            price__lt=amount + epsilon
         )
         if not potential_listings.exists():
             setattr(self, cache_key, None)

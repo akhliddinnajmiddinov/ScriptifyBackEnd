@@ -118,29 +118,28 @@ class TransactionSerializer(serializers.ModelSerializer):
         import math
         
         # Thresholds
-        amount_threshold = 10  # Price difference threshold
-        # time_threshold_seconds = 10  # Time difference threshold in seconds
+        # amount_threshold = 0  # Price difference threshold
+        time_threshold_seconds = 2*60*60  # Time difference threshold in seconds
         try:
             amount = float(obj.amount)
         except:
             setattr(self, cache_key, None)
             return None
 
-        # if not isinstance(obj.transaction_date, datetime):
-        #     setattr(self, cache_key, None)
-        #     return None
-        # transaction_date = obj.transaction_date
-        # if timezone.is_naive(transaction_date):
-        #     transaction_date = timezone.make_aware(transaction_date)
+        if not isinstance(obj.transaction_date, datetime):
+            setattr(self, cache_key, None)
+            return None
+        transaction_date = obj.transaction_date
+        if timezone.is_naive(transaction_date):
+            transaction_date = timezone.make_aware(transaction_date)
             
         # Get all listings within reasonable range
-        # time_range = timedelta(seconds=time_threshold_seconds)
+        time_range = timedelta(seconds=time_threshold_seconds)
         potential_listings = Listing.objects.filter(
-            # timestamp__gte=transaction_date - time_range,
-            # timestamp__lte=transaction_date + time_range,
-            price__gte=amount - amount_threshold,
-            price__lte=amount + amount_threshold
-        ) #.order_by('timestamp')
+            timestamp__gte=transaction_date - time_range,
+            timestamp__lte=transaction_date + time_range,
+            price=amount
+        )
         if not potential_listings.exists():
             setattr(self, cache_key, None)
             return None
@@ -151,20 +150,9 @@ class TransactionSerializer(serializers.ModelSerializer):
         
         for listing in potential_listings:
             # Calculate time difference in seconds
-            # time_diff = abs((listing.timestamp - transaction_date).total_seconds())
+            time_diff = abs((listing.timestamp - transaction_date).total_seconds())
             
-            # Calculate amount difference
-            amount_diff = abs(listing.price - amount)
-            
-            # Calculate distance: sqrt((time_weight * time_diff)^2 + (amount_weight * amount_diff)^2)
-            time_weight = 0  # Weight for time difference
-            amount_weight = 1.0  # Weight for amount difference
-            
-            # distance = math.sqrt(
-                # (time_weight * time_diff) ** 2 + 
-            #     (amount_weight * amount_diff) ** 2
-            # )
-            distance = amount_diff
+            distance = time_diff
             
             if distance < min_distance:
                 min_distance = distance

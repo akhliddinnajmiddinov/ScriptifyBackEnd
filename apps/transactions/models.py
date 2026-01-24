@@ -36,7 +36,7 @@ class Transaction(models.Model):
     """
     Transactions model
     """
-    transaction_id = models.CharField(max_length=255)
+    transaction_id = models.CharField(max_length=255, unique=True)
     transaction_date = models.DateTimeField()
     amount = models.FloatField()
     currency = models.CharField(max_length=255)

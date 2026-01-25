@@ -7,9 +7,12 @@ from django.db.models import Sum, Count, Avg, Q, Prefetch
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
-from .models import Listing
-from .serializers import ListingSerializer
-from .filters import StandardPagination, ListingFilter
+from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin
+from .serializers import (
+    ListingSerializer, ShelfSerializer, InventoryVendorSerializer, 
+    AsinSerializer, AsinPreviewItemSerializer, AsinBulkAddItemSerializer
+)
+from .filters import StandardPagination, ListingFilter, ShelfFilter, InventoryVendorFilter, AsinFilter
 from apps.transactions.filters import StableOrderingFilter
 from apps.transactions.models import Transaction
 from apps.transactions.serializers import TransactionSerializer
@@ -393,4 +396,543 @@ class ListingViewSet(viewsets.ModelViewSet):
             'listing': self.get_serializer(listing).data,
             'matched_transactions': [t['transaction'] for t in transaction_distances],
             'match_count': len(transaction_distances)
+        }, status=status.HTTP_200_OK)
+
+
+# ============== Inventory ViewSets ==============
+
+class ShelfViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Shelf CRUD operations.
+    """
+    queryset = Shelf.objects.all()
+    serializer_class = ShelfSerializer
+    filterset_class = ShelfFilter
+    filter_backends = [filters.DjangoFilterBackend, StableOrderingFilter]
+    ordering_fields = ['id', 'name', 'order']
+    ordering = ['order', 'id']
+    pagination_class = StandardPagination
+    
+    @extend_schema(
+        operation_id="shelves_list",
+        description="List all shelves with filtering and pagination.",
+        tags=["Inventory - Shelves"],
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="shelves_retrieve",
+        description="Get a shelf by ID.",
+        tags=["Inventory - Shelves"],
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="shelves_create",
+        description="Create a new shelf.",
+        tags=["Inventory - Shelves"],
+    )
+    def create(self, request, *args, **kwargs):
+        # Strip name whitespace
+        if 'name' in request.data and isinstance(request.data['name'], str):
+            request.data._mutable = True
+            request.data['name'] = request.data['name'].strip()
+            request.data._mutable = False
+            
+        return super().create(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="shelves_update",
+        description="Update a shelf. If new name exists, merge items to existing shelf and delete this one.",
+        tags=["Inventory - Shelves"],
+    )
+    def update(self, request, *args, **kwargs):
+        return self._update_with_merge(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="shelves_partial_update",
+        description="Partially update a shelf. If new name exists, merge items to existing shelf and delete this one.",
+        tags=["Inventory - Shelves"],
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return self._update_with_merge(request, partial=True, *args, **kwargs)
+    
+    def _update_with_merge(self, request, partial=False, *args, **kwargs):
+        """
+        Handle update with merge logic.
+        If new name already exists in another shelf, merge all connected items
+        to that shelf and delete the current one.
+        """
+        instance = self.get_object()
+        new_name = request.data.get('name', '').strip()
+        
+        # Check if name is being changed to an existing shelf
+        if new_name and new_name.lower() != instance.name.lower():
+            existing_shelf = Shelf.objects.filter(name__iexact=new_name).exclude(id=instance.id).first()
+            
+            if existing_shelf:
+                # Merge: move all connected asins to existing shelf
+                with db_transaction.atomic():
+                    for asin in instance.asins.all():
+                        # Add existing_shelf only if not already connected
+                        if not asin.shelf.filter(id=existing_shelf.id).exists():
+                            asin.shelf.add(existing_shelf)
+                        # Remove old shelf
+                        asin.shelf.remove(instance)
+                    
+                    # Delete the old shelf
+                    instance.delete()
+                
+                # Return same format as native update
+                return Response(ShelfSerializer(existing_shelf).data)
+        
+        # Normal update
+        data = request.data.copy()
+        if 'name' in request.data:
+            data['name'] = new_name
+            
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+    
+    @extend_schema(
+        operation_id="shelves_delete",
+        description="Delete a shelf.",
+        tags=["Inventory - Shelves"],
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
+
+class InventoryVendorViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for InventoryVendor CRUD operations.
+    """
+    queryset = InventoryVendor.objects.all()
+    serializer_class = InventoryVendorSerializer
+    filterset_class = InventoryVendorFilter
+    filter_backends = [filters.DjangoFilterBackend, StableOrderingFilter]
+    ordering_fields = ['id', 'name', 'order']
+    ordering = ['order', 'id']
+    pagination_class = StandardPagination
+    
+    @extend_schema(
+        operation_id="inventory_vendors_list",
+        description="List all inventory vendors with filtering and pagination.",
+        tags=["Inventory - Vendors"],
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="inventory_vendors_retrieve",
+        description="Get a vendor by ID.",
+        tags=["Inventory - Vendors"],
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="inventory_vendors_create",
+        description="Create a new vendor.",
+        tags=["Inventory - Vendors"],
+    )
+    def create(self, request, *args, **kwargs):
+        # Strip name whitespace
+        if 'name' in request.data and isinstance(request.data['name'], str):
+            request.data._mutable = True
+            request.data['name'] = request.data['name'].strip()
+            request.data._mutable = False
+            
+        return super().create(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="inventory_vendors_update",
+        description="Update a vendor. If new name exists, merge items to existing vendor and delete this one.",
+        tags=["Inventory - Vendors"],
+    )
+    def update(self, request, *args, **kwargs):
+        return self._update_with_merge(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="inventory_vendors_partial_update",
+        description="Partially update a vendor. If new name exists, merge items to existing vendor and delete this one.",
+        tags=["Inventory - Vendors"],
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return self._update_with_merge(request, partial=True, *args, **kwargs)
+    
+    def _update_with_merge(self, request, partial=False, *args, **kwargs):
+        """
+        Handle update with merge logic.
+        If new name already exists in another vendor, merge all connected items
+        to that vendor and delete the current one.
+        """
+        instance = self.get_object()
+        new_name = request.data.get('name', '').strip()
+        
+        # Check if name is being changed to an existing vendor
+        if new_name and new_name.lower() != instance.name.lower():
+            existing_vendor = InventoryVendor.objects.filter(name__iexact=new_name).exclude(id=instance.id).first()
+            
+            if existing_vendor:
+                # Merge: move all connected asins to existing vendor
+                with db_transaction.atomic():
+                    Asin.objects.filter(vendor=instance).update(vendor=existing_vendor)
+                    
+                    # Delete the old vendor
+                    instance.delete()
+                
+                # Return same format as native update
+                return Response(InventoryVendorSerializer(existing_vendor).data)
+        
+        # Normal update
+        data = request.data.copy()
+        if 'name' in request.data:
+            data['name'] = new_name
+            
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+    
+    @extend_schema(
+        operation_id="inventory_vendors_delete",
+        description="Delete a vendor.",
+        tags=["Inventory - Vendors"],
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
+
+class AsinViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Asin (inventory items) CRUD operations.
+    Includes preview and bulk_add actions.
+    """
+    queryset = Asin.objects.all()
+    serializer_class = AsinSerializer
+    filterset_class = AsinFilter
+    filter_backends = [filters.DjangoFilterBackend, StableOrderingFilter]
+    ordering_fields = ['id', 'value', 'name', 'ean', 'amount', 'multiple']
+    ordering = ['-id']
+    pagination_class = StandardPagination
+    
+    def get_queryset(self):
+        """Optimize queryset with select_related and prefetch_related."""
+        queryset = super().get_queryset()
+        queryset = queryset.select_related('vendor', 'parent').prefetch_related(
+            'shelf',
+            'children',
+            Prefetch('asins_listings', queryset=ListingAsin.objects.select_related('listing'))
+        )
+        return queryset
+    
+    @extend_schema(
+        operation_id="asins_list",
+        description="List all inventory items with filtering and pagination. "
+                    "Supports filtering by value, name, ean, vendor, amount range, multiple, parent, and shelf.",
+        tags=["Inventory - Items"],
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="asins_retrieve",
+        description="Get an inventory item by ID. Includes connected listings.",
+        tags=["Inventory - Items"],
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="asins_update",
+        description="Update an inventory item.",
+        tags=["Inventory - Items"],
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="asins_partial_update",
+        description="Partially update an inventory item.",
+        tags=["Inventory - Items"],
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="asins_delete",
+        description="Delete an inventory item.",
+        tags=["Inventory - Items"],
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="asins_preview",
+        description="Preview inventory items before bulk add. "
+                    "Validates vendor, shelfs, and contains (parent ASIN) existence.",
+        tags=["Inventory - Items"],
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'items': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'value': {'type': 'string'},
+                                'name': {'type': 'string'},
+                                'ean': {'type': 'string'},
+                                'vendor': {'type': 'string'},
+                                'amount': {'type': 'number'},
+                                'shelfs': {'type': 'array', 'items': {'type': 'object'}},
+                                'multiple': {'type': 'string', 'enum': ['YES', 'NO']},
+                                'contains': {'type': 'array', 'items': {'type': 'object'}}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+    )
+    @action(detail=False, methods=['post'])
+    def preview(self, request):
+        """
+        Preview inventory items with lookup results.
+        Validates vendor, shelfs, and contains existence.
+        """
+        items_data = request.data.get('items', [])
+        
+        if not items_data:
+            return Response(
+                {'error': 'No items provided'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        preview_results = []
+        for item_data in items_data:
+            serializer = AsinPreviewItemSerializer(data=item_data)
+            if serializer.is_valid():
+                preview_results.append(serializer.data)
+            else:
+                preview_results.append({
+                    'error': 'Validation failed',
+                    'data': item_data,
+                    'errors': serializer.errors
+                })
+        
+        return Response({
+            'preview': preview_results,
+            'total_count': len(preview_results)
+        }, status=status.HTTP_200_OK)
+    
+    @extend_schema(
+        operation_id="asins_bulk_add",
+        description="Bulk add inventory items. Validates vendor, shelfs, and contains existence. "
+                    "If any validation fails, all items are rolled back.",
+        tags=["Inventory - Items"],
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'items': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'value': {'type': 'string'},
+                                'name': {'type': 'string'},
+                                'ean': {'type': 'string'},
+                                'vendor': {'type': 'string'},
+                                'amount': {'type': 'number'},
+                                'shelfs': {'type': 'array'},
+                                'multiple': {'type': 'string'},
+                                'contains': {'type': 'array'}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+    )
+    @action(detail=False, methods=['post'])
+    def bulk_add(self, request):
+        """
+        Bulk add inventory items with atomic transaction.
+        Validates all references (vendor, shelfs, contains) before creating.
+        """
+        items_data = request.data.get('items', [])
+        
+        if not items_data:
+            return Response(
+                {'error': 'No items provided'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        errors = []
+        validated_items = []
+        
+        # First pass: Validate all items
+        for idx, item_data in enumerate(items_data):
+            serializer = AsinBulkAddItemSerializer(data=item_data)
+            
+            # 1. Standard Serializer Validation
+            if not serializer.is_valid():
+                errors.append({
+                    'index': idx,
+                    'data': item_data,
+                    'errors': serializer.errors
+                })
+                continue
+            
+            data = serializer.validated_data
+            custom_errors = {}
+            
+            # 2. Custom Validation (Vendor, Shelfs, Parent)
+            
+            # Validate vendor exists
+            vendor = None
+            vendor_name = data.get('vendor')
+            if vendor_name:
+                vendor = InventoryVendor.objects.filter(name__iexact=vendor_name).first()
+                if not vendor:
+                    custom_errors['vendor'] = [f"Vendor '{vendor_name}' not found"]
+            
+            # Validate shelfs exist
+            shelfs = []
+            if data.get('shelfs'):
+                missing_shelfs = []
+                for shelf_item in data.get('shelfs', []):
+                    shelf_name = shelf_item.get('name', '')
+                    shelf = Shelf.objects.filter(name__iexact=shelf_name).first()
+                    if shelf:
+                        shelfs.append(shelf)
+                    else:
+                        missing_shelfs.append(shelf_name)
+                
+                if missing_shelfs:
+                    custom_errors['shelfs'] = [f"Shelves not found: {', '.join(missing_shelfs)}"]
+            
+            # Validate contains (child ASINs) exist
+            children = []
+            if data.get('contains'):
+                missing_children = []
+                for child_item in data.get('contains', []):
+                    child_value = child_item.get('value', '')
+                    child = Asin.objects.filter(value__iexact=child_value).first()
+                    if child:
+                        children.append(child)
+                    else:
+                        missing_children.append(child_value)
+                
+                if missing_children:
+                    custom_errors['contains'] = [f"Child ASINs not found: {', '.join(missing_children)}"]
+            
+            # If custom validation failed, append error matching Transaction format
+            if custom_errors:
+                errors.append({
+                    'index': idx,
+                    'data': item_data,
+                    'errors': custom_errors
+                })
+            else:
+                validated_items.append({
+                    'data': data,
+                    'vendor': vendor,
+                    'shelfs': shelfs,
+                    'children': children
+                })
+        
+        # If any errors, return all errors without saving anything
+        if errors:
+            return Response(
+                {
+                    'error': 'Validation failed for one or more items. No items were created.',
+                    'error_count': len(errors),
+                    'errors': errors
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # All valid - create items atomically
+        created_items = []
+        try:
+            with db_transaction.atomic():
+                for item in validated_items:
+                    data = item['data']
+                    asin = Asin.objects.create(
+                        value=data['value'],
+                        name=data['name'],
+                        ean=data.get('ean') or '',
+                        vendor=item['vendor'],
+                        amount=data.get('amount', 0),
+                        multiple=data.get('multiple', 'NO'),
+                        parent=None  # Parent is set on children (they point to this item), not here
+                    )
+                    
+                    # Set M2M shelfs
+                    if item['shelfs']:
+                        asin.shelf.set(item['shelfs'])
+                    
+                    # Set parent for children
+                    if item['children']:
+                        for child in item['children']:
+                            child.parent = asin
+                            child.save()
+                    
+                    created_items.append(AsinSerializer(asin).data)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create items: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+        return Response(
+            {
+                'created_count': len(created_items),
+                'created_items': created_items
+            },
+            status=status.HTTP_201_CREATED
+        )
+    
+    @extend_schema(
+        operation_id="asins_bulk_delete",
+        description="Bulk delete inventory items by IDs.",
+        tags=["Inventory - Items"],
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'ids': {
+                        'type': 'array',
+                        'items': {'type': 'integer'}
+                    }
+                }
+            }
+        },
+    )
+    @action(detail=False, methods=['delete'])
+    def bulk_delete(self, request):
+        """
+        Bulk delete inventory items by IDs.
+        """
+        ids = request.data.get('ids', [])
+        
+        if not ids:
+            return Response(
+                {'error': 'No item IDs provided'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        deleted_count, _ = Asin.objects.filter(id__in=ids).delete()
+        
+        return Response({
+            'deleted_count': deleted_count,
+            'message': f'Successfully deleted {deleted_count} item(s)'
         }, status=status.HTTP_200_OK)

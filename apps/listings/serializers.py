@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import Listing
+from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin
 import json
+
 
 class ListingSerializer(serializers.ModelSerializer):
     error_status_text = serializers.SerializerMethodField()
@@ -79,3 +80,131 @@ class ListingSerializer(serializers.ModelSerializer):
                 return "No connected ASINs found for this listing"
         
         return None
+
+
+# ============== Inventory Serializers ==============
+
+class ShelfSerializer(serializers.ModelSerializer):
+    """Serializer for Shelf model"""
+    
+    class Meta:
+        model = Shelf
+        fields = ['id', 'name', 'order']
+
+
+class InventoryVendorSerializer(serializers.ModelSerializer):
+    """Serializer for InventoryVendor model"""
+    
+    class Meta:
+        model = InventoryVendor
+        fields = ['id', 'name', 'photo', 'order']
+
+
+class AsinMinimalSerializer(serializers.ModelSerializer):
+    """Minimal serializer for parent/children Asin references to avoid recursion"""
+    
+    class Meta:
+        model = Asin
+        fields = ['id', 'value', 'name']
+
+
+class ListingAsinSerializer(serializers.ModelSerializer):
+    """Serializer for ListingAsin with nested listing data"""
+    listing = ListingSerializer(read_only=True)
+    
+    class Meta:
+        model = ListingAsin
+        fields = ['id', 'listing', 'amount']
+
+
+class AsinSerializer(serializers.ModelSerializer):
+    """Serializer for Asin (inventory item) model"""
+    
+    vendor_data = InventoryVendorSerializer(source='vendor', read_only=True)
+    shelf_data = ShelfSerializer(source='shelf', many=True, read_only=True)
+    parent_data = AsinMinimalSerializer(source='parent', read_only=True)
+    children = AsinMinimalSerializer(many=True, read_only=True)
+    listings = ListingAsinSerializer(source='asins_listings', many=True, read_only=True)
+    
+    class Meta:
+        model = Asin
+        fields = [
+            'id', 'value', 'name', 'ean', 
+            'vendor', 'vendor_data',
+            'amount', 
+            'shelf', 'shelf_data',
+            'multiple', 
+            'parent', 'parent_data',
+            'children',
+            'listings'
+        ]
+        read_only_fields = ['listings', 'children']
+
+
+
+class AsinPreviewItemSerializer(serializers.Serializer):
+    """Serializer for preview API - validates and looks up related items"""
+    
+    value = serializers.CharField(max_length=255)
+    name = serializers.CharField(max_length=255)
+    ean = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True)
+    vendor = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True)
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, default=0)
+    shelfs = serializers.ListField(child=serializers.DictField(), required=False, default=list)
+    multiple = serializers.ChoiceField(choices=['YES', 'NO'], required=False, default='NO')
+    contains = serializers.ListField(child=serializers.DictField(), required=False, default=list)
+    
+    def to_representation(self, instance):
+        """Add exists flags for vendor, shelfs, and contains"""
+        data = super().to_representation(instance)
+        
+        # Look up vendor
+        vendor_name = data.get('vendor')
+        if vendor_name:
+            vendor = InventoryVendor.objects.filter(name__iexact=vendor_name).first()
+            data['vendor'] = {
+                'name': vendor_name,
+                'exists': vendor is not None,
+                'id': vendor.id if vendor else None
+            }
+        else:
+            data['vendor'] = None
+        
+        # Look up shelfs
+        shelfs_data = []
+        for shelf_item in data.get('shelfs', []):
+            shelf_name = shelf_item.get('name', '')
+            shelf = Shelf.objects.filter(name__iexact=shelf_name).first()
+            shelfs_data.append({
+                'name': shelf_name,
+                'exists': shelf is not None,
+                'id': shelf.id if shelf else None
+            })
+        data['shelfs'] = shelfs_data
+        
+        # Look up contains (child ASINs)
+        contains_data = []
+        for contains_item in data.get('contains', []):
+            asin_value = contains_item.get('value', '')
+            asin = Asin.objects.filter(value__iexact=asin_value).first()
+            contains_data.append({
+                'value': asin_value,
+                'exists': asin is not None,
+                'id': asin.id if asin else None
+            })
+        data['contains'] = contains_data
+        
+        return data
+
+
+class AsinBulkAddItemSerializer(serializers.Serializer):
+    """Serializer for bulk add API"""
+    
+    value = serializers.CharField(max_length=255)
+    name = serializers.CharField(max_length=255)
+    ean = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True)
+    vendor = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True)
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, default=0)
+    shelfs = serializers.ListField(child=serializers.DictField(), required=False, default=list)
+    multiple = serializers.ChoiceField(choices=['YES', 'NO'], required=False, default='NO')
+    contains = serializers.ListField(child=serializers.DictField(), required=False, default=list)

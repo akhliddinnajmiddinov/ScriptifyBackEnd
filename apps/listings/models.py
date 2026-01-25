@@ -34,13 +34,69 @@ class Listing(models.Model):
         ]
 
 
+class Shelf(models.Model):
+    """
+    Shelf for inventory storage locations
+    """
+    name = models.CharField(max_length=255)
+    order = models.PositiveIntegerField(default=0)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        ordering = ['order', 'id']
+        db_table = 'shelf'
+
+
+class InventoryVendor(models.Model):
+    """
+    Vendor for inventory items
+    """
+    name = models.CharField(max_length=255)
+    photo = models.ImageField(upload_to='inventory_vendors/', null=True, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        ordering = ['order', 'id']
+        db_table = 'inventory_vendor'
+
+
 class Asin(models.Model):
     """
-    Asin model
+    Asin model - serves as inventory item
     """
     value = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     
+    # Inventory fields
+    ean = models.CharField(max_length=255, null=True, blank=True)
+    vendor = models.ForeignKey(
+        'InventoryVendor',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='asins'
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    shelf = models.ManyToManyField('Shelf', related_name='asins', blank=True)
+    
+    MULTIPLE_CHOICES = [
+        ('YES', 'Yes'),
+        ('NO', 'No'),
+    ]
+    multiple = models.CharField(max_length=3, choices=MULTIPLE_CHOICES, default='NO')
+    
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='children'
+    )
 
     def __str__(self):
         return f"{self.value} - {self.name}"
@@ -52,6 +108,7 @@ class Asin(models.Model):
         indexes = [
             models.Index(fields=['value'], name='asin_value_idx'),
         ]
+
 
 class ListingAsin(models.Model):
     """

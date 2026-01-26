@@ -203,7 +203,7 @@ jobs:
             export CELERY_RESULT_BACKEND=${{ env.CELERY_RESULT_BACKEND }}
 
             docker compose down
-            docker compose up -d --build --pull always
+            docker compose up -d --pull always
             docker image prune -af
 
             echo "Deployment complete"

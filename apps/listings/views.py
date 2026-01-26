@@ -409,8 +409,8 @@ class ShelfViewSet(viewsets.ModelViewSet):
     serializer_class = ShelfSerializer
     filterset_class = ShelfFilter
     filter_backends = [filters.DjangoFilterBackend, StableOrderingFilter]
-    ordering_fields = ['id', 'name', 'order']
-    ordering = ['order', 'id']
+    ordering_fields = ['id', 'name']
+    ordering = ['id']
     pagination_class = StandardPagination
     
     @extend_schema(
@@ -515,8 +515,8 @@ class InventoryVendorViewSet(viewsets.ModelViewSet):
     serializer_class = InventoryVendorSerializer
     filterset_class = InventoryVendorFilter
     filter_backends = [filters.DjangoFilterBackend, StableOrderingFilter]
-    ordering_fields = ['id', 'name', 'order']
-    ordering = ['order', 'id']
+    ordering_fields = ['id', 'name']
+    ordering = ['id']
     pagination_class = StandardPagination
     
     @extend_schema(

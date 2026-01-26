@@ -35,7 +35,7 @@ class ShelfFilter(filters.FilterSet):
     
     class Meta:
         model = Shelf
-        fields = ['name', 'order']
+        fields = ['name']
 
 
 class InventoryVendorFilter(filters.FilterSet):
@@ -46,7 +46,7 @@ class InventoryVendorFilter(filters.FilterSet):
     
     class Meta:
         model = InventoryVendor
-        fields = ['name', 'order']
+        fields = ['name']
 
 
 

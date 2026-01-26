@@ -89,7 +89,7 @@ class ShelfSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Shelf
-        fields = ['id', 'name', 'order']
+        fields = ['id', 'name']
 
 
 class InventoryVendorSerializer(serializers.ModelSerializer):
@@ -97,7 +97,7 @@ class InventoryVendorSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = InventoryVendor
-        fields = ['id', 'name', 'photo', 'order']
+        fields = ['id', 'name', 'photo']
 
 
 class ListingAsinSerializer(serializers.ModelSerializer):

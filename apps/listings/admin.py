@@ -11,17 +11,15 @@ class ListingAdmin(admin.ModelAdmin):
 
 @admin.register(Shelf)
 class ShelfAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'order']
-    list_editable = ['order']
-    ordering = ['order', 'id']
+    list_display = ['id', 'name']
+    ordering = ['id']
     search_fields = ['name']
 
 
 @admin.register(InventoryVendor)
 class InventoryVendorAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'order']
-    list_editable = ['order']
-    ordering = ['order', 'id']
+    list_display = ['id', 'name']
+    ordering = ['id']
     search_fields = ['name']
 
 

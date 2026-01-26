@@ -38,42 +38,48 @@ class Shelf(models.Model):
     """
     Shelf for inventory storage locations
     """
-    name = models.CharField(max_length=255)
-    order = models.PositiveIntegerField(default=0)
+    name = models.CharField(max_length=255, unique=True)
     
     def __str__(self):
         return self.name
     
     class Meta:
-        ordering = ['order', 'id']
+        ordering = ['id']
+        managed = False
         db_table = 'shelf'
+        indexes = [
+            models.Index(fields=['name'], name='shelf_name_idx'),
+        ]
 
 
 class InventoryVendor(models.Model):
     """
     Vendor for inventory items
     """
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     photo = models.ImageField(upload_to='inventory_vendors/', null=True, blank=True)
-    order = models.PositiveIntegerField(default=0)
     
     def __str__(self):
         return self.name
     
     class Meta:
-        ordering = ['order', 'id']
+        ordering = ['id']
+        managed = False
         db_table = 'inventory_vendor'
+        indexes = [
+            models.Index(fields=['name'], name='inventory_vendor_name_idx'),
+        ]
 
 
 class Asin(models.Model):
     """
     Asin model - serves as inventory item
     """
-    value = models.CharField(max_length=255, null=True, blank=True)
+    value = models.CharField(max_length=255, null=True, blank=True, unique=True)
     name = models.CharField(max_length=255)
     
     # Inventory fields
-    ean = models.CharField(max_length=255, null=True, blank=True)
+    ean = models.CharField(max_length=255, null=True, blank=True, unique=True)
     vendor = models.CharField(max_length=255, blank=True, default='')
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     shelf = models.CharField(max_length=255, blank=True, default='')
@@ -88,8 +94,23 @@ class Asin(models.Model):
         db_table = 'asin'
         indexes = [
             models.Index(fields=['value'], name='asin_value_idx'),
+            models.Index(fields=['name'], name='asin_name_idx'),
+            models.Index(fields=['ean'], name='asin_ean_idx'),
+            models.Index(fields=['vendor'], name='asin_vendor_idx'),
+            models.Index(fields=['amount'], name='asin_amount_idx'),
+            models.Index(fields=['shelf'], name='asin_shelf_idx'),
+            # Composite indexes for common query patterns
+            models.Index(fields=['vendor', 'amount'], name='asin_vendor_amount_idx'),
+            models.Index(fields=['shelf', 'amount'], name='asin_shelf_amount_idx'),
         ]
 
+
+    def save(self, *args, **kwargs):
+        if self.value == '':
+            self.value = None
+        if self.ean == '':
+            self.ean = None
+        super().save(*args, **kwargs)
 
 class ListingAsin(models.Model):
     """

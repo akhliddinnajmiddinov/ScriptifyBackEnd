@@ -610,23 +610,23 @@ class InventoryVendorViewSet(viewsets.ModelViewSet):
 
 class AsinViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for Asin (inventory items) CRUD operations.
-    Includes preview and bulk_add actions.
+    ViewSet for Asin (inventory items) CRUD and bulk operations.
     """
-    queryset = Asin.objects.all()
+    queryset = Asin.objects.all().order_by('-id')
     serializer_class = AsinSerializer
     filterset_class = AsinFilter
     filter_backends = [filters.DjangoFilterBackend, StableOrderingFilter]
-    ordering_fields = ['id', 'value', 'name', 'ean', 'amount', 'multiple']
+    ordering_fields = ['id', 'value', 'name', 'ean', 'amount', 'vendor', 'shelf', 'contains']
     ordering = ['-id']
     pagination_class = StandardPagination
-    
+   
     def get_queryset(self):
-        """Optimize queryset with select_related and prefetch_related."""
+        """
+        Optimize queryset by prefetching asins_listings to prevent N+1 queries.
+        """
         queryset = super().get_queryset()
-        queryset = queryset.select_related('vendor', 'parent').prefetch_related(
-            'shelf',
-            'children',
+        # Prefetch asins_listings to avoid N+1 queries when counting Listings
+        queryset = queryset.prefetch_related(
             Prefetch('asins_listings', queryset=ListingAsin.objects.select_related('listing'))
         )
         return queryset
@@ -634,48 +634,93 @@ class AsinViewSet(viewsets.ModelViewSet):
     @extend_schema(
         operation_id="asins_list",
         description="List all inventory items with filtering and pagination. "
-                    "Supports filtering by value, name, ean, vendor, amount range, multiple, parent, and shelf.",
+                    "Supports filtering by value, name, ean, vendor, shelf, contains, and amount range.",
         tags=["Inventory - Items"],
+        parameters=[
+            OpenApiParameter('value', OpenApiTypes.STR, description='Search by ASIN/SKU (partial match)'),
+            OpenApiParameter('name', OpenApiTypes.STR, description='Search by item name (partial match)'),
+            OpenApiParameter('ean', OpenApiTypes.STR, description='Search by EAN (partial match)'),
+            OpenApiParameter('vendor', OpenApiTypes.STR, description='Search by vendor (partial match)'),
+            OpenApiParameter('shelf', OpenApiTypes.STR, description='Search by shelf (partial match)'),
+            OpenApiParameter('contains', OpenApiTypes.STR, description='Search by contains (partial match)'),
+            OpenApiParameter('min_amount', OpenApiTypes.FLOAT, description='Minimum amount'),
+            OpenApiParameter('max_amount', OpenApiTypes.FLOAT, description='Maximum amount'),
+            OpenApiParameter('page', OpenApiTypes.INT, description='Page number'),
+            OpenApiParameter('page_size', OpenApiTypes.INT, description='Results per page (max 100)'),
+            OpenApiParameter('ordering', OpenApiTypes.STR, description='Order results by field (e.g., amount, -value)'),
+        ],
+        responses=AsinSerializer(many=True),
     )
     def list(self, request, *args, **kwargs):
+        """List all inventory items with filtering and pagination."""
         return super().list(request, *args, **kwargs)
     
     @extend_schema(
         operation_id="asins_retrieve",
-        description="Get an inventory item by ID. Includes connected listings.",
+        description="Get detailed information about a specific inventory item.",
         tags=["Inventory - Items"],
+        responses=AsinSerializer,
     )
     def retrieve(self, request, *args, **kwargs):
+        """Retrieve a single inventory item by ID."""
         return super().retrieve(request, *args, **kwargs)
     
     @extend_schema(
-        operation_id="asins_update",
-        description="Update an inventory item.",
+        operation_id="asins_create",
+        description="Create a new inventory item with value (ASIN/SKU), name, and optional fields.",
         tags=["Inventory - Items"],
+        request=AsinSerializer,
+        responses=AsinSerializer,
+    )
+    def create(self, request, *args, **kwargs):
+        """Create a single inventory item."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
+    
+    @extend_schema(
+        operation_id="asins_update",
+        description="Update an inventory item (full update).",
+        tags=["Inventory - Items"],
+        request=AsinSerializer,
+        responses=AsinSerializer,
     )
     def update(self, request, *args, **kwargs):
+        """Update an inventory item (full update)."""
         return super().update(request, *args, **kwargs)
     
     @extend_schema(
         operation_id="asins_partial_update",
-        description="Partially update an inventory item.",
+        description="Partially update an inventory item. Only provided fields will be updated.",
         tags=["Inventory - Items"],
+        request=AsinSerializer,
+        responses=AsinSerializer,
     )
     def partial_update(self, request, *args, **kwargs):
+        """Partially update an inventory item."""
         return super().partial_update(request, *args, **kwargs)
     
     @extend_schema(
         operation_id="asins_delete",
-        description="Delete an inventory item.",
+        description="Delete a specific inventory item by ID.",
         tags=["Inventory - Items"],
+        responses={204: None},
     )
     def destroy(self, request, *args, **kwargs):
+        """Delete a single inventory item."""
         return super().destroy(request, *args, **kwargs)
     
     @extend_schema(
-        operation_id="asins_preview",
-        description="Preview inventory items before bulk add. "
-                    "Validates vendor, shelfs, and contains (parent ASIN) existence.",
+        operation_id="asins_bulk_add",
+        description="Bulk add multiple inventory items in a single request. "
+                    "All items must be valid - if any item is invalid, nothing is saved. "
+                    "Returns all validation errors if any item fails validation.",
         tags=["Inventory - Items"],
         request={
             'application/json': {
@@ -691,81 +736,39 @@ class AsinViewSet(viewsets.ModelViewSet):
                                 'ean': {'type': 'string'},
                                 'vendor': {'type': 'string'},
                                 'amount': {'type': 'number'},
-                                'shelfs': {'type': 'array', 'items': {'type': 'object'}},
-                                'multiple': {'type': 'string', 'enum': ['YES', 'NO']},
-                                'contains': {'type': 'array', 'items': {'type': 'object'}}
-                            }
+                                'shelf': {'type': 'string'},
+                                'contains': {'type': 'string'},
+                            },
+                            'required': ['value', 'name']
                         }
                     }
-                }
+                },
+                'required': ['items']
             }
         },
-    )
-    @action(detail=False, methods=['post'])
-    def preview(self, request):
-        """
-        Preview inventory items with lookup results.
-        Validates vendor, shelfs, and contains existence.
-        """
-        items_data = request.data.get('items', [])
-        
-        if not items_data:
-            return Response(
-                {'error': 'No items provided'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        preview_results = []
-        for item_data in items_data:
-            serializer = AsinPreviewItemSerializer(data=item_data)
-            if serializer.is_valid():
-                preview_results.append(serializer.data)
-            else:
-                preview_results.append({
-                    'error': 'Validation failed',
-                    'data': item_data,
-                    'errors': serializer.errors
-                })
-        
-        return Response({
-            'preview': preview_results,
-            'total_count': len(preview_results)
-        }, status=status.HTTP_200_OK)
-    
-    @extend_schema(
-        operation_id="asins_bulk_add",
-        description="Bulk add inventory items. Validates vendor, shelfs, and contains existence. "
-                    "If any validation fails, all items are rolled back.",
-        tags=["Inventory - Items"],
-        request={
-            'application/json': {
+        responses={
+            201: {
                 'type': 'object',
                 'properties': {
-                    'items': {
-                        'type': 'array',
-                        'items': {
-                            'type': 'object',
-                            'properties': {
-                                'value': {'type': 'string'},
-                                'name': {'type': 'string'},
-                                'ean': {'type': 'string'},
-                                'vendor': {'type': 'string'},
-                                'amount': {'type': 'number'},
-                                'shelfs': {'type': 'array'},
-                                'multiple': {'type': 'string'},
-                                'contains': {'type': 'array'}
-                            }
-                        }
-                    }
+                    'created_count': {'type': 'integer'},
+                    'created_items': {'type': 'array'}
                 }
-            }
+            },
+            400: {
+                'type': 'object',
+                'properties': {
+                    'error': {'type': 'string'},
+                    'error_count': {'type': 'integer'},
+                    'errors': {'type': 'array'}
+                }
+            },
         },
     )
     @action(detail=False, methods=['post'])
     def bulk_add(self, request):
         """
-        Bulk add inventory items with atomic transaction.
-        Validates all references (vendor, shelfs, contains) before creating.
+        Bulk add multiple inventory items.
+        All items must be valid - if any item is invalid, nothing is saved.
         """
         items_data = request.data.get('items', [])
         
@@ -775,123 +778,38 @@ class AsinViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        # First pass: Validate all items without saving
+        serializers = []
         errors = []
-        validated_items = []
         
-        # First pass: Validate all items
         for idx, item_data in enumerate(items_data):
-            serializer = AsinBulkAddItemSerializer(data=item_data)
-            
-            # 1. Standard Serializer Validation
-            if not serializer.is_valid():
+            serializer = self.get_serializer(data=item_data)
+            if serializer.is_valid():
+                serializers.append((idx, serializer))
+            else:
                 errors.append({
                     'index': idx,
                     'data': item_data,
                     'errors': serializer.errors
-                })
-                continue
-            
-            data = serializer.validated_data
-            custom_errors = {}
-            
-            # 2. Custom Validation (Vendor, Shelfs, Parent)
-            
-            # Validate vendor exists
-            vendor = None
-            vendor_name = data.get('vendor')
-            if vendor_name:
-                vendor = InventoryVendor.objects.filter(name__iexact=vendor_name).first()
-                if not vendor:
-                    custom_errors['vendor'] = [f"Vendor '{vendor_name}' not found"]
-            
-            # Validate shelfs exist
-            shelfs = []
-            if data.get('shelfs'):
-                missing_shelfs = []
-                for shelf_item in data.get('shelfs', []):
-                    shelf_name = shelf_item.get('name', '')
-                    shelf = Shelf.objects.filter(name__iexact=shelf_name).first()
-                    if shelf:
-                        shelfs.append(shelf)
-                    else:
-                        missing_shelfs.append(shelf_name)
-                
-                if missing_shelfs:
-                    custom_errors['shelfs'] = [f"Shelves not found: {', '.join(missing_shelfs)}"]
-            
-            # Validate contains (child ASINs) exist
-            children = []
-            if data.get('contains'):
-                missing_children = []
-                for child_item in data.get('contains', []):
-                    child_value = child_item.get('value', '')
-                    child = Asin.objects.filter(value__iexact=child_value).first()
-                    if child:
-                        children.append(child)
-                    else:
-                        missing_children.append(child_value)
-                
-                if missing_children:
-                    custom_errors['contains'] = [f"Child ASINs not found: {', '.join(missing_children)}"]
-            
-            # If custom validation failed, append error matching Transaction format
-            if custom_errors:
-                errors.append({
-                    'index': idx,
-                    'data': item_data,
-                    'errors': custom_errors
-                })
-            else:
-                validated_items.append({
-                    'data': data,
-                    'vendor': vendor,
-                    'shelfs': shelfs,
-                    'children': children
                 })
         
         # If any errors, return all errors without saving anything
         if errors:
             return Response(
                 {
-                    'error': 'Validation failed for one or more items. No items were created.',
+                    'error': 'Validation failed for one or more items. No items were saved.',
                     'error_count': len(errors),
                     'errors': errors
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # All valid - create items atomically
+        # All valid - save all items in a single database transaction
         created_items = []
-        try:
-            with db_transaction.atomic():
-                for item in validated_items:
-                    data = item['data']
-                    asin = Asin.objects.create(
-                        value=data['value'],
-                        name=data['name'],
-                        ean=data.get('ean') or '',
-                        vendor=item['vendor'],
-                        amount=data.get('amount', 0),
-                        multiple=data.get('multiple', 'NO'),
-                        parent=None  # Parent is set on children (they point to this item), not here
-                    )
-                    
-                    # Set M2M shelfs
-                    if item['shelfs']:
-                        asin.shelf.set(item['shelfs'])
-                    
-                    # Set parent for children
-                    if item['children']:
-                        for child in item['children']:
-                            child.parent = asin
-                            child.save()
-                    
-                    created_items.append(AsinSerializer(asin).data)
-        except Exception as e:
-            return Response(
-                {'error': f'Failed to create items: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        with db_transaction.atomic():
+            for idx, serializer in serializers:
+                serializer.save()
+                created_items.append(serializer.data)
         
         return Response(
             {
@@ -903,7 +821,7 @@ class AsinViewSet(viewsets.ModelViewSet):
     
     @extend_schema(
         operation_id="asins_bulk_delete",
-        description="Bulk delete inventory items by IDs.",
+        description="Bulk delete multiple inventory items by their IDs in a single request.",
         tags=["Inventory - Items"],
         request={
             'application/json': {
@@ -911,10 +829,21 @@ class AsinViewSet(viewsets.ModelViewSet):
                 'properties': {
                     'ids': {
                         'type': 'array',
-                        'items': {'type': 'integer'}
+                        'items': {'type': 'integer'},
+                        'description': 'List of item IDs to delete'
                     }
-                }
+                },
+                'required': ['ids']
             }
+        },
+        responses={
+            200: {
+                'type': 'object',
+                'properties': {
+                    'deleted_count': {'type': 'integer'},
+                    'message': {'type': 'string'}
+                }
+            },
         },
     )
     @action(detail=False, methods=['delete'])

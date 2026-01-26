@@ -69,34 +69,15 @@ class Asin(models.Model):
     """
     Asin model - serves as inventory item
     """
-    value = models.CharField(max_length=255)
+    value = models.CharField(max_length=255, null=True, blank=True)
     name = models.CharField(max_length=255)
     
     # Inventory fields
     ean = models.CharField(max_length=255, null=True, blank=True)
-    vendor = models.ForeignKey(
-        'InventoryVendor',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='asins'
-    )
+    vendor = models.CharField(max_length=255, blank=True, default='')
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    shelf = models.ManyToManyField('Shelf', related_name='asins', blank=True)
-    
-    MULTIPLE_CHOICES = [
-        ('YES', 'Yes'),
-        ('NO', 'No'),
-    ]
-    multiple = models.CharField(max_length=3, choices=MULTIPLE_CHOICES, default='NO')
-    
-    parent = models.ForeignKey(
-        'self',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='children'
-    )
+    shelf = models.CharField(max_length=255, blank=True, default='')
+    contains = models.CharField(max_length=500, blank=True, default='', help_text="Comma-separated ASIN values for child items")
 
     def __str__(self):
         return f"{self.value} - {self.name}"

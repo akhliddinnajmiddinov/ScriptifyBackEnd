@@ -27,8 +27,6 @@ class InventoryVendorAdmin(admin.ModelAdmin):
 
 @admin.register(Asin)
 class AsinAdmin(admin.ModelAdmin):
-    list_display = ['id', 'value', 'name', 'ean', 'vendor', 'amount', 'multiple', 'parent']
-    list_filter = ['multiple', 'vendor']
-    search_fields = ['value', 'name', 'ean']
-    filter_horizontal = ['shelf']
-    raw_id_fields = ['vendor', 'parent']
+    list_display = ['id', 'value', 'name', 'ean', 'vendor', 'amount', 'shelf', 'contains']
+    list_filter = ['vendor']
+    search_fields = ['value', 'name', 'ean', 'vendor', 'shelf', 'contains']

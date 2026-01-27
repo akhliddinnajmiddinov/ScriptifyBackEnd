@@ -2,6 +2,8 @@ from django_filters import rest_framework as filters
 from .models import Listing, Shelf, InventoryVendor, Asin
 from .serializers import ListingSerializer
 from rest_framework.pagination import PageNumberPagination
+import re
+from django.db.models import Q
 
 
 class StandardPagination(PageNumberPagination):
@@ -78,6 +80,47 @@ class AsinFilter(filters.FilterSet):
     min_amount = filters.NumberFilter(field_name='amount', lookup_expr='gte')
     max_amount = filters.NumberFilter(field_name='amount', lookup_expr='lte')
     
+    # Universal search
+    search = filters.CharFilter(method='filter_search')
+    
     class Meta:
         model = Asin
-        fields = ['value', 'name', 'ean', 'vendor', 'shelf', 'contains', 'min_amount', 'max_amount']
+        fields = ['value', 'name', 'ean', 'vendor', 'shelf', 'contains', 'min_amount', 'max_amount', 'search']
+
+    def _sanitize_and_tokenize(self, value: str) -> list[str]:
+        if not value or not value.strip():
+            return []
+        sanitized = re.sub(r'[",*#]+', " ", value)
+        return [t.strip() for t in sanitized.split() if t.strip()]
+    
+    def filter_search(self, queryset, name, value):
+        """
+        Optimized universal search with token-based searching.
+        Each token is searched independently with AND logic.
+        """
+        tokens = self._sanitize_and_tokenize(value)
+        
+        # If no valid tokens (e.g. search cleared), return original queryset
+        if not tokens:
+            return queryset
+        
+        # Apply filters for each token with AND logic
+        query = Q()
+        for token in tokens:
+            token_q = self._build_token_query(token)
+            query &= token_q
+        
+        return queryset.filter(query).distinct()
+
+    def _build_token_query(self, token):
+        """
+        Build Q object for a single token using icontains on all searchable fields.
+        """
+        return (
+            Q(value__icontains=token) |
+            Q(name__icontains=token) |
+            Q(ean__icontains=token) |
+            Q(vendor__icontains=token) |
+            Q(shelf__icontains=token) |
+            Q(contains__icontains=token)
+        )

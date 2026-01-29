@@ -81,7 +81,7 @@ class Asin(models.Model):
     # Inventory fields
     ean = models.CharField(max_length=255, null=True, blank=True, unique=True)
     vendor = models.CharField(max_length=255, blank=True, default='')
-    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    amount = models.IntegerField(default=0)
     shelf = models.CharField(max_length=255, blank=True, default='')
     contains = models.CharField(max_length=500, blank=True, default='', help_text="Comma-separated ASIN values for child items")
 

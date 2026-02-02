@@ -7,7 +7,7 @@ from django.db.models import Sum, Count, Avg, Q, Prefetch
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
-from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin
+from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent
 from .serializers import (
     ListingSerializer, ShelfSerializer, InventoryVendorSerializer, 
     AsinSerializer, AsinPreviewItemSerializer, AsinBulkAddItemSerializer
@@ -622,12 +622,14 @@ class AsinViewSet(viewsets.ModelViewSet):
    
     def get_queryset(self):
         """
-        Optimize queryset by prefetching asins_listings to prevent N+1 queries.
+        Optimize queryset by prefetching asins_listings and components to prevent N+1 queries.
         """
         queryset = super().get_queryset()
         # Prefetch asins_listings to avoid N+1 queries when counting Listings
+        # Prefetch component_set for BuildComponent M2M relationship
         queryset = queryset.prefetch_related(
-            Prefetch('asins_listings', queryset=ListingAsin.objects.select_related('listing'))
+            Prefetch('asins_listings', queryset=ListingAsin.objects.select_related('listing')),
+            Prefetch('component_set', queryset=BuildComponent.objects.select_related('component'))
         )
         return queryset
     

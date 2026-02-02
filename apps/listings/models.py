@@ -112,6 +112,32 @@ class Asin(models.Model):
             self.ean = None
         super().save(*args, **kwargs)
 
+class BuildComponent(models.Model):
+    """
+    Through table for self-referential M2M on Asin.
+    Defines which components (and how many) are needed to build a parent item.
+    """
+    parent = models.ForeignKey(
+        Asin,
+        on_delete=models.CASCADE,
+        related_name='component_set'
+    )
+    component = models.ForeignKey(
+        Asin,
+        on_delete=models.CASCADE,
+        related_name='parent_set'
+    )
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.parent.value} contains {self.quantity}x {self.component.value}"
+
+    class Meta:
+        db_table = 'build_component'
+        unique_together = ['parent', 'component']
+        ordering = ['parent', 'component']
+
+
 class ListingAsin(models.Model):
     """
     ListingAsin model

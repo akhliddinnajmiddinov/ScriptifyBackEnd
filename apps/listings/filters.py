@@ -73,9 +73,13 @@ class AsinFilter(filters.FilterSet):
     # Shelf search (now simple text field)
     shelf = filters.CharFilter(field_name='shelf', lookup_expr='icontains')
     
-    # Contains search (now simple text field)
+    # Contains search (text field, kept for backwards compatibility)
     contains = filters.CharFilter(field_name='contains', lookup_expr='icontains')
     
+    # Component search (searches component ASIN values via M2M)
+    component = filters.CharFilter(method='filter_component')
+    component_id = filters.CharFilter(method='filter_component_id')
+
     # Amount range filtering
     min_amount = filters.NumberFilter(field_name='amount', lookup_expr='gte')
     max_amount = filters.NumberFilter(field_name='amount', lookup_expr='lte')
@@ -85,13 +89,29 @@ class AsinFilter(filters.FilterSet):
     
     class Meta:
         model = Asin
-        fields = ['value', 'name', 'ean', 'vendor', 'shelf', 'contains', 'min_amount', 'max_amount', 'search']
+        fields = ['value', 'name', 'ean', 'vendor', 'shelf', 'contains', 'component', 'min_amount', 'max_amount', 'search']
 
     def _sanitize_and_tokenize(self, value: str) -> list[str]:
         if not value or not value.strip():
             return []
         sanitized = re.sub(r'[",*#]+', " ", value)
         return [t.strip() for t in sanitized.split() if t.strip()]
+    
+    def filter_component(self, queryset, name, value):
+        """
+        Filter by component ASIN value (via M2M relationship).
+        """
+        if not value:
+            return queryset
+        return queryset.filter(component_set__component__value__icontains=value).distinct()
+    
+    def filter_component_id(self, queryset, name, value):
+        """
+        Filter by component ASIN ID (via M2M relationship).
+        """
+        if not value:
+            return queryset
+        return queryset.filter(component_set__component__pk=value).distinct()
     
     def filter_search(self, queryset, name, value):
         """
@@ -115,6 +135,7 @@ class AsinFilter(filters.FilterSet):
     def _build_token_query(self, token):
         """
         Build Q object for a single token using icontains on all searchable fields.
+        Includes both the legacy 'contains' text field and the new M2M component relationship.
         """
         return (
             Q(value__icontains=token) |
@@ -122,5 +143,6 @@ class AsinFilter(filters.FilterSet):
             Q(ean__icontains=token) |
             Q(vendor__icontains=token) |
             Q(shelf__icontains=token) |
-            Q(contains__icontains=token)
+            Q(contains__icontains=token) |
+            Q(component_set__component__value__icontains=token)
         )

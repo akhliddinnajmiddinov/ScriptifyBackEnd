@@ -1,0 +1,805 @@
+Found 128 Asin records with contains field
+
+Processing: B00FGLOS3I (Brother LC 129 XL 125 XL Multipack)
+  Contains: B07PX36GXT, B00A2HXKIK, B00A2HXLA2, B00ALU5WAW
+  → B07PX36GXT x1 (Found: ID 1269)
+  → B00A2HXKIK x1 (Found: ID 1388)
+  → B00A2HXLA2 x1 (Found: ID 865)
+  → B00ALU5WAW x1 (Found: ID 1235)
+
+Processing: B001FXOHCI (Brother LC 1100 HY Multipack)
+  Contains: B001DHSYVQ, B001DHJUWI, B00DSV56UW, B001DHVVB6
+  → B001DHSYVQ x1 (Found: ID 1447)
+  → B001DHJUWI x1 (Found: ID 1389)
+  → B00DSV56UW x1 (Found: ID 1391)
+  → B001DHVVB6 x1 (Found: ID 1390)
+
+Processing: B01MRV4CXD (27 XL Multipack Yellow, Magenta, Cyan)
+  Contains: B00E9OSLDQ, B00E9OSLWC, B00E9OSMBM
+  → B00E9OSLDQ x1 (Found: ID 871)
+  → B00E9OSLWC x1 (Found: ID 1009)
+  → B00E9OSMBM x1 (Found: ID 775)
+
+Processing: B000WB85J0 (Brother LC 970 Multipack)
+  Contains: B001G4OQI6, B000T9RSYI, B000TNEVOO, B000T9OM1K
+  → B001G4OQI6 x1 (Found: ID 1461)
+  → B000T9RSYI x1 (Found: ID 1462)
+  → B000TNEVOO x1 (Found: ID 1463)
+  → B000T9OM1K x1 (Found: ID 1464)
+
+Processing: B0779FV2PB (Brother LC 3211 Multipack)
+  Contains: B076JJRJCX, B076JKML2C, B076JK5LZK, B076JH64LQ
+  → B076JJRJCX x1 (Found: ID 1231)
+  → B076JKML2C x1 (Found: ID 1465)
+  → B076JK5LZK x1 (Found: ID 1466)
+  → B076JH64LQ x1 (Found: ID 1467)
+
+Processing: B014JSOFHC (Brother LC 221 Multipack - Better Rank -Cheaper)
+  Contains: B014JSO9W8, B014JSOBSA, B075SLJ96R, B014JSOXTM
+  → B014JSO9W8 x1 (Found: ID 1280)
+  → B014JSOBSA x1 (Found: ID 1393)
+  → B075SLJ96R x1 (Found: ID 1394)
+  → B014JSOXTM x1 (Found: ID 1385)
+
+Processing: B0DJCDQS5G (Brother LC 221 Multipack)
+  Contains: B014JSO9W8, B014JSOBSA, B014JSOBSA, B014JSOXTM
+  → B014JSO9W8 x1 (Found: ID 1280)
+  → B014JSOBSA x2 (Found: ID 1393)
+  → B014JSOXTM x1 (Found: ID 1385)
+
+Processing: B0G58KV57S (Epson 18 Tripple Multipack)
+  Contains: B008392HKG, B008392HKG, B008392HKG
+  → B008392HKG x3 (Found: ID 703)
+
+Processing: B09VL4VDJK (Brother LC 422 Multipack Cyan Magenta Yellow Black)
+  Contains: B09VH9DT9L, B09VH9X3PD, B09VHB42K4, B09VH9DFQG
+  → B09VH9DT9L x1 (Found: ID 1065)
+  → B09VH9X3PD x1 (Found: ID 830)
+  → B09VHB42K4 x1 (Found: ID 1054)
+  → B09VH9DFQG x1 (Found: ID 1451)
+
+Processing: B00A309TSG (Brother LC 127 XL LC 125 XL Multipack Cyan Magenta Yellow Black)
+  Contains: B00A2HXJ68, B00A2HXKIK, B00A2HXLA2, B00ALU5WAW
+  → B00A2HXJ68 x1 (Found: ID 1278)
+  → B00A2HXKIK x1 (Found: ID 1388)
+  → B00A2HXLA2 x1 (Found: ID 865)
+  → B00ALU5WAW x1 (Found: ID 1235)
+
+Processing: B009DL18VW (Canon 72 Multipack MBK/C/M/Y/R)
+  Contains: B009DL0X5O, B01AASB7T4, B009DL0ZZC, B0098HW2JI, B00C2VK1UO
+  → B009DL0X5O x1 (Found: ID 1366)
+  → B01AASB7T4 x1 (Found: ID 1367)
+  → B009DL0ZZC x1 (Found: ID 1045)
+  → B0098HW2JI x1 (Found: ID 863)
+  → B00C2VK1UO x1 (Found: ID 1095)
+
+Processing: B009DL18G2 (Canon 72 Photo Multipack)
+  Contains: B009DL0Y2Q, B01AASB7T4, B009DL0ZZC, B0098HW2JI, B009DL17R2
+  → B009DL0Y2Q x1 (Found: ID 993)
+  → B01AASB7T4 x1 (Found: ID 1367)
+  → B009DL0ZZC x1 (Found: ID 1045)
+  → B0098HW2JI x1 (Found: ID 863)
+  → B009DL17R2 x1 (Found: ID 1368)
+
+Processing: B093F7GRGN (Brother LC 424 Multipack)
+  Contains: B093F8B6F3, B093F88SYX, B093F7QPR8, B093F7VY4L
+  → B093F8B6F3 x1 (Found: ID 1478)
+  → B093F88SYX x1 (Found: ID 1479)
+  → B093F7QPR8 x1 (Found: ID 1480)
+  → B093F7VY4L x1 (Found: ID 1481)
+
+Processing: B000TGO4YI (Epson T5597 Multipack)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B0751KXGWF (Canon 581 Multipack with Photo Paper)
+  Contains: Photo paper
+  → Photo paper x1 (NOT FOUND!)
+
+Processing: B0C17BS9JQ (Canon PGI 580 / 581 Setup Multipack)
+  Contains: SETUP
+  → SETUP x1 (NOT FOUND!)
+
+Processing: B08GKX4MC5 (HP 912 Multipack Magenta Cyan Yellow Magenta Black)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B019Y6I6T2 (Epson 24 XL Multipack)
+  Contains: B0094P9QV6, B0094P9QZ2, B0094P9R6K, B015NE4IZK, B00OMPTFXC, B0094P9RI8
+  → B0094P9QV6 x1 (Found: ID 1019)
+  → B0094P9QZ2 x1 (Found: ID 767)
+  → B0094P9R6K x1 (Found: ID 862)
+  → B015NE4IZK x1 (Found: ID 722)
+  → B00OMPTFXC x1 (Found: ID 982)
+  → B0094P9RI8 x1 (Found: ID 1169)
+
+Processing: B013DHMFSQ (Epson 29 XL Multipack Black Cyan, Magenta, Yellow)
+  Contains: B013DHM8WY, B013DHMAEU, B013DHMC7A, B013DHMDYW
+  → B013DHM8WY x1 (Found: ID 1200)
+  → B013DHMAEU x1 (Found: ID 1456)
+  → B013DHMC7A x1 (Found: ID 739)
+  → B013DHMDYW x1 (Found: ID 923)
+
+Processing: B0C1757K53 (Canon 8 / 5 Multipack Black Blue Yellow Magenta Cyan Black)
+  Contains: B000B8TJ0I, B000B8TJ0S, B005CGEJPE, B000B8TJ1C, B004J0JGZC
+  → B000B8TJ0I x1 (Found: ID 1326)
+  → B000B8TJ0S x1 (Found: ID 1369)
+  → B005CGEJPE x1 (Found: ID 1325)
+  → B000B8TJ1C x1 (Found: ID 1370)
+  → B004J0JGZC x1 (Found: ID 713)
+
+Processing: B0085CRI9G (Canon 510 Twin black)
+  Contains: B00B31OWZY, B00B31OWZY
+  → B00B31OWZY x2 (Found: ID 1302)
+
+Processing: B0149NZN5A (Canon 570, 571 Multipack  BK C M Y)
+  Contains: B0149NZIIC, B0149NZ1ZC, B0149NZ3UU, B0149NZ6YI, B0149NZBIE
+  → B0149NZIIC x1 (Found: ID 1125)
+  → B0149NZ1ZC x1 (Found: ID 854)
+  → B0149NZ3UU x1 (Found: ID 1287)
+  → B0149NZ6YI x1 (Found: ID 1042)
+  → B0149NZBIE x1 (Found: ID 921)
+
+Processing: B0B8X3SL18 (Epson 503 XL Multipack, Black, Magenta, Cyan, Yellow)
+  Contains: B0B8X3CQ5D, B0B8X2PZD6, B0B8X2P3G5, B0B8X2NQBR
+  → B0B8X3CQ5D x1 (Found: ID 1075)
+  → B0B8X2PZD6 x1 (Found: ID 858)
+  → B0B8X2P3G5 x1 (Found: ID 1067)
+  → B0B8X2NQBR x1 (Found: ID 872)
+
+Processing: B001EX5BWY (Canon 521 Multipack Cyan Magenta Yellow)
+  Contains: B001EX1FRE, B001EWYO0A, B001EX5BN8
+  → B001EX1FRE x1 (Found: ID 1286)
+  → B001EWYO0A x1 (Found: ID 975)
+  → B001EX5BN8 x1 (Found: ID 1188)
+
+Processing: B004LSURE6 (Brother LC 1240 Multipack)
+  Contains: B004HYBL9E, B004HYDK3Y, B004HY9NI0
+  → B004HYBL9E x1 (Found: ID 983)
+  → B004HYDK3Y x1 (Found: ID 1401)
+  → B004HY9NI0 x1 (Found: ID 1402)
+
+Processing: B003Y5KND2 (Canon 526 Multipack Cyan, Magenta, Yellow)
+  Contains: B003Y5OECI, B003Y5KNC8, B003Y5PZBM
+  → B003Y5OECI x1 (Found: ID 1330)
+  → B003Y5KNC8 x1 (Found: ID 1329)
+  → B003Y5PZBM x1 (Found: ID 1154)
+
+Processing: B00TP5MFI6 (Canon 2500 XL Multipack Black Cyan Yellow Magenta )
+  Contains: B00N4OOPR8, B00N4OOQNQ, B01GU37DP0, B01LWAC8EP
+  → B00N4OOPR8 x1 (Found: ID 1322)
+  → B00N4OOQNQ x1 (Found: ID 1323)
+  → B01GU37DP0 x1 (Found: ID 1363)
+  → B01LWAC8EP x1 (Found: ID 840)
+
+Processing: B008MTRCPM (Epson 16 Multipack Cyan Magenta Yellow Black)
+  Contains: B01MRV4AYJ, B008GJH94C, B008GJH9JM, B008GJH9XI
+  → B01MRV4AYJ x1 (Found: ID 1006)
+  → B008GJH94C x1 (Found: ID 1162)
+  → B008GJH9JM x1 (Found: ID 805)
+  → B008GJH9XI x1 (Found: ID 787)
+
+Processing: B08G1MZCG2 (Epson 405 XL Multipack Black Cyan Yellow Magenta)
+  Contains: B08G1KB7N7, B08G1MFYGQ, B08G1MJM2B, B08G1CGXCV
+  → B08G1KB7N7 x1 (Found: ID 987)
+  → B08G1MFYGQ x1 (Found: ID 1026)
+  → B08G1MJM2B x1 (Found: ID 878)
+  → B08G1CGXCV x1 (Found: ID 1023)
+
+Processing: B09QLNPVVR (Canon 525 Black 526 Cyan, Magenta, Yellow Multipack)
+  Contains: B0050HGLCE,  B0040L2T1I, B003Y5OECI, B003Y5KNC8, B003Y5PZBM
+  → B0050HGLCE x1 (Found: ID 1142)
+  → B0040L2T1I x1 (Found: ID 803)
+  → B003Y5OECI x1 (Found: ID 1330)
+  → B003Y5KNC8 x1 (Found: ID 1329)
+  → B003Y5PZBM x1 (Found: ID 1154)
+
+Processing: B0B8X3TBW1 (Epson 604 Multipack ( Black XL ) Cyan Magenta Yellow)
+  Contains: B0B8X4MF12, B0BC1PF592, B0B97RQXBP, B0B97LQ4TN
+  → B0B8X4MF12 x1 (Found: ID 1375)
+  → B0BC1PF592 x1 (Found: ID 1339)
+  → B0B97RQXBP x1 (Found: ID 1340)
+  → B0B97LQ4TN x1 (Found: ID 1313)
+
+Processing: B005QP5GFI (Canon 35 Black Twin & CLI-36 Colour)
+  Contains: B00161YM5Q, B00161YM5Q, B000MGMJYC
+  → B00161YM5Q x2 (Found: ID 1425)
+  → B000MGMJYC x1 (Found: ID 691)
+
+Processing: B08BXT7Z6J (Epson 104 Multipack Magenta Black Yellow Cyan)
+  Contains: B07GPHSWN5, B07GP7B15B, B07GS6ZRN8, B07GNT2RJF
+  → B07GPHSWN5 x1 (Found: ID 1420)
+  → B07GP7B15B x1 (Found: ID 1221)
+  → B07GS6ZRN8 x1 (Found: ID 969)
+  → B07GNT2RJF x1 (Found: ID 902)
+
+Processing: B0CH8NYKJZ (Canon 520 Twin)
+  Contains: B001EX38G0, B001EX38G0
+  → B001EX38G0 x2 (Found: ID 847)
+
+Processing: B015OW6BIS (Canon 551 Black Yellow Magenta, Cyan, Multipack)
+  Contains: B009DL077I, B009DL089K, B009DL08X6, B009DL09PI
+  → B009DL077I x1 (Found: ID 914)
+  → B009DL089K x1 (Found: ID 1295)
+  → B009DL08X6 x1 (Found: ID 1180)
+  → B009DL09PI x1 (Found: ID 1165)
+
+Processing: B004HYDOH6 (Brother LC 1280 XL Multipack, Yellow, Magenta, Cyan, Magenta)
+  Contains: B004HYBMN4, B004HY68B0, B004HY9ND0, B004HY9K9W
+  → B004HYBMN4 x1 (Found: ID 1239)
+  → B004HY68B0 x1 (Found: ID 1230)
+  → B004HY9ND0 x1 (Found: ID 1234)
+  → B004HY9K9W x1 (Found: ID 1482)
+
+Processing: B00NA02OS8 (Brother LC 227 XL LC 225 XL Multipack)
+  Contains: B00MAMTRHS, B075Q3FSXY, B07C5QGY37, B00MAMTNG8
+  → B00MAMTRHS x1 (Found: ID 1400)
+  → B075Q3FSXY x1 (Found: ID 1236)
+  → B07C5QGY37 x1 (Found: ID 1237)
+  → B00MAMTNG8 x1 (Found: ID 1411)
+
+Processing: 9000889340 (Canon 545 546 Multipack Black Color)
+  Contains: B00ET2LU2M, B00ET2LSWO
+  → B00ET2LU2M x1 (Found: ID 876)
+  → B00ET2LSWO x1 (Found: ID 741)
+
+Processing: B0CH8KFBKZ (Canon 575 Black XL 576 Color XL Multipack Photo paper)
+  Contains: Photo paper
+  → Photo paper x1 (NOT FOUND!)
+
+Processing: B015OW693U (Canon 521 Multipack Black Yellow Magenta Cyan Photo Paper)
+  Contains: Photo paper
+  → Photo paper x1 (NOT FOUND!)
+
+Processing: B001DZFXH6 (Epson T1006 Multipack Cyan Magenta Yellow)
+  Contains: B001DZJTRQ, B001DZJTVW, B001EKNJ9Y
+  → B001DZJTRQ x1 (Found: ID 1130)
+  → B001DZJTVW x1 (Found: ID 1172)
+  → B001EKNJ9Y x1 (Found: ID 891)
+
+Processing: B079CHPB2Y (Epson 16 XL Multipack Black, Magenta, Yellow, Cyan)
+  Contains: B008GJHB8G, B01MUTG09E, B008GJHC6C, B008GJHCM6
+  → B008GJHB8G x1 (Found: ID 859)
+  → B01MUTG09E x1 (Found: ID 873)
+  → B008GJHC6C x1 (Found: ID 1081)
+  → B008GJHCM6 x1 (Found: ID 866)
+
+Processing: B07WYHQLDB (Epson 603 Multipack ( Black XL ) Magenta Yellow Cyan)
+  Contains: B07VWYM7KX, B07VWS9QNJ, B07VYS9SBY, B07VWYCD9K
+  → B07VWYM7KX x1 (Found: ID 1141)
+  → B07VWS9QNJ x1 (Found: ID 1290)
+  → B07VYS9SBY x1 (Found: ID 1331)
+  → B07VWYCD9K x1 (Found: ID 1289)
+
+Processing: B074NCC8DK (Epson 378 Multipack, 6 Colors)
+  Contains: TODO
+  → TODO x1 (NOT FOUND!)
+
+Processing: B06XK4P3H1 (Epson 34 XL Multipack Black Cyan Magenta Yellow)
+  Contains: B06XKCGHDF, B06XKDDNVR, B06XK5BCPG, B06XK78TWF
+  → B06XKCGHDF x1 (Found: ID 1222)
+  → B06XKDDNVR x1 (Found: ID 947)
+  → B06XK5BCPG x1 (Found: ID 842)
+  → B06XK78TWF x1 (Found: ID 852)
+
+Processing: B0797HSBNN (Brother LC 3213 Multipack, Cyan, Magenta, Yellow, Black)
+  Contains: B076JK5XRH, B076JKT3VY, B07GY35XFH, B076JLDS5F
+  → B076JK5XRH x1 (Found: ID 1449)
+  → B076JKT3VY x1 (Found: ID 1398)
+  → B07GY35XFH x1 (Found: ID 1397)
+  → B076JLDS5F x1 (Found: ID 1399)
+
+Processing: B07VVSTH27 (Epson 603 Multipack)
+  Contains: B07XP26Q8H, B07VWS9QNJ, B07VYS9SBY, B07VWYCD9K
+  → B07XP26Q8H x1 (Found: ID 692)
+  → B07VWS9QNJ x1 (Found: ID 1290)
+  → B07VYS9SBY x1 (Found: ID 1331)
+  → B07VWYCD9K x1 (Found: ID 1289)
+
+Processing: B0094P9PHQ (Epson 24 Multipack 6 colors (Cyan Yellow MK + Light cyan, Light magenta))
+  Contains: B0094P9PMQ, B00KY3TN6U, B0094P9PWQ, B0094P9Q3Y, B07CNR2D97, B0094P9QHK
+  → B0094P9PMQ x1 (Found: ID 1011)
+  → B00KY3TN6U x1 (Found: ID 694)
+  → B0094P9PWQ x1 (Found: ID 1079)
+  → B0094P9Q3Y x1 (Found: ID 890)
+  → B07CNR2D97 x1 (Found: ID 1032)
+  → B0094P9QHK x1 (Found: ID 1321)
+
+Processing: B0B9HFYFJT (Epson 502 XL Multipack Black Magenta Yellow Cyan)
+  Contains: B07BB4NJH2, B07BB51G4S, B07BKL26SN, B07BB51G4V
+  → B07BB4NJH2 x1 (Found: ID 1149)
+  → B07BB51G4S x1 (Found: ID 869)
+  → B07BKL26SN x1 (Found: ID 1056)
+  → B07BB51G4V x1 (Found: ID 726)
+
+Processing: B08GKYHH4R (HP 934 935 Multipack Cyan Magenta Black Yellow)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B0008FUA34 (Epson T0487 Multipack 6 colors)
+  Contains: TODO
+  → TODO x1 (NOT FOUND!)
+
+Processing: B00OHGGW7S (Canon 525 Twin Plastic)
+  Contains: B0050HGLCE, B0050HGLCE
+  → B0050HGLCE x2 (Found: ID 1142)
+
+Processing: B004Q4ADJO (Canon 9 Multipack PBK /C /M /Y / GY)
+  Contains: NOASINS
+  → NOASINS x1 (NOT FOUND!)
+
+Processing: B00NA02FAA (Brother LC 223 Multipack Magenta Cyan Black Yellow)
+  Contains: B00MAMTLDI, B00MAMTUMK, B00MAMTVEC, B00MAMTVY2
+  → B00MAMTLDI x1 (Found: ID 1327)
+  → B00MAMTUMK x1 (Found: ID 1281)
+  → B00MAMTVEC x1 (Found: ID 1282)
+  → B00MAMTVY2 x1 (Found: ID 1283)
+
+Processing: B073JPC571 (Epson 35 XL Multipack Magenta Cyan Yellow Black)
+  Contains: B06XKDCCGZ, B06XK74558, B06XK8K78V, B06XKD83TC
+  → B06XKDCCGZ x1 (Found: ID 760)
+  → B06XK74558 x1 (Found: ID 804)
+  → B06XK8K78V x1 (Found: ID 1012)
+  → B06XKD83TC x1 (Found: ID 749)
+
+Processing: B00AZL4TH4 (Brother LC 123 Multipack Cyan Magenta Black Yellow)
+  Contains: B00A0N0UV6, B00A0N0USY, B00A0N0U5W, B00A0N0OVW
+  → B00A0N0UV6 x1 (Found: ID 761)
+  → B00A0N0USY x1 (Found: ID 1374)
+  → B00A0N0U5W x1 (Found: ID 939)
+  → B00A0N0OVW x1 (Found: ID 1332)
+
+Processing: B0CH8P67MX (Canon 35 Twin)
+  Contains: B00161YM5Q, B00161YM5Q
+  → B00161YM5Q x2 (Found: ID 1425)
+
+Processing: B003N8YEKS (Canon 37 38 Multipack)
+  Contains: B0013DMFBK, B002UD3700
+  → B0013DMFBK x1 (Found: ID 1268)
+  → B002UD3700 x1 (Found: ID 1328)
+
+Processing: B008392IQE (Epson 18 XL Multipack Cyan Yellow Magenta Black)
+  Contains: B008392HPQ, B008392HWY, B008392I5K, B008392IFA
+  → B008392HPQ x1 (Found: ID 789)
+  → B008392HWY x1 (Found: ID 870)
+  → B008392I5K x1 (Found: ID 934)
+  → B008392IFA x1 (Found: ID 1198)
+
+Processing: B0B8X4CBKQ (Epson 604 XL Multipack Cyan, Magenta, Yellow, Black)
+  Contains: B0B8X4MF12, B0B8X4155Z, B0B8X2ZR9H, B0B8X5FFZ5
+  → B0B8X4MF12 x1 (Found: ID 1375)
+  → B0B8X4155Z x1 (Found: ID 1438)
+  → B0B8X2ZR9H x1 (Found: ID 736)
+  → B0B8X5FFZ5 x1 (Found: ID 1483)
+
+Processing: B000UCCQ50 (Brother LC 1000 Multipack Cyan Magenta Yellow)
+  Contains: B000UC909A, B000IIP7XO, B00WH7TDMU
+  → B000UC909A x1 (Found: ID 1484)
+  → B000IIP7XO x1 (Found: ID 1396)
+  → B00WH7TDMU x1 (Found: ID 1395)
+
+Processing: B009DL0WKK (Canon 42 Multipack BK/ GY/ LGY/ C/ M/ Y/ PC/ PM)
+  Contains: B009DL0FRK, B009DL0V4M, B009DL0VRY, B009DL0GB0, B0098HW428, B00BD334F6, B009DL0JU8, B009DL0UKM
+  → B009DL0FRK x1 (Found: ID 1074)
+  → B009DL0V4M x1 (Found: ID 1364)
+  → B009DL0VRY x1 (Found: ID 1158)
+  → B009DL0GB0 x1 (Found: ID 971)
+  → B0098HW428 x1 (Found: ID 989)
+  → B00BD334F6 x1 (Found: ID 704)
+  → B009DL0JU8 x1 (Found: ID 1147)
+  → B009DL0UKM x1 (Found: ID 1303)
+
+Processing: B003MVEVEU (Epson T1306 Multipack Cyan Magenta Yellow)
+  Contains: B003MVGVW0, B003MVGWBA, B003MVIZ4W
+  → B003MVGVW0 x1 (Found: ID 1469)
+  → B003MVGWBA x1 (Found: ID 702)
+  → B003MVIZ4W x1 (Found: ID 916)
+
+Processing: B00AIOZU08 (Brother LC 125 XL Cyan, Magenta, Yellow Multipack)
+  Contains: B00A2HXKIK, B00A2HXLA2, B00ALU5WAW
+  → B00A2HXKIK x1 (Found: ID 1388)
+  → B00A2HXLA2 x1 (Found: ID 865)
+  → B00ALU5WAW x1 (Found: ID 1235)
+
+Processing: B0CH8L2DW1 (Canon 575 Black 576 Color Multipack Photo paper)
+  Contains: Photo paper
+  → Photo paper x1 (NOT FOUND!)
+
+Processing: B07951GM69 (Canon 550 551 Setup Multipack Black Black Cyan Magenta Yellow)
+  Contains: SETUP
+  → SETUP x1 (NOT FOUND!)
+
+Processing: B01KAD1JVA (HP 934 Multipack Cyan Black Magenta Yellow)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B0041OO5HK (Brother LC 985 Multipack Black Yellow Magenta Cyan)
+  Contains: B003TH9L42, B003THGOTM, B008HOFAF6, B003THF9DY
+  → B003TH9L42 x1 (Found: ID 1452)
+  → B003THGOTM x1 (Found: ID 1249)
+  → B008HOFAF6 x1 (Found: ID 1248)
+  → B003THF9DY x1 (Found: ID 1477)
+
+Processing: B000SWUIJI (Brother LC 1000 Multipack Black, Magenta, Yellow, Cyan)
+  Contains: B000J102ZI, B000UC909A, B000IIP7XO, B00WH7TDMU
+  → B000J102ZI x1 (Found: ID 1257)
+  → B000UC909A x1 (Found: ID 1484)
+  → B000IIP7XO x1 (Found: ID 1396)
+  → B00WH7TDMU x1 (Found: ID 1395)
+
+Processing: B09XR9VCJZ (Brother LC 421 Multipack Black Yellow Cyan, Magenta)
+  Contains: B09B291695, B09B2832DD, B09B28G7S7, B09B2CN1L4
+  → B09B291695 x1 (Found: ID 1485)
+  → B09B2832DD x1 (Found: ID 1415)
+  → B09B28G7S7 x1 (Found: ID 1416)
+  → B09B2CN1L4 x1 (Found: ID 1417)
+
+Processing: B003MVJ36Q (Epson Multipack T1285 Black, Magenta, Yellow, Cyan)
+  Contains: B003MVOFZU, B003MVJ1OA, B003MVJ23K, B01EFQ4E56
+  → B003MVOFZU x1 (Found: ID 1378)
+  → B003MVJ1OA x1 (Found: ID 1316)
+  → B003MVJ23K x1 (Found: ID 1317)
+  → B01EFQ4E56 x1 (Found: ID 838)
+
+Processing: B01AGDX0OI (HP 364 Multipack Black Cyan Magenta Yellow)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B0756VYWL1 (Epson 33 XL Multipack)
+  Contains: B013DHMTA0, B013J7UIB6, B013DHMV08, B013DHMWUM, B013J7HJCM
+  → B013DHMTA0 x1 (Found: ID 1135)
+  → B013J7UIB6 x1 (Found: ID 710)
+  → B013DHMV08 x1 (Found: ID 1300)
+  → B013DHMWUM x1 (Found: ID 888)
+  → B013J7HJCM x1 (Found: ID 1061)
+
+Processing: B0CH8P8JT8 (Canon 571 XL Multipack Cyan Magenta Yellow Black Photo Paper )
+  Contains: Photo paper
+  → Photo paper x1 (NOT FOUND!)
+
+Processing: B0CH8NN12P (Canon 525 Twin Cardboard)
+  Contains: B0050HGLCE, B0050HGLCE
+  → B0050HGLCE x2 (Found: ID 1142)
+
+Processing: B013DHM7F2 (Epson 29 Multipack Cyan Black Yellow Magenta)
+  Contains: B013DHM0PO, B013DHM2D4, B013DHM3WO, B013DHM5IG
+  → B013DHM0PO x1 (Found: ID 1070)
+  → B013DHM2D4 x1 (Found: ID 1243)
+  → B013DHM3WO x1 (Found: ID 1244)
+  → B013DHM5IG x1 (Found: ID 1022)
+
+Processing: B08G1L9BHM (Epson 405 Multipack Black Cyan Yellow Magenta)
+  Contains: B08G1D3DHT, B08G1K3PNP, B08G1N69WW, B08G1KPY1L
+  → B08G1D3DHT x1 (Found: ID 849)
+  → B08G1K3PNP x1 (Found: ID 1108)
+  → B08G1N69WW x1 (Found: ID 997)
+  → B08G1KPY1L x1 (Found: ID 717)
+
+Processing: B00F52DRDU (Canon 540 XL 541 XL Color Black)
+  Contains: B09MDKPLXS, B07KZJ9TQZ
+  → B09MDKPLXS x1 (Found: ID 821)
+  → B07KZJ9TQZ x1 (Found: ID 1475)
+
+Processing: B0CH8NXG4Y (Canon 551 multipack Cardboard)
+  Contains: B009DL077I, B009DL089K, B009DL08X6, B009DL09PI
+  → B009DL077I x1 (Found: ID 914)
+  → B009DL089K x1 (Found: ID 1295)
+  → B009DL08X6 x1 (Found: ID 1180)
+  → B009DL09PI x1 (Found: ID 1165)
+
+Processing: B00064CJ8G (Canon 16 Color Twin pack)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B0057GTUXA (Epson T0807 Multipack, 6 cartridges)
+  Contains: B000H2NGEI, B000H2NGES, B000H2NGG6, B000RHP8AS, B000H2NGGQ, B000H2NGH0
+  → B000H2NGEI x1 (Found: ID 1007)
+  → B000H2NGES x1 (Found: ID 1314)
+  → B000H2NGG6 x1 (Found: ID 1053)
+  → B000RHP8AS x1 (Found: ID 1297)
+  → B000H2NGGQ x1 (Found: ID 1299)
+  → B000H2NGH0 x1 (Found: ID 1288)
+
+Processing: B014W6CGEU (Canon 570 XL 571 Multipack Black Black Magenta Cyan Yellow)
+  Contains: B0149NZK3U, B0149NZ1ZC, B0149NZ3UU, B0149NZ6YI, B0149NZBIE
+  → B0149NZK3U x1 (Found: ID 1134)
+  → B0149NZ1ZC x1 (Found: ID 854)
+  → B0149NZ3UU x1 (Found: ID 1287)
+  → B0149NZ6YI x1 (Found: ID 1042)
+  → B0149NZBIE x1 (Found: ID 921)
+
+Processing: B08GKWVD7M (HP 903 Multipack Magenta Black Yellow Cyan)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B003N2J1MK (Canon 520 521 Multipack Black Black Cyan Magenta Yellow)
+  Contains: B001EX38G0, B001FTM0U8, B001EX1FRE, B001EWYO0A, B001EX5BN8
+  → B001EX38G0 x1 (Found: ID 847)
+  → B001FTM0U8 x1 (Found: ID 908)
+  → B001EX1FRE x1 (Found: ID 1286)
+  → B001EWYO0A x1 (Found: ID 975)
+  → B001EX5BN8 x1 (Found: ID 1188)
+
+Processing: B08GKXLKHV (HP 953 Multipack, Black, Cyan, Yellow, Magenta)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B08GKW8Z1N (HP 963 Multipack Cyan Magenta Magenta Black)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B07VZ2X3M2 (Epson 603 XL Multipack Magenta Cyan Yellow Black)
+  Contains: B07VWYM7KX, B07VVT4HXY, B07VVSLQP3, B07VWZ2X86
+  → B07VWYM7KX x1 (Found: ID 1141)
+  → B07VVT4HXY x1 (Found: ID 1002)
+  → B07VVSLQP3 x1 (Found: ID 754)
+  → B07VWZ2X86 x1 (Found: ID 845)
+
+Processing: B013DHMRFM (Epson 33 Multipack 5 Colors Cyan Yellow Magenta Black and  Photo Black)
+  Contains: B01MTYBRG0, B013DHMJWS, B013DHMLKI, B013DHMNJW, B013DHMPCC
+  → B01MTYBRG0 x1 (Found: ID 1163)
+  → B013DHMJWS x1 (Found: ID 992)
+  → B013DHMLKI x1 (Found: ID 1301)
+  → B013DHMNJW x1 (Found: ID 1015)
+  → B013DHMPCC x1 (Found: ID 1161)
+
+Processing: B01MXT0SU7 (Brother LC 3219 XL Multipack Cyan, Magenta, Yellow, Black)
+  Contains: B01M6BSYME, B01M7XE2CJ, B01MG8AEL8, B01MRDVLBZ
+  → B01M6BSYME x1 (Found: ID 745)
+  → B01M7XE2CJ x1 (Found: ID 1305)
+  → B01MG8AEL8 x1 (Found: ID 1306)
+  → B01MRDVLBZ x1 (Found: ID 744)
+
+Processing: B0CH8MKSPN (Canon 551 XL Multipack Photo paper)
+  Contains: Photo paper
+  → Photo paper x1 (NOT FOUND!)
+
+Processing: B00OP8OHO8 (HP 304A Toner Multipack Cyan, Magenta, Yellow)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B0CH8P1JV8 (Canon 581 Multipack Cyan Magenta Yellow Black)
+  Contains: B0751L29HY, B0751L8XL5, B0751Q6GVV, B0751LTGQX
+  → B0751L29HY x1 (Found: ID 994)
+  → B0751L8XL5 x1 (Found: ID 1334)
+  → B0751Q6GVV x1 (Found: ID 1335)
+  → B0751LTGQX x1 (Found: ID 933)
+
+Processing: B005JD1XY0 (Epson T0895 Multipack)
+  Contains: B0057GTX1Y, B001H4BB7E, B005MMWQS0, B001AJ0HYY
+  → B0057GTX1Y x1 (Found: ID 1315)
+  → B001H4BB7E x1 (Found: ID 1292)
+  → B005MMWQS0 x1 (Found: ID 1293)
+  → B001AJ0HYY x1 (Found: ID 1291)
+
+Processing: B0017T1X18 (Canon Multipack 35 36 Black Black Color)
+  Contains: B0CH8P67MX, B000MGMJYC
+  → B0CH8P67MX x1 (Found: ID 1017)
+  → B000MGMJYC x1 (Found: ID 691)
+
+Processing: B004920Q7W (Canon 526 Multipack Grey, 525 Black, 526 Black, Magenta Yellow, Cyan)
+  Contains: B0050HGLCE, B0040L2T1I, B003Y5OECI, B003Y5KNC8, B003Y5PZBM, B003Y5GQ88
+  → B0050HGLCE x1 (Found: ID 1142)
+  → B0040L2T1I x1 (Found: ID 803)
+  → B003Y5OECI x1 (Found: ID 1330)
+  → B003Y5KNC8 x1 (Found: ID 1329)
+  → B003Y5PZBM x1 (Found: ID 1154)
+  → B003Y5GQ88 x1 (Found: ID 1365)
+
+Processing: B00008IOQJ (Canon 15 Color Twin pack)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B00JJI7Q2Y (Canon 550 XL, 551 Multipack  Black Black Cyan Magenta Yellow)
+  Contains: B009ELRFOA, B009DL077I, B009DL089K, B009DL08X6, B009DL09PI
+  → B009ELRFOA x1 (Found: ID 1121)
+  → B009DL077I x1 (Found: ID 914)
+  → B009DL089K x1 (Found: ID 1295)
+  → B009DL08X6 x1 (Found: ID 1180)
+  → B009DL09PI x1 (Found: ID 1165)
+
+Processing: B01BLR5NZM (Brother LC 1100 Multipack Black, Yellow, Cyan, Magenta)
+  Contains: B001DHJUUU, B001DHSYWK, B001DHFZ0O, B001DHIB4G
+  → B001DHJUUU x1 (Found: ID 1027)
+  → B001DHSYWK x1 (Found: ID 1264)
+  → B001DHFZ0O x1 (Found: ID 1263)
+  → B001DHIB4G x1 (Found: ID 1262)
+
+Processing: B01EFQ1PGC (Epson T0615 Multipack Yellow, Magenta, Cyan, Black)
+  Contains: B000B74BT8, B000B74BSY, B000B74BSE, B000RY8UR4
+  → B000B74BT8 x1 (Found: ID 1422)
+  → B000B74BSY x1 (Found: ID 1486)
+  → B000B74BSE x1 (Found: ID 1487)
+  → B000RY8UR4 x1 (Found: ID 1488)
+
+Processing: B0CH8PYQV8 (Canon 2500 Multipack Cyan Magenta Yellow Black)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B09VL6T3RB (Brother LC 422 XL Multipack Black, Cyan Magenta Yellow)
+  Contains: B09VL65CQB, B09VL68LW1, B09VL68RD9, B09VL77DMG
+  → B09VL65CQB x1 (Found: ID 1068)
+  → B09VL68LW1 x1 (Found: ID 1489)
+  → B09VL68RD9 x1 (Found: ID 884)
+  → B09VL77DMG x1 (Found: ID 1450)
+
+Processing: B001PKOQ1S (Brother LC 980 Multipack, Black, Magenta, Yellow, Cyan)
+  Contains: B001GT9BWC, B001GT2OVW, B0030BPD6C, B001GT2OW6
+  → B001GT9BWC x1 (Found: ID 1359)
+  → B001GT2OVW x1 (Found: ID 1310)
+  → B0030BPD6C x1 (Found: ID 1360)
+  → B001GT2OW6 x1 (Found: ID 1309)
+
+Processing: B009ELRF04 (Canon 551 Multipack Plastic)
+  Contains: B009DL077I, B009DL089K, B009DL08X6, B009DL09PI
+  → B009DL077I x1 (Found: ID 914)
+  → B009DL089K x1 (Found: ID 1295)
+  → B009DL08X6 x1 (Found: ID 1180)
+  → B009DL09PI x1 (Found: ID 1165)
+
+Processing: B07CZTJ8TM (Epson Multipack 502 (Black XL) Cyan Magenta Yellow)
+  Contains: B07BB4NJH2, B07BB3HS1P, B07BB3J1TK, B07BB39KD6
+  → B07BB4NJH2 x1 (Found: ID 1149)
+  → B07BB3HS1P x1 (Found: ID 1346)
+  → B07BB3J1TK x1 (Found: ID 1347)
+  → B07BB39KD6 x1 (Found: ID 1348)
+
+Processing: B00B9V1M2O (Canon 40 41 Multipack)
+  Contains: B000B8TIZO, B004C29Z4Y
+  → B000B8TIZO x1 (Found: ID 1189)
+  → B004C29Z4Y x1 (Found: ID 1160)
+
+Processing: B075L73YMD (Brother LC 3217 Multipack)
+  Contains: B01M9IRJZH, B01MDU4EAJ, B01M3XQ7AT, B01M8Q3OPU
+  → B01M9IRJZH x1 (Found: ID 1233)
+  → B01MDU4EAJ x1 (Found: ID 1356)
+  → B01M3XQ7AT x1 (Found: ID 1357)
+  → B01M8Q3OPU x1 (Found: ID 1358)
+
+Processing: B000BUMSJU (Epson T0556 Multipack)
+  Contains: B004U6ES9Y, B01EFQ0TB4, B000RHMJ5U, B0002VLV28
+  → B004U6ES9Y x1 (Found: ID 1029)
+  → B01EFQ0TB4 x1 (Found: ID 1351)
+  → B000RHMJ5U x1 (Found: ID 1352)
+  → B0002VLV28 x1 (Found: ID 937)
+
+Processing: B07XP1W68Q (Epson 603 Multipack Cyan Magenta Yellow)
+  Contains: B07VWS9QNJ, B07VYS9SBY, B07VWYCD9K
+  → B07VWS9QNJ x1 (Found: ID 1290)
+  → B07VYS9SBY x1 (Found: ID 1331)
+  → B07VWYCD9K x1 (Found: ID 1289)
+
+Processing: B06XKC8XCM (Epson 34 Multipack Black Magenta Yellow Cyan)
+  Contains: B06XK8K4YH, B06XKDHKDD, B06XK8K74M, B06XK5BKFR
+  → B06XK8K4YH x1 (Found: ID 1150)
+  → B06XKDHKDD x1 (Found: ID 1349)
+  → B06XK8K74M x1 (Found: ID 1350)
+  → B06XK5BKFR x1 (Found: ID 850)
+
+Processing: B07BB31VL9 (Epson 502 Multipack Black Magenta Yellow Cyan)
+  Contains: B07BB3QQPV, B07BB3HS1P, B07BB3J1TK, B07BB39KD6
+  → B07BB3QQPV x1 (Found: ID 1206)
+  → B07BB3HS1P x1 (Found: ID 1346)
+  → B07BB3J1TK x1 (Found: ID 1347)
+  → B07BB39KD6 x1 (Found: ID 1348)
+
+Processing: B00DASE0H8 (Brother LC 121 Multipack Cyan Magenta Yellow Black)
+  Contains: B00DASDQH8, B00DASDU7E, B00DASDXPS, B00DASE2CG
+  → B00DASDQH8 x1 (Found: ID 1343)
+  → B00DASDU7E x1 (Found: ID 1342)
+  → B00DASDXPS x1 (Found: ID 1344)
+  → B00DASE2CG x1 (Found: ID 1345)
+
+Processing: B008GJHI5M (Epson 26 XL Multipack Magenta Cyan Black Yellow)
+  Contains: B01N9F9VOJ, B008GJHHA8, B008GJHHSK, B008GJHGU4
+  → B01N9F9VOJ x1 (Found: ID 833)
+  → B008GJHHA8 x1 (Found: ID 877)
+  → B008GJHHSK x1 (Found: ID 1005)
+  → B008GJHGU4 x1 (Found: ID 1341)
+
+Processing: B00TA3I03M (Epson 27 XL Multipack 3 colors Cyan Magenta Yellow)
+  Contains: B00E9OSLDQ, B00E9OSLWC, B00E9OSMBM
+  → B00E9OSLDQ x1 (Found: ID 871)
+  → B00E9OSLWC x1 (Found: ID 1009)
+  → B00E9OSMBM x1 (Found: ID 775)
+
+Processing: B0756V5X31 (Epson 33 Multipack Black Magenta Yellow Cyan)
+  Contains: B01MTYBRG0, B013DHMNJW, B013DHMLKI, B013DHMPCC
+  → B01MTYBRG0 x1 (Found: ID 1163)
+  → B013DHMNJW x1 (Found: ID 1015)
+  → B013DHMLKI x1 (Found: ID 1301)
+  → B013DHMPCC x1 (Found: ID 1161)
+
+Processing: B0B8X2D5DD (Epson 604 Multipack Cyan Yellow Magenta Black)
+  Contains: B0B8X64NYL, B0BC1PF592, B0B97RQXBP, B0B97LQ4TN
+  → B0B8X64NYL x1 (Found: ID 813)
+  → B0BC1PF592 x1 (Found: ID 1339)
+  → B0B97RQXBP x1 (Found: ID 1340)
+  → B0B97LQ4TN x1 (Found: ID 1313)
+
+Processing: B0CLM1FS55 (HP 937 Multipack Black Magenta Cyan Yellow)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B0B8X267JZ (Epson 503 Multipack, Black, Magenta, Cyan, Yellow)
+  Contains: B0B8X4513B, B0B9LCMN97, B0B97NSVH9, B0B97PZM2C
+  → B0B8X4513B x1 (Found: ID 1092)
+  → B0B9LCMN97 x1 (Found: ID 1336)
+  → B0B97NSVH9 x1 (Found: ID 1337)
+  → B0B97PZM2C x1 (Found: ID 1338)
+
+Processing: B0CH8NGPLT (Canon 580 581 Multipack)
+  Contains: B0751J2SH2, B0751L29HY, B0751LTGQX, B0751Q6GVV, B0751L8XL5
+  → B0751J2SH2 x1 (Found: ID 1285)
+  → B0751L29HY x1 (Found: ID 994)
+  → B0751LTGQX x1 (Found: ID 933)
+  → B0751Q6GVV x1 (Found: ID 1335)
+  → B0751L8XL5 x1 (Found: ID 1334)
+
+Processing: B0CH8PW3KC (Canon 1500 XL Multipack Black, Magenta, Cyan, Yellow)
+  Contains: B01LVZA8QP, B00PRN6T0U, B01LWVFO1G, B01LW6Z5RW
+  → B01LVZA8QP x1 (Found: ID 875)
+  → B00PRN6T0U x1 (Found: ID 1318)
+  → B01LWVFO1G x1 (Found: ID 1304)
+  → B01LW6Z5RW x1 (Found: ID 1319)
+
+Processing: B008GJHFGY (Epson 26 Multipack)
+  Contains: B008GJG3NK, B008GJHDWA, B008GJHF3M, B008GJHEII
+  → B008GJG3NK x1 (Found: ID 1274)
+  → B008GJHDWA x1 (Found: ID 1275)
+  → B008GJHF3M x1 (Found: ID 1113)
+  → B008GJHEII x1 (Found: ID 1333)
+
+Processing: B008392HKG (Epson 18 Multipack / Black Cyan Yellow Magenta)
+  Contains: B00FZNBB78, B008392CBA, B008392CTM, B008392CJC
+  → B00FZNBB78 x1 (Found: ID 1312)
+  → B008392CBA x1 (Found: ID 1311)
+  → B008392CTM x1 (Found: ID 1211)
+  → B008392CJC x1 (Found: ID 1320)
+
+Processing: B0CH8L1VP8 (Canon Multipack - 540L, 540L , 541XL, Photo Paper)
+  Contains: Photo paper
+  → Photo paper x1 (NOT FOUND!)
+
+Processing: B00JFOF5BQ (HP 131A Multipack Toner Cyan Magenta Yellow)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+Processing: B0C14PPS61 (Canon 550 551 Setup Multipack)
+  Contains: SETUP
+  → SETUP x1 (NOT FOUND!)
+
+Processing: B008571J64 (Canon 36 Twin Color)
+  Contains: B000MGMJYC, B000MGMJYC
+  → B000MGMJYC x2 (Found: ID 691)
+
+Processing: B0753J5XS4 (Epson 202 XL Multipack)
+  Contains: B075R8GD44, B074KDY75T, B0753J5XS3, B074ND6SVG, B0753KVDZ9
+  → B075R8GD44 x1 (Found: ID 714)
+  → B074KDY75T x1 (Found: ID 1041)
+  → B0753J5XS3 x1 (Found: ID 974)
+  → B074ND6SVG x1 (Found: ID 1123)
+  → B0753KVDZ9 x1 (Found: ID 695)
+
+Processing: B074KGV5LT (Epson 202 Multipack)
+  Contains: B0759FR9BW, B074KKD92V, B074KF5V2S, B074KGMBJD, B074KD5RFH
+  → B0759FR9BW x1 (Found: ID 743)
+  → B074KKD92V x1 (Found: ID 779)
+  → B074KF5V2S x1 (Found: ID 719)
+  → B074KGMBJD x1 (Found: ID 950)
+  → B074KD5RFH x1 (Found: ID 1008)
+
+Processing: B08GKW3RPL (HP 950 951 MULTIPACK)
+  Contains: NOBUILD
+  → NOBUILD x1 (NOT FOUND!)
+
+============================================================
+MIGRATION ABORTED: The following ASINs do not exist:
+  - NOASINS
+  - NOBUILD
+  - Photo paper
+  - SETUP
+  - TODO
+============================================================
+
+Please create these ASINs first, then run this command again.

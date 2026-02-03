@@ -136,6 +136,10 @@ class BuildComponent(models.Model):
         db_table = 'build_component'
         unique_together = ['parent', 'component']
         ordering = ['parent', 'component']
+        indexes = [
+            models.Index(fields=['parent'], name='build_comp_parent_idx'),
+            models.Index(fields=['component'], name='build_comp_comp_idx'),
+        ]
 
 
 class ListingAsin(models.Model):
@@ -175,6 +179,11 @@ class BuildLog(models.Model):
     class Meta:
         db_table = 'build_log'
         ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['parent_item'], name='build_log_parent_idx'),
+            models.Index(fields=['timestamp'], name='build_log_timestamp_idx'),
+            models.Index(fields=['is_reverted'], name='build_log_reverted_idx'),
+        ]
 
 
 class BuildLogItem(models.Model):
@@ -190,3 +199,7 @@ class BuildLogItem(models.Model):
 
     class Meta:
         db_table = 'build_log_item'
+        indexes = [
+            models.Index(fields=['build_log'], name='build_log_item_log_idx'),
+            models.Index(fields=['component'], name='build_log_item_comp_idx'),
+        ]

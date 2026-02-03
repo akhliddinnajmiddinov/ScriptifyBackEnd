@@ -158,3 +158,35 @@ class ListingAsin(models.Model):
             models.Index(fields=['listing'], name='listing_asin_listing_idx'),
             models.Index(fields=['asin'], name='listing_asin_asin_idx'),
         ]
+
+
+class BuildLog(models.Model):
+    """
+    Records a build action where components were consumed.
+    """
+    parent_item = models.ForeignKey(Asin, on_delete=models.CASCADE, related_name='build_logs')
+    quantity = models.PositiveIntegerField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_reverted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Build {self.quantity}x {self.parent_item.value} at {self.timestamp}"
+
+    class Meta:
+        db_table = 'build_log'
+        ordering = ['-timestamp']
+
+
+class BuildLogItem(models.Model):
+    """
+    Snapshot of components consumed for a specific build.
+    """
+    build_log = models.ForeignKey(BuildLog, on_delete=models.CASCADE, related_name='items')
+    component = models.ForeignKey(Asin, on_delete=models.CASCADE)
+    quantity_consumed = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.quantity_consumed}x {self.component.value} for log {self.build_log.id}"
+
+    class Meta:
+        db_table = 'build_log_item'

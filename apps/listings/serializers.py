@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent
+from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem
 import json
 
 
@@ -221,3 +221,31 @@ class AsinBulkAddItemSerializer(serializers.Serializer):
     amount = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, default=0)
     shelf = serializers.CharField(max_length=255, required=False, allow_blank=True, default='')
     contains = serializers.CharField(max_length=500, required=False, allow_blank=True, default='')
+
+
+class BuildLogItemSerializer(serializers.ModelSerializer):
+    component_value = serializers.CharField(source='component.value', read_only=True)
+    component_name = serializers.CharField(source='component.name', read_only=True)
+    
+    class Meta:
+        model = BuildLogItem
+        fields = ['id', 'component', 'component_value', 'component_name', 'quantity_consumed']
+
+
+class BuildLogSerializer(serializers.ModelSerializer):
+    parent_item_value = serializers.CharField(source='parent_item.value', read_only=True)
+    parent_item_name = serializers.CharField(source='parent_item.name', read_only=True)
+    items = BuildLogItemSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = BuildLog
+        fields = ['id', 'parent_item', 'parent_item_value', 'parent_item_name', 
+                  'quantity', 'timestamp', 'is_reverted', 'items']
+
+
+class BuildOrderDiscoverySerializer(AsinSerializer):
+    max_buildable = serializers.IntegerField()
+    
+    class Meta(AsinSerializer.Meta):
+        fields = AsinSerializer.Meta.fields + ['max_buildable']
+

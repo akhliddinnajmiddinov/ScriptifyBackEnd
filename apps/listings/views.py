@@ -7,11 +7,11 @@ from django.db.models import Sum, Count, Avg, Q, Prefetch
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
-from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin
+from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem
 from .serializers import (
     ListingSerializer, ShelfSerializer, InventoryVendorSerializer, 
-    AsinSerializer, AsinPreviewItemSerializer, AsinBulkAddItemSerializer
-)
+    AsinSerializer, AsinPreviewItemSerializer, AsinBulkAddItemSerializer,
+    BuildLogSerializer, BuildOrderDiscoverySerializer)
 from .filters import StandardPagination, ListingFilter, ShelfFilter, InventoryVendorFilter, AsinFilter
 from apps.transactions.filters import StableOrderingFilter
 from apps.transactions.models import Transaction
@@ -622,12 +622,14 @@ class AsinViewSet(viewsets.ModelViewSet):
    
     def get_queryset(self):
         """
-        Optimize queryset by prefetching asins_listings to prevent N+1 queries.
+        Optimize queryset by prefetching asins_listings and components to prevent N+1 queries.
         """
         queryset = super().get_queryset()
         # Prefetch asins_listings to avoid N+1 queries when counting Listings
+        # Prefetch component_set for BuildComponent M2M relationship
         queryset = queryset.prefetch_related(
-            Prefetch('asins_listings', queryset=ListingAsin.objects.select_related('listing'))
+            Prefetch('asins_listings', queryset=ListingAsin.objects.select_related('listing')),
+            Prefetch('component_set', queryset=BuildComponent.objects.select_related('component'))
         )
         return queryset
     
@@ -818,6 +820,174 @@ class AsinViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_201_CREATED
         )
+
+
+class BuildLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for Build History (Read Only).
+    Provides a revert action to break down a build.
+    """
+    queryset = BuildLog.objects.all().prefetch_related(
+        Prefetch('items', queryset=BuildLogItem.objects.select_related('component'))
+    ).select_related('parent_item')
+    serializer_class = BuildLogSerializer
+    pagination_class = StandardPagination
+    filter_backends = [StableOrderingFilter]
+    ordering = ['-timestamp']
+
+    @extend_schema(
+        operation_id="build_log_revert",
+        description="Revert a build action (break down items). Increases component stock and marks log as reverted.",
+        tags=["Inventory - Build Orders"],
+        responses={200: BuildLogSerializer},
+    )
+    @action(detail=True, methods=['post'])
+    def revert(self, request, pk=None):
+        build_log = self.get_object()
+        
+        if build_log.is_reverted:
+            return Response(
+                {"error": "This build has already been reverted."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        with db_transaction.atomic():
+            # Restore component quantities
+            for log_item in build_log.items.all():
+                component = log_item.component
+                component.amount += log_item.quantity_consumed
+                component.save()
+            
+            # Mark as reverted
+            build_log.is_reverted = True
+            build_log.save()
+            
+        return Response(BuildLogSerializer(build_log).data)
+
+
+class BuildOrderViewSet(viewsets.ViewSet):
+    """
+    ViewSet for discovering buildable items and executing builds.
+    """
+    
+    @extend_schema(
+        operation_id="build_orders_status",
+        description="List all items with components, grouped into ready and missing based on stock availability.",
+        tags=["Inventory - Build Orders"],
+        responses={
+            200: OpenApiResponse(
+                description="Lists of ready and missing build orders",
+                response=OpenApiTypes.OBJECT,
+            )
+        },
+    )
+    @action(detail=False, methods=['get'])
+    def status(self, request):
+        # Find all Asins that have components
+        items_with_components = Asin.objects.order_by('-id').annotate(
+            comp_count=Count('component_set')
+        ).filter(comp_count__gt=0).prefetch_related(
+            Prefetch('component_set', queryset=BuildComponent.objects.select_related('component'))
+        )
+        
+        ready = []
+        missing = []
+        
+        for item in items_with_components:
+            # Calculate max buildable quantity
+            max_buildable = float('inf')
+            has_missing = False
+            
+            components = item.component_set.all()
+            for bc in components:
+                if bc.quantity > 0:
+                    possible = bc.component.amount // bc.quantity
+                    if possible < max_buildable:
+                        max_buildable = possible
+                    if bc.component.amount < bc.quantity:
+                        has_missing = True
+                else:
+                    # Quantity 0? Should not happen but handle it
+                    pass
+            
+            if max_buildable == float('inf'):
+                max_buildable = 0
+            
+            item.max_buildable = int(max_buildable)
+            data = BuildOrderDiscoverySerializer(item).data
+            
+            if has_missing or max_buildable == 0:
+                missing.append(data)
+            else:
+                ready.append(data)
+                
+        return Response({
+            'ready': ready,
+            'missing': missing
+        })
+
+    @extend_schema(
+        operation_id="build_orders_execute",
+        description="Execute a build action for a parent item.",
+        tags=["Inventory - Build Orders"],
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'parent_id': {'type': 'integer'},
+                    'quantity': {'type': 'integer', 'minimum': 1},
+                },
+                'required': ['parent_id', 'quantity']
+            }
+        },
+        responses={201: BuildLogSerializer},
+    )
+    @action(detail=False, methods=['post'])
+    def build(self, request):
+        parent_id = request.data.get('parent_id')
+        quantity = int(request.data.get('quantity', 0))
+        
+        if not parent_id or quantity <= 0:
+            return Response({"error": "parent_id and positive quantity are required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            parent_item = Asin.objects.prefetch_related('component_set__component').get(id=parent_id)
+        except Asin.DoesNotExist:
+            return Response({"error": "Parent item not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+        components = parent_item.component_set.all()
+        if not components:
+            return Response({"error": "This item has no components defined"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Validate stock
+        for bc in components:
+            required = bc.quantity * quantity
+            if bc.component.amount < required:
+                return Response({
+                    "error": f"Insufficient stock for component {bc.component.value}. Needed: {required}, Available: {bc.component.amount}"
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        with db_transaction.atomic():
+            # Create Log
+            build_log = BuildLog.objects.create(
+                parent_item=parent_item,
+                quantity=quantity
+            )
+            
+            # Consume stock and create log items
+            for bc in components:
+                required = bc.quantity * quantity
+                component = bc.component
+                component.amount -= required
+                component.save()
+                
+                BuildLogItem.objects.create(
+                    build_log=build_log,
+                    component=component,
+                    quantity_consumed=required
+                )
+                
+        return Response(BuildLogSerializer(build_log).data, status=status.HTTP_201_CREATED)
     
     @extend_schema(
         operation_id="asins_bulk_delete",

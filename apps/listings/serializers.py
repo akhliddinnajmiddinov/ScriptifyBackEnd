@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin
+from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem
 import json
 
 
@@ -109,6 +109,32 @@ class ListingAsinSerializer(serializers.ModelSerializer):
         fields = ['id', 'listing', 'amount']
 
 
+class BuildComponentSerializer(serializers.ModelSerializer):
+    """
+    Serializer for BuildComponent - shows component details with quantity.
+    Used for nested representation in AsinSerializer.
+    """
+    component_id = serializers.IntegerField(source='component.id', read_only=True)
+    component_value = serializers.CharField(source='component.value', read_only=True)
+    component_name = serializers.CharField(source='component.name', read_only=True)
+    component_amount = serializers.IntegerField(source='component.amount', read_only=True)
+    component_shelf = serializers.CharField(source='component.shelf', read_only=True)
+    
+    class Meta:
+        model = BuildComponent
+        fields = ['id', 'component_id', 'component_value', 'component_name', 
+                  'component_amount', 'component_shelf', 'quantity']
+
+
+class BuildComponentInputSerializer(serializers.Serializer):
+    """
+    Serializer for creating/updating BuildComponent relationships.
+    Accepts component_id and quantity.
+    """
+    component_id = serializers.IntegerField()
+    quantity = serializers.IntegerField(min_value=1, default=1)
+
+
 class AsinSerializer(serializers.ModelSerializer):
     """Serializer for Asin (inventory item) model"""
     error_status_text = serializers.SerializerMethodField()
@@ -116,31 +142,58 @@ class AsinSerializer(serializers.ModelSerializer):
     # Nested listing data
     listings = ListingAsinSerializer(source='asins_listings', many=True, read_only=True)
     
+    # Components (M2M through BuildComponent)
+    components = BuildComponentSerializer(source='component_set', many=True, read_only=True)
+    
+    # For creating/updating components
+    components_input = BuildComponentInputSerializer(many=True, required=False, write_only=True)
+    
     class Meta:
         model = Asin
         fields = [
             'id', 'value', 'name', 'ean', 
             'vendor', 'amount', 'shelf', 'contains',
-            'listings', 'error_status_text'
+            'listings', 'components', 'components_input', 'error_status_text'
         ]
-        read_only_fields = ['listings', 'error_status_text']
+        read_only_fields = ['listings', 'components', 'error_status_text']
     
+    def create(self, validated_data):
+        components_input = validated_data.pop('components_input', [])
+        instance = super().create(validated_data)
+        self._update_components(instance, components_input)
+        return instance
+    
+    def update(self, instance, validated_data):
+        components_input = validated_data.pop('components_input', None)
+        instance = super().update(instance, validated_data)
+        if components_input is not None:
+            self._update_components(instance, components_input)
+        return instance
+    
+    def _update_components(self, instance, components_input):
+        """Update BuildComponent relationships for an Asin."""
+        # Clear existing components
+        instance.component_set.all().delete()
+        
+        # Create new components
+        for comp_data in components_input:
+            component_id = comp_data.get('component_id')
+            quantity = comp_data.get('quantity', 1)
+            try:
+                component = Asin.objects.get(id=component_id)
+                BuildComponent.objects.create(
+                    parent=instance,
+                    component=component,
+                    quantity=quantity
+                )
+            except Asin.DoesNotExist:
+                raise serializers.ValidationError(f"Asin with ID {component_id} does not exist")
+        
     def get_error_status_text(self, obj):
         """
         Return error status text if item does not have connected listings.
         Optimized: Uses prefetched asins_listings to avoid additional query.
         """
-        # Check if item has any connected Listings through ListingAsin relationship
-        # Use prefetched data if available, otherwise fall back to count()
-        # if hasattr(obj, 'asins_listings'):
-        #     # If prefetched, use len() to avoid query; otherwise use count()
-        #     if hasattr(obj, '_prefetched_objects_cache') and 'asins_listings' in obj._prefetched_objects_cache:
-        #         listing_count = len(obj.asins_listings.all())
-        #     else:
-        #         listing_count = obj.asins_listings.count()
-        #     if listing_count == 0:
-        #         return "No connected listings found for this item"
-        
         return None
 
 
@@ -168,3 +221,31 @@ class AsinBulkAddItemSerializer(serializers.Serializer):
     amount = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, default=0)
     shelf = serializers.CharField(max_length=255, required=False, allow_blank=True, default='')
     contains = serializers.CharField(max_length=500, required=False, allow_blank=True, default='')
+
+
+class BuildLogItemSerializer(serializers.ModelSerializer):
+    component_value = serializers.CharField(source='component.value', read_only=True)
+    component_name = serializers.CharField(source='component.name', read_only=True)
+    
+    class Meta:
+        model = BuildLogItem
+        fields = ['id', 'component', 'component_value', 'component_name', 'quantity_consumed']
+
+
+class BuildLogSerializer(serializers.ModelSerializer):
+    parent_item_value = serializers.CharField(source='parent_item.value', read_only=True)
+    parent_item_name = serializers.CharField(source='parent_item.name', read_only=True)
+    items = BuildLogItemSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = BuildLog
+        fields = ['id', 'parent_item', 'parent_item_value', 'parent_item_name', 
+                  'quantity', 'timestamp', 'is_reverted', 'items']
+
+
+class BuildOrderDiscoverySerializer(AsinSerializer):
+    max_buildable = serializers.IntegerField()
+    
+    class Meta(AsinSerializer.Meta):
+        fields = AsinSerializer.Meta.fields + ['max_buildable']
+

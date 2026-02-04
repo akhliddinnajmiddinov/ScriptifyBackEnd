@@ -821,6 +821,284 @@ class AsinViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED
         )
 
+    @extend_schema(
+        operation_id="asins_preview_listing_updates",
+        description="Preview inventory updates from listings within a date range. "
+                    "Excludes listings with URLs containing 'kleinanzeigen'. "
+                    "Returns computed amount deltas and shelf changes.",
+        tags=["Inventory - Items"],
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'start': {'type': 'string', 'format': 'date-time', 'description': 'Start datetime (inclusive)'},
+                    'end': {'type': 'string', 'format': 'date-time', 'description': 'End datetime (exclusive)'},
+                },
+                'required': ['start', 'end']
+            }
+        },
+        responses={
+            200: {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'properties': {
+                        'asin_id': {'type': 'integer'},
+                        'value': {'type': 'string'},
+                        'name': {'type': 'string'},
+                        'old_amount': {'type': 'integer'},
+                        'delta_amount': {'type': 'integer'},
+                        'new_amount': {'type': 'integer'},
+                        'old_shelf': {'type': 'string', 'nullable': True},
+                        'new_shelf': {'type': 'string', 'nullable': True},
+                    }
+                }
+            },
+            400: {'type': 'object', 'properties': {'error': {'type': 'string'}}},
+        },
+    )
+    @action(detail=False, methods=['post'])
+    def preview_listing_updates(self, request):
+        """
+        Preview inventory updates from listings in a date range.
+        Excludes listings with URLs containing 'kleinanzeigen'.
+        """
+        start_str = request.data.get('start')
+        end_str = request.data.get('end')
+        
+        if not start_str or not end_str:
+            return Response(
+                {'error': 'Both start and end datetime are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            from django.utils.dateparse import parse_datetime
+            from django.utils.timezone import is_aware, make_aware
+            
+            start = parse_datetime(start_str)
+            end = parse_datetime(end_str)
+            
+            if not start:
+                return Response({'error': f'Invalid start datetime format: {start_str}'}, status=status.HTTP_400_BAD_REQUEST)
+            if not end:
+                return Response({'error': f'Invalid end datetime format: {end_str}'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            # Ensure they are aware if USE_TZ is True (Standard Django behavior with parse_datetime)
+            if not is_aware(start):
+                start = make_aware(start)
+            if not is_aware(end):
+                end = make_aware(end)
+        except (ValueError, AttributeError) as e:
+            return Response(
+                {'error': f'Invalid datetime format: {str(e)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if end <= start:
+            return Response(
+                {'error': 'End datetime must be after start datetime'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Query: aggregate amounts per ASIN from listings in range, excluding kleinanzeigen
+        from django.db.models import Sum
+        from django.db.models.functions import Coalesce
+        
+        # Get all ListingAsin entries where:
+        # - listing.timestamp is in [start, end)
+        # - listing.listing_url does NOT contain 'kleinanzeigen'
+        listing_asins = ListingAsin.objects.filter(
+            listing__timestamp__gte=start,
+            listing__timestamp__lt=end,
+        ).exclude(
+            listing__listing_url__icontains='kleinanzeigen'
+        ).values('asin_id').annotate(
+            delta_amount=Sum('amount')
+        )
+        
+        if not listing_asins:
+            return Response([], status=status.HTTP_200_OK)
+        
+        # Get ASIN details for each aggregated result
+        asin_ids = [item['asin_id'] for item in listing_asins]
+        asins = {a.id: a for a in Asin.objects.filter(id__in=asin_ids)}
+        
+        # Build delta map
+        delta_map = {item['asin_id']: item['delta_amount'] for item in listing_asins}
+        
+        def compute_shelf_update(old_shelf):
+            """
+            Shelf logic:
+            - NULL/empty/whitespace => 'Box'
+            - non-empty and does NOT contain 'Box' (case-insensitive) => append ', Box'
+            - contains 'Box' => no change (return old_shelf)
+            """
+            if old_shelf is None:
+                return 'Box'
+            s = old_shelf.strip()
+            if s == '':
+                return 'Box'
+            if 'box' in s.lower():
+                return old_shelf  # Return the original shelf instead of None
+            return f'{old_shelf}, Box'
+        
+        # Build preview results
+        results = []
+        for asin_id in asin_ids:
+            asin = asins.get(asin_id)
+            if not asin:
+                continue
+            
+            delta = delta_map.get(asin_id, 0) or 0
+            old_amount = asin.amount or 0
+            new_amount = old_amount + delta
+            
+            old_shelf = asin.shelf
+            new_shelf = compute_shelf_update(old_shelf)
+            
+            results.append({
+                'asin_id': asin.id,
+                'value': asin.value or '',
+                'name': asin.name or '',
+                'old_amount': old_amount,
+                'delta_amount': delta,
+                'new_amount': new_amount,
+                'old_shelf': old_shelf,
+                'new_shelf': new_shelf,
+            })
+        
+        # Sort by asin_id for consistent ordering
+        results.sort(key=lambda x: x['asin_id'])
+        
+        return Response(results, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        operation_id="asins_apply_listing_updates",
+        description="Apply inventory updates from the preview. "
+                    "Updates amount and shelf for each ASIN in the list.",
+        tags=["Inventory - Items"],
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'updates': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'asin_id': {'type': 'integer'},
+                                'new_amount': {'type': 'integer'},
+                                'new_shelf': {'type': 'string', 'nullable': True},
+                            },
+                            'required': ['asin_id', 'new_amount']
+                        }
+                    }
+                },
+                'required': ['updates']
+            }
+        },
+        responses={
+            200: {
+                'type': 'object',
+                'properties': {
+                    'updated_count': {'type': 'integer'},
+                }
+            },
+            400: {
+                'type': 'object',
+                'properties': {
+                    'error': {'type': 'string'},
+                    'error_count': {'type': 'integer'},
+                    'errors': {'type': 'array'}
+                }
+            },
+        },
+    )
+    @action(detail=False, methods=['post'])
+    def apply_listing_updates(self, request):
+        """
+        Apply inventory updates from a preview.
+        Updates amount and optionally shelf for each ASIN.
+        All or nothing: if any update fails validation, no changes are committed.
+        """
+        updates = request.data.get('updates', [])
+        
+        if not updates:
+            return Response(
+                {'error': 'No updates provided'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        errors = []
+        validated_updates = []
+        
+        # Phase 1: Validation
+        # Check all updates before applying any changes to ensure atomicity.
+        for idx, update in enumerate(updates):
+            asin_id = update.get('asin_id')
+            new_amount = update.get('new_amount')
+            new_shelf = update.get('new_shelf')
+            
+            field_errors = {}
+            if asin_id is None:
+                field_errors['asin_id'] = ['This field is required.']
+            if new_amount is None:
+                field_errors['new_amount'] = ['This field is required.']
+            
+            if field_errors:
+                errors.append({
+                    'index': idx,
+                    'asin_id': asin_id,
+                    'errors': field_errors
+                })
+                continue
+                
+            try:
+                asin = Asin.objects.get(id=asin_id)
+                validated_updates.append((asin, new_amount, new_shelf))
+            except Asin.DoesNotExist:
+                errors.append({
+                    'index': idx,
+                    'asin_id': asin_id,
+                    'errors': {'asin_id': [f'ASIN with id {asin_id} not found.']}
+                })
+
+        if errors:
+            return Response(
+                {
+                    'error': 'Validation failed for one or more items. No updates were applied.',
+                    'error_count': len(errors),
+                    'errors': errors
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # Phase 2: Application
+        # Everything validated, now apply in a single transaction.
+        updated_count = 0
+        try:
+            with db_transaction.atomic():
+                for asin, new_amount, new_shelf in validated_updates:
+                    # Update amount
+                    asin.amount = new_amount
+                    
+                    # Update shelf only if new_shelf is provided (not None)
+                    if new_shelf is not None:
+                        asin.shelf = new_shelf
+                    
+                    asin.save()
+                    updated_count += 1
+        except Exception as e:
+            return Response(
+                {'error': f'Database error during apply: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+        return Response(
+            {'updated_count': updated_count},
+            status=status.HTTP_200_OK
+        )
+
 
 class BuildLogViewSet(viewsets.ReadOnlyModelViewSet):
     """

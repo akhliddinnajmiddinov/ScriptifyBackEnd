@@ -1,5 +1,5 @@
 from django_filters import rest_framework as filters
-from .models import Listing, Shelf, InventoryVendor, Asin
+from .models import Listing, Shelf, InventoryVendor, Asin, InventoryColor
 from .serializers import ListingSerializer
 from rest_framework.pagination import PageNumberPagination
 import re
@@ -146,3 +146,14 @@ class AsinFilter(filters.FilterSet):
             Q(contains__icontains=token) |
             Q(component_set__component__value__icontains=token)
         )
+
+
+class InventoryColorFilter(filters.FilterSet):
+    """
+    FilterSet for InventoryColor model.
+    """
+    pattern = filters.CharFilter(field_name='pattern', lookup_expr='icontains')
+    
+    class Meta:
+        model = InventoryColor
+        fields = ['pattern']

@@ -7,12 +7,12 @@ from django.db.models import Sum, Count, Avg, Q, Prefetch
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
-from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem
+from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem, InventoryColor
 from .serializers import (
     ListingSerializer, ShelfSerializer, InventoryVendorSerializer, 
     AsinSerializer, AsinPreviewItemSerializer, AsinBulkAddItemSerializer,
-    BuildLogSerializer, BuildOrderDiscoverySerializer)
-from .filters import StandardPagination, ListingFilter, ShelfFilter, InventoryVendorFilter, AsinFilter
+    BuildLogSerializer, BuildOrderDiscoverySerializer, InventoryColorSerializer)
+from .filters import StandardPagination, ListingFilter, ShelfFilter, InventoryVendorFilter, AsinFilter, InventoryColorFilter
 from apps.transactions.filters import StableOrderingFilter
 from apps.transactions.models import Transaction
 from apps.transactions.serializers import TransactionSerializer
@@ -1313,3 +1313,84 @@ class BuildOrderViewSet(viewsets.ViewSet):
             'deleted_count': deleted_count,
             'message': f'Successfully deleted {deleted_count} item(s)'
         }, status=status.HTTP_200_OK)
+
+
+class InventoryColorViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for InventoryColor CRUD operations.
+    """
+    queryset = InventoryColor.objects.all().order_by('pattern')
+    serializer_class = InventoryColorSerializer
+    filterset_class = InventoryColorFilter
+    filter_backends = [filters.DjangoFilterBackend, StableOrderingFilter]
+    ordering_fields = ['id', 'pattern', 'created_at', 'updated_at']
+    ordering = ['pattern']
+    pagination_class = StandardPagination
+    
+    @extend_schema(
+        operation_id="inventory_colors_list",
+        description="List all inventory colors with filtering and pagination.",
+        tags=["Inventory - Colors"],
+        parameters=[
+            OpenApiParameter('pattern', OpenApiTypes.STR, description='Filter by pattern name (partial match)'),
+            OpenApiParameter('page', OpenApiTypes.INT, description='Page number'),
+            OpenApiParameter('page_size', OpenApiTypes.INT, description='Results per page (max 100)'),
+        ],
+        responses=InventoryColorSerializer(many=True),
+    )
+    def list(self, request, *args, **kwargs):
+        """List all inventory colors with filtering and pagination."""
+        return super().list(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="inventory_colors_retrieve",
+        description="Get a color by ID.",
+        tags=["Inventory - Colors"],
+        responses=InventoryColorSerializer,
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a single color by ID."""
+        return super().retrieve(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="inventory_colors_create",
+        description="Create a new color pattern.",
+        tags=["Inventory - Colors"],
+        request=InventoryColorSerializer,
+        responses=InventoryColorSerializer,
+    )
+    def create(self, request, *args, **kwargs):
+        """Create a single color pattern."""
+        return super().create(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="inventory_colors_update",
+        description="Update a color pattern (full update).",
+        tags=["Inventory - Colors"],
+        request=InventoryColorSerializer,
+        responses=InventoryColorSerializer,
+    )
+    def update(self, request, *args, **kwargs):
+        """Update a color pattern (full update)."""
+        return super().update(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="inventory_colors_partial_update",
+        description="Partially update a color pattern. Only provided fields will be updated.",
+        tags=["Inventory - Colors"],
+        request=InventoryColorSerializer,
+        responses=InventoryColorSerializer,
+    )
+    def partial_update(self, request, *args, **kwargs):
+        """Partially update a color pattern."""
+        return super().partial_update(request, *args, **kwargs)
+    
+    @extend_schema(
+        operation_id="inventory_colors_delete",
+        description="Delete a specific color pattern by ID.",
+        tags=["Inventory - Colors"],
+        responses={204: None},
+    )
+    def destroy(self, request, *args, **kwargs):
+        """Delete a single color pattern."""
+        return super().destroy(request, *args, **kwargs)

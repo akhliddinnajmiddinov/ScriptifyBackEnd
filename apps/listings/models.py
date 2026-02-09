@@ -203,3 +203,25 @@ class BuildLogItem(models.Model):
             models.Index(fields=['build_log'], name='build_log_item_log_idx'),
             models.Index(fields=['component'], name='build_log_item_comp_idx'),
         ]
+
+
+class InventoryColor(models.Model):
+    """
+    Color patterns for inventory items.
+    Maps color patterns (e.g., "magenta", "red") to hex color codes.
+    """
+    pattern = models.CharField(max_length=255, unique=True, help_text="Color pattern name (e.g., 'magenta', 'red', 'cyan')")
+    color = models.CharField(max_length=7, help_text="Hex color code (e.g., '#FF00FF')")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.pattern} ({self.color})"
+    
+    class Meta:
+        db_table = 'inventory_color'
+        ordering = ['pattern']
+        indexes = [
+            models.Index(fields=['pattern'], name='inventory_color_pattern_idx'),
+        ]

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Listing, Shelf, InventoryVendor, Asin, BuildComponent
+from .models import Listing, Shelf, InventoryVendor, Asin, BuildComponent, InventoryColor
 
 
 @admin.register(Listing)
@@ -52,3 +52,11 @@ class BuildComponentAdmin(admin.ModelAdmin):
     list_filter = ['parent']
     search_fields = ['parent__value', 'parent__name', 'component__value', 'component__name']
     autocomplete_fields = ['parent', 'component']
+
+
+@admin.register(InventoryColor)
+class InventoryColorAdmin(admin.ModelAdmin):
+    list_display = ['id', 'pattern', 'color', 'created_at', 'updated_at']
+    list_filter = ['created_at', 'updated_at']
+    search_fields = ['pattern']
+    ordering = ['pattern']

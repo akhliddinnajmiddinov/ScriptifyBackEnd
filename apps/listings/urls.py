@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ListingViewSet, ShelfViewSet, InventoryVendorViewSet, AsinViewSet, BuildLogViewSet, BuildOrderViewSet
+from .views import ListingViewSet, ShelfViewSet, InventoryVendorViewSet, AsinViewSet, BuildLogViewSet, BuildOrderViewSet, InventoryColorViewSet
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -10,6 +10,7 @@ router.register(r'inventory-vendors', InventoryVendorViewSet, basename='inventor
 router.register(r'asins', AsinViewSet, basename='asin')
 router.register(r'build-logs', BuildLogViewSet, basename='build-log')
 router.register(r'build-orders', BuildOrderViewSet, basename='build-order')
+router.register(r'inventory-colors', InventoryColorViewSet, basename='inventory-color')
 
 # URL patterns
 urlpatterns = [

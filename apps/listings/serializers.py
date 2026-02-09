@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem
+from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem, InventoryColor
 import json
 
 
@@ -248,4 +248,25 @@ class BuildOrderDiscoverySerializer(AsinSerializer):
     
     class Meta(AsinSerializer.Meta):
         fields = AsinSerializer.Meta.fields + ['max_buildable']
+
+
+class InventoryColorSerializer(serializers.ModelSerializer):
+    """Serializer for InventoryColor model"""
+    
+    class Meta:
+        model = InventoryColor
+        fields = ['id', 'pattern', 'color', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+    
+    def validate_color(self, value):
+        """Validate hex color format"""
+        if not value.startswith('#'):
+            raise serializers.ValidationError("Color must start with '#'")
+        if len(value) != 7:
+            raise serializers.ValidationError("Color must be 7 characters (e.g., '#FF00FF')")
+        try:
+            int(value[1:], 16)
+        except ValueError:
+            raise serializers.ValidationError("Color must be a valid hex code")
+        return value.upper()  # Normalize to uppercase
 

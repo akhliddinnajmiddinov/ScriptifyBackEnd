@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem, InventoryColor
+from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem, InventoryColor, MinPriceTask
 import json
 
 
@@ -153,9 +153,10 @@ class AsinSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'value', 'name', 'ean', 
             'vendor', 'amount', 'shelf', 'contains',
+            'min_listing_data',
             'listings', 'components', 'components_input', 'error_status_text'
         ]
-        read_only_fields = ['listings', 'components', 'error_status_text']
+        read_only_fields = ['listings', 'components', 'error_status_text', 'min_listing_data']
     
     def create(self, validated_data):
         components_input = validated_data.pop('components_input', [])
@@ -248,6 +249,20 @@ class BuildOrderDiscoverySerializer(AsinSerializer):
     
     class Meta(AsinSerializer.Meta):
         fields = AsinSerializer.Meta.fields + ['max_buildable']
+
+
+class MinPriceTaskSerializer(serializers.ModelSerializer):
+    """Serializer for MinPriceTask model"""
+    percentage = serializers.FloatField(read_only=True)
+
+    class Meta:
+        model = MinPriceTask
+        fields = [
+            'id', 'status', 'celery_task_id',
+            'total_asins', 'processed_asins', 'percentage',
+            'started_at', 'finished_at', 'error_message',
+        ]
+        read_only_fields = fields
 
 
 class InventoryColorSerializer(serializers.ModelSerializer):

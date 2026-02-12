@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Listing, Shelf, InventoryVendor, Asin, BuildComponent, InventoryColor
+from .models import Listing, Shelf, InventoryVendor, Asin, BuildComponent, InventoryColor, MinPriceTask
 
 
 @admin.register(Listing)
@@ -60,3 +60,10 @@ class InventoryColorAdmin(admin.ModelAdmin):
     list_filter = ['created_at', 'updated_at']
     search_fields = ['pattern']
     ordering = ['pattern']
+
+
+@admin.register(MinPriceTask)
+class MinPriceTaskAdmin(admin.ModelAdmin):
+    list_display = ['id', 'status', 'total_asins', 'processed_asins', 'started_at', 'finished_at']
+    list_filter = ['status']
+    ordering = ['-id']

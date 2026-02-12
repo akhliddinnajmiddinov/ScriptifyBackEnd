@@ -4,14 +4,16 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction as db_transaction
 from django.db.models import Sum, Count, Avg, Q, Prefetch
+from django.utils import timezone
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
-from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem, InventoryColor
+from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem, InventoryColor, MinPriceTask
 from .serializers import (
     ListingSerializer, ShelfSerializer, InventoryVendorSerializer, 
     AsinSerializer, AsinPreviewItemSerializer, AsinBulkAddItemSerializer,
-    BuildLogSerializer, BuildOrderDiscoverySerializer, InventoryColorSerializer)
+    BuildLogSerializer, BuildOrderDiscoverySerializer, InventoryColorSerializer,
+    MinPriceTaskSerializer)
 from .filters import StandardPagination, ListingFilter, ShelfFilter, InventoryVendorFilter, AsinFilter, InventoryColorFilter
 from apps.transactions.filters import StableOrderingFilter
 from apps.transactions.models import Transaction
@@ -1394,3 +1396,100 @@ class InventoryColorViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         """Delete a single color pattern."""
         return super().destroy(request, *args, **kwargs)
+
+
+class MinPriceTaskViewSet(viewsets.ViewSet):
+    """
+    ViewSet for managing the min-price fetching background task.
+    Provides start, status, and cancel endpoints.
+    """
+
+    @extend_schema(
+        operation_id="min_price_task_start",
+        description="Start a new min-price fetching task. Only one task can run at a time.",
+        tags=["Inventory - Min Price Task"],
+        responses={
+            201: MinPriceTaskSerializer,
+            409: OpenApiResponse(description='A task is already running'),
+        },
+    )
+    @action(detail=False, methods=['post'])
+    def start(self, request):
+        """Start a new min-price fetching task."""
+        from .tasks import fetch_min_prices_task
+        from django.utils import timezone as tz
+
+        # Check if a task is already running
+        running = MinPriceTask.objects.filter(status__in=['PENDING', 'RUNNING']).first()
+        if running:
+            return Response(
+                {'error': 'A min-price task is already running.', 'task': MinPriceTaskSerializer(running).data},
+                status=status.HTTP_409_CONFLICT
+            )
+
+        # Create a new task record
+        task_obj = MinPriceTask.objects.create(status='PENDING')
+
+        # Dispatch the Celery task
+        try:
+            celery_result = fetch_min_prices_task.delay(task_id=task_obj.id)
+            task_obj.celery_task_id = celery_result.id
+            task_obj.save()
+        except Exception as e:
+            task_obj.status = 'FAILURE'
+            task_obj.error_message = f'Failed to start task: {str(e)}'
+            task_obj.finished_at = tz.now()
+            task_obj.save()
+            return Response(
+                {'error': f'Failed to start task: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response(MinPriceTaskSerializer(task_obj).data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        operation_id="min_price_task_status",
+        description="Get the status of the last min-price task.",
+        tags=["Inventory - Min Price Task"],
+        responses={
+            200: MinPriceTaskSerializer,
+            404: OpenApiResponse(description='No task found'),
+        },
+    )
+    @action(detail=False, methods=['get'])
+    def status(self, request):
+        """Get the status of the last (most recent) min-price task."""
+        task_obj = MinPriceTask.objects.order_by('-id').first()
+        if not task_obj:
+            return Response({'error': 'No min-price task found.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(MinPriceTaskSerializer(task_obj).data)
+
+    @extend_schema(
+        operation_id="min_price_task_cancel",
+        description="Cancel the currently running min-price task.",
+        tags=["Inventory - Min Price Task"],
+        responses={
+            200: MinPriceTaskSerializer,
+            404: OpenApiResponse(description='No running task found'),
+        },
+    )
+    @action(detail=False, methods=['post'])
+    def cancel(self, request):
+        """Cancel the currently running min-price task."""
+        task_obj = MinPriceTask.objects.filter(status__in=['PENDING', 'RUNNING']).first()
+        if not task_obj:
+            return Response({'error': 'No running min-price task found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        task_obj.status = 'CANCELLED'
+        task_obj.finished_at = timezone.now()
+        task_obj.save()
+
+        # Also try to revoke the Celery task
+        if task_obj.celery_task_id:
+            try:
+                from scriptify_backend.celery import app as celery_app
+                celery_app.control.revoke(task_obj.celery_task_id, terminate=True)
+            except Exception:
+                pass  # Best effort
+
+        return Response(MinPriceTaskSerializer(task_obj).data)

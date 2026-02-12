@@ -84,6 +84,7 @@ class Asin(models.Model):
     amount = models.IntegerField(default=0)
     shelf = models.CharField(max_length=255, blank=True, default='')
     contains = models.CharField(max_length=500, blank=True, default='', help_text="Comma-separated ASIN values for child items")
+    min_listing_data = models.JSONField(null=True, blank=True, help_text="Cached Amazon min-price listing data (JSON)")
 
     def __str__(self):
         return f"{self.value} - {self.name}"
@@ -203,6 +204,42 @@ class BuildLogItem(models.Model):
             models.Index(fields=['build_log'], name='build_log_item_log_idx'),
             models.Index(fields=['component'], name='build_log_item_comp_idx'),
         ]
+
+
+MIN_PRICE_TASK_STATUS_CHOICES = [
+    ('PENDING', 'Pending'),
+    ('RUNNING', 'Running'),
+    ('SUCCESS', 'Success'),
+    ('FAILURE', 'Failure'),
+    ('CANCELLED', 'Cancelled'),
+]
+
+
+class MinPriceTask(models.Model):
+    """
+    Tracks a single min-price fetching task.
+    Only one task can run at a time.
+    """
+    status = models.CharField(max_length=20, choices=MIN_PRICE_TASK_STATUS_CHOICES, default='PENDING')
+    celery_task_id = models.CharField(max_length=255, blank=True, null=True)
+    total_asins = models.IntegerField(default=0)
+    processed_asins = models.IntegerField(default=0)
+    started_at = models.DateTimeField(null=True, blank=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    error_message = models.TextField(blank=True, default='')
+
+    class Meta:
+        db_table = 'min_price_task'
+        ordering = ['-id']
+
+    def __str__(self):
+        return f"MinPriceTask #{self.id} ({self.status})"
+
+    @property
+    def percentage(self):
+        if self.total_asins == 0:
+            return 0
+        return round((self.processed_asins / self.total_asins) * 100, 1)
 
 
 class InventoryColor(models.Model):

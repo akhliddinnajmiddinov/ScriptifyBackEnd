@@ -46,7 +46,11 @@ env:
   TOP_N_KEEPA_PRODUCTS: ${{ secrets.TOP_N_KEEPA_PRODUCTS }}
   HEADLESS: ${{ secrets.HEADLESS }}
   USE_FILE_BASED_IMAGES: ${{ secrets.USE_FILE_BASED_IMAGES }}
-
+  LWA_APP_ID: ${{ secrets.LWA_APP_ID }}
+  LWA_CLIENT_SECRET: ${{ secrets.LWA_CLIENT_SECRET }}
+  SP_API_REFRESH_TOKEN: ${{ secrets.SP_API_REFRESH_TOKEN }}
+  SP_API_DEFAULT_MARKETPLACE: ${{ secrets.SP_API_DEFAULT_MARKETPLACE }}
+  
 
 jobs:
   build_and_deploy:
@@ -111,6 +115,10 @@ jobs:
           envkey_TOP_N_KEEPA_PRODUCTS: ${{ env.TOP_N_KEEPA_PRODUCTS }}
           envkey_HEADLESS: ${{ env.HEADLESS }}
           envkey_USE_FILE_BASED_IMAGES: ${{ env.USE_FILE_BASED_IMAGES }}
+          envkey_LWA_APP_ID: ${{ env.LWA_APP_ID }}
+          envkey_LWA_CLIENT_SECRET: ${{ env.LWA_CLIENT_SECRET }}
+          envkey_SP_API_REFRESH_TOKEN: ${{ env.SP_API_REFRESH_TOKEN }}
+          envkey_SP_API_DEFAULT_MARKETPLACE: ${{ env.SP_API_DEFAULT_MARKETPLACE }}
           file_name: .env
           fail_on_empty: false
           sort_keys: false
@@ -201,6 +209,11 @@ jobs:
             export REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
             export CELERY_BROKER_URL=${{ env.CELERY_BROKER_URL }}
             export CELERY_RESULT_BACKEND=${{ env.CELERY_RESULT_BACKEND }}
+            export LWA_APP_ID=${{ secrets.LWA_APP_ID }}
+            export LWA_CLIENT_SECRET=${{ secrets.LWA_CLIENT_SECRET }}
+            export SP_API_REFRESH_TOKEN=${{ secrets.SP_API_REFRESH_TOKEN }}
+            export SP_API_DEFAULT_MARKETPLACE=${{ secrets.SP_API_DEFAULT_MARKETPLACE }}
+  
 
             docker compose down
             docker compose up -d --pull always

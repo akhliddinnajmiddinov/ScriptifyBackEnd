@@ -50,7 +50,7 @@ env:
   LWA_CLIENT_SECRET: ${{ secrets.LWA_CLIENT_SECRET }}
   SP_API_REFRESH_TOKEN: ${{ secrets.SP_API_REFRESH_TOKEN }}
   SP_API_DEFAULT_MARKETPLACE: ${{ secrets.SP_API_DEFAULT_MARKETPLACE }}
-  
+
 
 jobs:
   build_and_deploy:

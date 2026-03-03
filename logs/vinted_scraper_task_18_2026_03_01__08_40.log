@@ -1,0 +1,39 @@
+2026-03-01 08:40:57 | INFO     | 
+================================================================================
+2026-03-01 08:40:57 | INFO     | 🚀 VINTED DATA SCRAPER
+2026-03-01 08:40:57 | INFO     | ================================================================================
+2026-03-01 08:40:57 | INFO     | 📋 Configuration:
+2026-03-01 08:40:57 | INFO     |    Base URL: https://www.vinted.de
+2026-03-01 08:40:57 | INFO     |    Output CSV: /tmp/vinted_scraper_dummy.csv
+2026-03-01 08:40:57 | INFO     |    Output JSON: /tmp/vinted_scraper_dummy.json
+2026-03-01 08:40:57 | INFO     |    Cookies file: vinted_cookies.json
+2026-03-01 08:40:57 | INFO     | ================================================================================
+2026-03-01 08:40:57 | INFO     | Setting up browser...
+2026-03-01 08:40:59 | INFO     | ✓ Browser ready
+2026-03-01 08:40:59 | INFO     | 
+================================================================================
+2026-03-01 08:40:59 | INFO     | 🔐 LOGIN PROCESS
+2026-03-01 08:40:59 | INFO     | --------------------------------------------------------------------------------
+2026-03-01 08:40:59 | WARNING  | 🔐 Attempting automatic login...
+2026-03-01 08:41:10 | INFO     |    Clicking: Deutschland...
+2026-03-01 08:41:12 | INFO     |    Clicking: Alle zulassen...
+2026-03-01 08:41:13 | INFO     |    Filling email...
+2026-03-01 08:41:13 | INFO     |    Filling password...
+2026-03-01 08:41:14 | INFO     |    Clicking submit button...
+2026-03-01 08:41:14 | INFO     | ⏳ Waiting for login to complete...
+2026-03-01 08:41:14 | INFO     |    (If captcha appears, please solve it - 60 seconds available)
+2026-03-01 08:41:16 | INFO     |    ⏳ Still on login page... (58s remaining)
+2026-03-01 08:41:18 | INFO     |    ⏳ Still on login page... (56s remaining)
+2026-03-01 08:41:20 | INFO     |    ⏳ Still on login page... (54s remaining)
+2026-03-01 08:41:22 | INFO     |    ⏳ Still on login page... (52s remaining)
+2026-03-01 08:41:24 | INFO     |    ⏳ Still on login page... (50s remaining)
+2026-03-01 08:41:26 | INFO     |    ⏳ Still on login page... (48s remaining)
+2026-03-01 08:41:28 | INFO     |    ⏳ Still on login page... (46s remaining)
+2026-03-01 08:41:30 | INFO     |    ⏳ Still on login page... (44s remaining)
+2026-03-01 08:41:32 | INFO     |    ⏳ Still on login page... (42s remaining)
+2026-03-01 08:41:35 | INFO     |    ⏳ Still on login page... (40s remaining)
+2026-03-01 08:41:37 | INFO     |    ⏳ Still on login page... (38s remaining)
+2026-03-01 08:41:39 | INFO     |    ⏳ Still on login page... (36s remaining)
+2026-03-01 08:41:41 | INFO     |    ⏳ Still on login page... (34s remaining)
+2026-03-01 08:41:43 | INFO     | 
+Cleaning up...

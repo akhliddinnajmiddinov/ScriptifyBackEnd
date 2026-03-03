@@ -83,6 +83,8 @@ INSTALLED_APPS = [
     'apps.scripts',
     'apps.transactions',
     'apps.listings',
+    'apps.purchases',
+    'apps.tasks',
 ]
 
 MIDDLEWARE = [

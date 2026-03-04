@@ -8,6 +8,7 @@ class PurchasesFilter(filters.FilterSet):
     """
     FilterSet for Purchases model.
     """
+    id = filters.NumberFilter(field_name='id', lookup_expr='exact')
     platform = filters.CharFilter(field_name='platform', lookup_expr='exact')
     external_id = filters.CharFilter(field_name='external_id', lookup_expr='icontains')
     order_status = filters.CharFilter(field_name='order_status', lookup_expr='exact')
@@ -21,11 +22,11 @@ class PurchasesFilter(filters.FilterSet):
     seller_name = filters.CharFilter(method='filter_seller_name')
     min_total_price = filters.NumberFilter(field_name='total_price', lookup_expr='gte')
     max_total_price = filters.NumberFilter(field_name='total_price', lookup_expr='lte')
-    search = filters.CharFilter(method='filter_search')
+    query = filters.CharFilter(method='filter_query')
     
     class Meta:
         model = Purchases
-        fields = ['platform', 'external_id', 'order_status', 'approved_status', 'product_title', 'tracking_code', 'start_date', 'end_date', 'updated_start_date', 'updated_end_date', 'seller_name', 'min_total_price', 'max_total_price', 'search']
+        fields = ['id', 'platform', 'external_id', 'order_status', 'approved_status', 'product_title', 'tracking_code', 'start_date', 'end_date', 'updated_start_date', 'updated_end_date', 'seller_name', 'min_total_price', 'max_total_price', 'query']
     
     def filter_seller_name(self, queryset, name, value):
         """
@@ -50,9 +51,9 @@ class PurchasesFilter(filters.FilterSet):
         sanitized = re.sub(r'[",*#]+', " ", value)
         return [t.strip() for t in sanitized.split() if t.strip()]
     
-    def filter_search(self, queryset, name, value):
+    def filter_query(self, queryset, name, value):
         """
-        Universal search across tracking_code, product_title, seller_name (in JSONField), and external_id.
+        Universal search across tracking_code, product_title, seller_name (in JSONField), external_id, and platform.
         Uses token-based searching with AND logic (all tokens must match).
         """
         tokens = self._sanitize_and_tokenize(value)
@@ -72,12 +73,13 @@ class PurchasesFilter(filters.FilterSet):
     def _build_token_query(self, token):
         """
         Build Q object for a single token using icontains on all searchable fields.
-        Searches in: tracking_code, product_title, seller_name (JSONField), and external_id.
+        Searches in: tracking_code, product_title, seller_name (JSONField), external_id, and platform.
         """
         return (
             Q(tracking_code__icontains=token) |
             Q(product_title__icontains=token) |
             Q(external_id__icontains=token) |
+            Q(platform__icontains=token) |
             Q(seller_info__seller_name__icontains=token) |
             Q(seller_info__username__icontains=token)
         )

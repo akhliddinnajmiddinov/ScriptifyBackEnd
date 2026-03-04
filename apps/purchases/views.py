@@ -74,9 +74,10 @@ class PurchasesViewSet(viewsets.ModelViewSet):
         operation_id="purchases_list",
         description="List all purchases with filtering and pagination. "
                     "Supports filtering by platform, order_status, approved_status, product_title, tracking_code, seller_name, total_price range, and date ranges. "
-                    "Universal search (search parameter) searches across tracking_code, product_title, seller_name, and external_id.",
+                    "Universal search (query parameter) searches across tracking_code, product_title, seller_name, external_id, and platform.",
         tags=["Purchases"],
         parameters=[
+            OpenApiParameter('id', OpenApiTypes.INT, description='Filter by ID (exact match)'),
             OpenApiParameter('platform', OpenApiTypes.STR, description='Filter by platform (vinted, amazon, kleinanzeigen, momox)'),
             OpenApiParameter('external_id', OpenApiTypes.STR, description='Search by external ID (partial match)'),
             OpenApiParameter('order_status', OpenApiTypes.STR, description='Filter by order status'),
@@ -86,7 +87,7 @@ class PurchasesViewSet(viewsets.ModelViewSet):
             OpenApiParameter('seller_name', OpenApiTypes.STR, description='Search by seller name (searches in seller_info JSONField)'),
             OpenApiParameter('min_total_price', OpenApiTypes.FLOAT, description='Minimum total price'),
             OpenApiParameter('max_total_price', OpenApiTypes.FLOAT, description='Maximum total price'),
-            OpenApiParameter('search', OpenApiTypes.STR, description='Universal search across tracking_code, product_title, seller_name, and external_id'),
+            OpenApiParameter('query', OpenApiTypes.STR, description='Universal search across tracking_code, product_title, seller_name, external_id, and platform'),
             OpenApiParameter('start_date', OpenApiTypes.DATETIME, description='Filter purchases from this date (purchased_at >= start_date)'),
             OpenApiParameter('end_date', OpenApiTypes.DATETIME, description='Filter purchases until this date (purchased_at <= end_date)'),
             OpenApiParameter('updated_start_date', OpenApiTypes.DATETIME, description='Filter purchases updated from this date (updated_at >= updated_start_date)'),

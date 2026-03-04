@@ -1,5 +1,5 @@
 from django_filters import rest_framework as filters
-from .models import Listing, Shelf, InventoryVendor, Asin, InventoryColor
+from .models import Listing, Shelf, InventoryVendor, Asin, InventoryColor, ListingAsin
 from .serializers import ListingSerializer
 from rest_framework.pagination import PageNumberPagination
 import re
@@ -157,3 +157,62 @@ class InventoryColorFilter(filters.FilterSet):
     class Meta:
         model = InventoryColor
         fields = ['pattern']
+
+
+class ListingAsinFilter(filters.FilterSet):
+    """
+    FilterSet for ListingAsin model.
+    """
+    listing = filters.NumberFilter(field_name='listing__id', lookup_expr='exact')
+    asin = filters.NumberFilter(field_name='asin__id', lookup_expr='exact')
+    purchase = filters.NumberFilter(field_name='purchase__id', lookup_expr='exact')
+
+    # Universal ASIN search: same fields used in the inventory/ASIN page search
+    # Searches across asin.value, asin.name, asin.ean, asin.vendor, asin.shelf, asin.contains
+    asin_query = filters.CharFilter(method='filter_asin_query')
+
+    # Universal purchase/conversation search: searches across purchase.external_id
+    # and the listing's own tracking/url fields
+    purchase_query = filters.CharFilter(method='filter_purchase_query')
+
+    class Meta:
+        model = ListingAsin
+        fields = ['listing', 'asin', 'purchase', 'asin_query', 'purchase_query']
+
+    def filter_asin_query(self, queryset, name, value):
+        """
+        Universal text search across the connected ASIN's fields.
+        Mirrors the AsinFilter.filter_search logic.
+        """
+        if not value or not value.strip():
+            return queryset
+        # Tokenize on whitespace (same as AsinFilter)
+        tokens = [t.strip() for t in value.split() if t.strip()]
+        query = Q()
+        for token in tokens:
+            query &= (
+                Q(asin__value__icontains=token) |
+                Q(asin__name__icontains=token) |
+                Q(asin__ean__icontains=token) |
+                Q(asin__vendor__icontains=token) |
+                Q(asin__shelf__icontains=token) |
+                Q(asin__contains__icontains=token)
+            )
+        return queryset.filter(query).distinct()
+
+    def filter_purchase_query(self, queryset, name, value):
+        """
+        Universal text search across the connected purchase's fields
+        (external_id) and the listing's tracking/URL fields.
+        """
+        if not value or not value.strip():
+            return queryset
+        tokens = [t.strip() for t in value.split() if t.strip()]
+        query = Q()
+        for token in tokens:
+            query &= (
+                Q(purchase__external_id__icontains=token) |
+                Q(listing__listing_url__icontains=token) |
+                Q(listing__tracking_number__icontains=token)
+            )
+        return queryset.filter(query).distinct()

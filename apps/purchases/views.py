@@ -21,7 +21,7 @@ class PurchasesViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.DjangoFilterBackend, StableOrderingFilter]
     ordering_fields = [
         'id', 'platform', 'external_id', 'product_title', 'order_status',
-        'approved_status', 'purchased_at', 'updated_at', 'total_price', 'tracking_code',
+        'approved_status', 'purchased_at', 'updated_at', 'approved_rejected_at', 'total_price', 'tracking_code',
         'seller_name', 'seller_name_sort'  # seller_name_sort is the annotated field for JSONField ordering
     ]
     ordering = ['-updated_at', '-id']
@@ -38,10 +38,16 @@ class PurchasesViewSet(viewsets.ModelViewSet):
         
         # Annotate seller_name for ordering (from JSONField)
         # Use COALESCE to prefer seller_name, fallback to username
-        queryset = queryset.extra(
-            select={
-                'seller_name_sort': "COALESCE(seller_info->>'seller_name', seller_info->>'username', '')"
-            }
+        from django.db.models import F, Value, CharField
+        from django.db.models.functions import Coalesce
+        
+        queryset = queryset.annotate(
+            seller_name_sort=Coalesce(
+                F('seller_info__seller_name'),
+                F('seller_info__username'),
+                Value(''),
+                output_field=CharField()
+            )
         )
         
         return queryset
@@ -94,7 +100,7 @@ class PurchasesViewSet(viewsets.ModelViewSet):
             OpenApiParameter('updated_end_date', OpenApiTypes.DATETIME, description='Filter purchases updated until this date (updated_at <= updated_end_date)'),
             OpenApiParameter('page', OpenApiTypes.INT, description='Page number'),
             OpenApiParameter('page_size', OpenApiTypes.INT, description='Results per page (max 100)'),
-            OpenApiParameter('ordering', OpenApiTypes.STR, description='Order results by field (e.g., -updated_at, total_price, seller_name)'),
+            OpenApiParameter('ordering', OpenApiTypes.STR, description='Order results by field (e.g., -updated_at, approved_rejected_at, total_price, seller_name)'),
         ],
         responses=PurchasesSerializer(many=True),
     )

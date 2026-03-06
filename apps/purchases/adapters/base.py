@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Optional, Any, Tuple
 from decimal import Decimal
 from datetime import datetime
+from django.utils import timezone
 
 
 class BasePurchasesAdapter(ABC):
@@ -85,7 +86,7 @@ class BasePurchasesAdapter(ABC):
     
     def normalize_datetime(self, dt_value: Any) -> Optional[datetime]:
         """
-        Normalize datetime from various formats.
+        Normalize datetime from various formats to timezone-aware datetime.
         
         Handles:
         - ISO format strings
@@ -97,23 +98,39 @@ class BasePurchasesAdapter(ABC):
             return None
         
         if isinstance(dt_value, datetime):
+            if timezone.is_naive(dt_value):
+                return timezone.make_aware(dt_value)
             return dt_value
         
         if isinstance(dt_value, str):
+            dt_value = dt_value.strip()
+            if not dt_value:
+                return None
+                
             # Try ISO format
             try:
                 # Handle with timezone
                 if 'T' in dt_value or '+' in dt_value or dt_value.endswith('Z'):
                     return datetime.fromisoformat(dt_value.replace('Z', '+00:00'))
-                # Handle simple date format
-                return datetime.strptime(dt_value, '%Y-%m-%d %H:%M:%S')
+                
+                # Handle simple date format (e.g., 2026-02-20 13:57:50)
+                # Parse as naive first, then make aware
+                naive_dt = datetime.strptime(dt_value, '%Y-%m-%d %H:%M:%S')
+                return timezone.make_aware(naive_dt)
+            except (ValueError, AttributeError):
+                pass
+                
+            # Try just date format
+            try:
+                naive_dt = datetime.strptime(dt_value, '%Y-%m-%d')
+                return timezone.make_aware(naive_dt)
             except (ValueError, AttributeError):
                 pass
         
         if isinstance(dt_value, (int, float)):
-            # Unix timestamp
+            # Unix timestamp - create as aware UTC
             try:
-                return datetime.fromtimestamp(dt_value)
+                return datetime.fromtimestamp(dt_value, tz=timezone.utc)
             except (ValueError, OSError):
                 pass
         

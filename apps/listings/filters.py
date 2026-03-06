@@ -211,8 +211,8 @@ class ListingAsinFilter(filters.FilterSet):
         query = Q()
         for token in tokens:
             query &= (
-                Q(purchase__external_id__icontains=token) |
-                Q(listing__listing_url__icontains=token) |
-                Q(listing__tracking_number__icontains=token)
+                Q(purchase__product_title__icontains=token) |
+                Q(purchase__primary_listing_url__icontains=token) |
+                Q(purchase__tracking_code__icontains=token)
             )
         return queryset.filter(query).distinct()

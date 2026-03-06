@@ -19,6 +19,8 @@ class PurchasesFilter(filters.FilterSet):
     end_date = filters.DateTimeFilter(field_name='purchased_at', lookup_expr='lte')
     updated_start_date = filters.DateTimeFilter(field_name='updated_at', lookup_expr='gte')
     updated_end_date = filters.DateTimeFilter(field_name='updated_at', lookup_expr='lte')
+    approved_start_date = filters.DateTimeFilter(field_name='approved_rejected_at', lookup_expr='gte')
+    approved_end_date = filters.DateTimeFilter(field_name='approved_rejected_at', lookup_expr='lte')
     seller_name = filters.CharFilter(method='filter_seller_name')
     min_total_price = filters.NumberFilter(field_name='total_price', lookup_expr='gte')
     max_total_price = filters.NumberFilter(field_name='total_price', lookup_expr='lte')
@@ -26,7 +28,7 @@ class PurchasesFilter(filters.FilterSet):
     
     class Meta:
         model = Purchases
-        fields = ['id', 'platform', 'external_id', 'order_status', 'approved_status', 'product_title', 'tracking_code', 'start_date', 'end_date', 'updated_start_date', 'updated_end_date', 'seller_name', 'min_total_price', 'max_total_price', 'query']
+        fields = ['id', 'platform', 'external_id', 'order_status', 'approved_status', 'product_title', 'tracking_code', 'start_date', 'end_date', 'updated_start_date', 'updated_end_date', 'approved_start_date', 'approved_end_date', 'seller_name', 'min_total_price', 'max_total_price', 'query']
     
     def filter_seller_name(self, queryset, name, value):
         """

@@ -41,6 +41,11 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
+      - APP_ENV=${APP_ENV}
+      - SECRET_KEY=${SECRET_KEY}
+      - VINTED_EMAIL=${VINTED_EMAIL}
+      - VINTED_PASSWORD=${VINTED_PASSWORD}
+      - VINTED_MAX_CONVERSATIONS=${VINTED_MAX_CONVERSATIONS}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthy/"]
       interval: 30s
@@ -112,6 +117,11 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
+      - APP_ENV=${APP_ENV}
+      - SECRET_KEY=${SECRET_KEY}
+      - VINTED_EMAIL=${VINTED_EMAIL}
+      - VINTED_PASSWORD=${VINTED_PASSWORD}
+      - VINTED_MAX_CONVERSATIONS=${VINTED_MAX_CONVERSATIONS}
     depends_on:
       redis:
         condition: service_healthy
@@ -122,6 +132,43 @@ services:
     mem_limit: 1100M
     mem_reservation: 900M
     cpus: '0.6'
+
+  celery-beat:
+    image: ${DOCKER_USERNAME}/scriptify_backend:${IMAGE_TAG}
+    container_name: scriptify_celery_beat
+    restart: unless-stopped
+    command:
+      - celery
+      - -A
+      - scriptify_backend
+      - beat
+      - --loglevel=info
+      - --scheduler=django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - media_data:/app/media
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - APP_ENV=${APP_ENV}
+      - SECRET_KEY=${SECRET_KEY}
+      - VINTED_EMAIL=${VINTED_EMAIL}
+      - VINTED_PASSWORD=${VINTED_PASSWORD}
+      - VINTED_MAX_CONVERSATIONS=${VINTED_MAX_CONVERSATIONS}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - scriptify_backend_network
+    mem_limit: 400M
+    mem_reservation: 200M
+    cpus: '0.2'
 
 networks:
   scriptify_backend_network:

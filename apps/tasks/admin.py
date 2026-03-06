@@ -5,6 +5,7 @@ from .models import Task, TaskRun
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'slug', 'celery_task', 'is_active', 'created_at')
+    list_display_links = ('id', 'name', 'slug', 'celery_task')
     list_filter = ('is_active', 'created_at')
     search_fields = ('name', 'slug', 'description')
     prepopulated_fields = {'slug': ('name',)}

@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     'apps.listings',
     'apps.purchases',
     'apps.tasks',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -152,6 +153,8 @@ CELERY_TIMEZONE = 'UTC'
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_SOFT_TIME_LIMIT = 60 * 300 # 300 minutes
 CELERY_TASK_TIME_LIMIT = 60 * 325  # 325 minutes
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 CORS_ALLOWED_ORIGINS = [
     "http://104.248.33.182",

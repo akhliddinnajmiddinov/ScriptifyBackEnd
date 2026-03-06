@@ -939,6 +939,39 @@ class VintedScraperPlaywright:
         
         logger.info("✓ Cleanup complete")
 
+@shared_task(bind=True)
+def scheduled_vinted_scraper(self):
+    """
+    Scheduled wrapper for the Vinted scraper (called by Celery Beat).
+    Creates a TaskRun and delegates to fetch_vinted_conversations_task.
+    Skips if a scraper is already running.
+    """
+    from .models import Task, TaskRun
+
+    try:
+        task = Task.objects.get(slug='vinted-conversation-scraping')
+    except Task.DoesNotExist:
+        logger.error("Scheduled scraper: Task 'vinted-conversation-scraping' not found in DB.")
+        return
+
+    # Skip if already running
+    running = TaskRun.objects.filter(task=task, status__in=['PENDING', 'RUNNING']).first()
+    if running:
+        logger.info(f"Scheduled scraper: Skipping — TaskRun #{running.id} is already running.")
+        return
+
+    # Create a new TaskRun for the scheduled run
+    task_run = TaskRun.objects.create(
+        task=task,
+        started_by=None,  # Scheduled — no user
+        status='PENDING',
+        input_data={},
+    )
+    logger.info(f"Scheduled scraper: Created TaskRun #{task_run.id}")
+
+    # Dispatch the actual scraper task
+    fetch_vinted_conversations_task.delay(task_run_id=task_run.id)
+
 
 @shared_task(bind=True)
 def fetch_vinted_conversations_task(self, task_run_id: int):
@@ -969,6 +1002,12 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
         input_data = task_run.input_data or {}
         days_to_fetch = input_data.get('days_to_fetch')
         
+        # Read max conversations limit from environment
+        max_conversations_env = os.environ.get('VINTED_MAX_CONVERSATIONS', '').strip()
+        max_conversations = int(max_conversations_env) if max_conversations_env else None
+        if max_conversations:
+            logger.info(f"TaskRun #{task_run_id}: Max conversations limit set to {max_conversations}")
+        
         # Get cookies_file path from Task (None if not set - no cookies will be used)
         cookies_file_path = None
         logger.info(f"Task cookies file: {task.cookies_file}")
@@ -994,6 +1033,7 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
                 task_run_id=task_run_id,
                 cookies_file_path=cookies_file_path,
                 days_to_fetch=days_to_fetch,
+                max_conversations=max_conversations,
             )
         )
         
@@ -1026,6 +1066,7 @@ async def _run_vinted_scraper(
     task_run_id: int,
     cookies_file_path: Optional[str],
     days_to_fetch: Optional[int],
+    max_conversations: Optional[int] = None,
 ):
     """
     Async wrapper that runs the Vinted scraper and intercepts data to save to Purchases.
@@ -1273,6 +1314,15 @@ async def _run_vinted_scraper(
                                         )
                                         # Continue processing other conversations
                                         continue
+                                    
+                                    # Check max conversations limit
+                                    if max_conversations and processed_count[0] >= max_conversations:
+                                        logger.info(
+                                            f"TaskRun #{task_run_id}: Reached max conversations limit "
+                                            f"({max_conversations}). Stopping."
+                                        )
+                                        await session.close()
+                                        return
                         
                         # Check pagination
                         pagination = data.get("pagination", {})

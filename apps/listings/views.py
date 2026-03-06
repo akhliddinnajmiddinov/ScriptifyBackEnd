@@ -13,8 +13,10 @@ from .serializers import (
     ListingSerializer, ShelfSerializer, InventoryVendorSerializer, 
     AsinSerializer, AsinPreviewItemSerializer, AsinBulkAddItemSerializer,
     BuildLogSerializer, BuildOrderDiscoverySerializer, InventoryColorSerializer,
-    MinPriceTaskSerializer)
-from .filters import StandardPagination, ListingFilter, ShelfFilter, InventoryVendorFilter, AsinFilter, InventoryColorFilter
+    MinPriceTaskSerializer, ListingAsinSerializer)
+from .filters import (
+    StandardPagination, ListingFilter, ShelfFilter, InventoryVendorFilter, 
+    AsinFilter, InventoryColorFilter, ListingAsinFilter)
 from apps.transactions.filters import StableOrderingFilter
 from apps.transactions.models import Transaction
 from apps.transactions.serializers import TransactionSerializer
@@ -1315,6 +1317,52 @@ class BuildOrderViewSet(viewsets.ViewSet):
             'deleted_count': deleted_count,
             'message': f'Successfully deleted {deleted_count} item(s)'
         }, status=status.HTTP_200_OK)
+
+
+class ListingAsinViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for ListingAsin CRUD operations.
+    Allows managing the relationship between Listings and ASINs.
+    """
+    queryset = ListingAsin.objects.all()
+    serializer_class = ListingAsinSerializer
+    filterset_class = ListingAsinFilter
+    filter_backends = [filters.DjangoFilterBackend, StableOrderingFilter]
+    ordering_fields = ['id', 'amount']
+    ordering = ['-id']
+    pagination_class = StandardPagination
+
+    @extend_schema(
+        operation_id="listing_asins_list",
+        description="List all listing-asin connections with filtering.",
+        tags=["Inventory - Connections"],
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        operation_id="listing_asins_create",
+        description="Create a new connection between a listing and an ASIN.",
+        tags=["Inventory - Connections"],
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @extend_schema(
+        operation_id="listing_asins_update",
+        description="Update a connection (e.g., change amount).",
+        tags=["Inventory - Connections"],
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @extend_schema(
+        operation_id="listing_asins_delete",
+        description="Delete a connection.",
+        tags=["Inventory - Connections"],
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
 
 
 class InventoryColorViewSet(viewsets.ModelViewSet):

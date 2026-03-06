@@ -149,6 +149,7 @@ class ListingAsin(models.Model):
     """
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='listings_asins', null=True, blank=True)
     asin = models.ForeignKey(Asin, on_delete=models.CASCADE, related_name='asins_listings', null=True, blank=True)
+    purchase = models.ForeignKey('purchases.Purchases', on_delete=models.SET_NULL, related_name='purchases_asins', null=True, blank=True)
     amount = models.IntegerField()
     
     def __str__(self):

@@ -1,0 +1,66 @@
+2026-03-01 08:43:57 | INFO     | 
+================================================================================
+2026-03-01 08:43:57 | INFO     | 🚀 VINTED DATA SCRAPER
+2026-03-01 08:43:57 | INFO     | ================================================================================
+2026-03-01 08:43:57 | INFO     | 📋 Configuration:
+2026-03-01 08:43:57 | INFO     |    Base URL: https://www.vinted.de
+2026-03-01 08:43:57 | INFO     |    Output CSV: /tmp/vinted_scraper_dummy.csv
+2026-03-01 08:43:57 | INFO     |    Output JSON: /tmp/vinted_scraper_dummy.json
+2026-03-01 08:43:57 | INFO     |    Cookies file: vinted_cookies.json
+2026-03-01 08:43:57 | INFO     | ================================================================================
+2026-03-01 08:43:57 | INFO     | Setting up browser...
+2026-03-01 08:43:59 | INFO     | ✓ Browser ready
+2026-03-01 08:43:59 | INFO     | 
+================================================================================
+2026-03-01 08:43:59 | INFO     | 🔐 LOGIN PROCESS
+2026-03-01 08:43:59 | INFO     | --------------------------------------------------------------------------------
+2026-03-01 08:43:59 | WARNING  | 🔐 Attempting automatic login...
+2026-03-01 08:44:11 | INFO     |    Clicking: Deutschland...
+2026-03-01 08:44:13 | INFO     |    Clicking: Alle zulassen...
+2026-03-01 08:44:14 | INFO     |    Filling email...
+2026-03-01 08:44:14 | INFO     |    Filling password...
+2026-03-01 08:44:15 | INFO     |    Clicking submit button...
+2026-03-01 08:44:15 | INFO     | ⏳ Waiting for login to complete...
+2026-03-01 08:44:15 | INFO     |    (If captcha appears, please solve it - 60 seconds available)
+2026-03-01 08:44:17 | INFO     |    ⏳ Still on login page... (58s remaining)
+2026-03-01 08:44:19 | INFO     |    ⏳ Still on login page... (56s remaining)
+2026-03-01 08:44:21 | INFO     |    ⏳ Still on login page... (54s remaining)
+2026-03-01 08:44:23 | INFO     |    ⏳ Still on login page... (52s remaining)
+2026-03-01 08:44:25 | INFO     |    ⏳ Still on login page... (50s remaining)
+2026-03-01 08:44:27 | INFO     |    ⏳ Still on login page... (48s remaining)
+2026-03-01 08:44:29 | INFO     |    ⏳ Still on login page... (46s remaining)
+2026-03-01 08:44:31 | INFO     |    ⏳ Still on login page... (44s remaining)
+2026-03-01 08:44:33 | INFO     |    ⏳ Still on login page... (42s remaining)
+2026-03-01 08:44:35 | INFO     |    ⏳ Still on login page... (40s remaining)
+2026-03-01 08:44:38 | INFO     |    ⏳ Still on login page... (38s remaining)
+2026-03-01 08:44:40 | INFO     |    ⏳ Still on login page... (36s remaining)
+2026-03-01 08:44:42 | INFO     |    ⏳ Still on login page... (34s remaining)
+2026-03-01 08:44:44 | INFO     |    ⏳ Still on login page... (32s remaining)
+2026-03-01 08:44:46 | INFO     |    ⏳ Still on login page... (30s remaining)
+2026-03-01 08:44:48 | INFO     |    ⏳ Still on login page... (28s remaining)
+2026-03-01 08:44:50 | INFO     |    ⏳ Still on login page... (26s remaining)
+2026-03-01 08:44:52 | INFO     |    ⏳ Still on login page... (24s remaining)
+2026-03-01 08:44:54 | INFO     |    ⏳ Still on login page... (21s remaining)
+2026-03-01 08:44:56 | INFO     |    ⏳ Still on login page... (19s remaining)
+2026-03-01 08:44:58 | INFO     |    ⏳ Still on login page... (17s remaining)
+2026-03-01 08:45:00 | INFO     |    ⏳ Still on login page... (15s remaining)
+2026-03-01 08:45:02 | INFO     |    ⏳ Still on login page... (13s remaining)
+2026-03-01 08:45:04 | INFO     |    ⏳ Still on login page... (11s remaining)
+2026-03-01 08:45:06 | INFO     |    ⏳ Still on login page... (9s remaining)
+2026-03-01 08:45:09 | INFO     |    ⏳ Still on login page... (7s remaining)
+2026-03-01 08:45:11 | INFO     |    ⏳ Still on login page... (5s remaining)
+2026-03-01 08:45:13 | INFO     |    ⏳ Still on login page... (3s remaining)
+2026-03-01 08:45:15 | INFO     |    ⏳ Still on login page... (1s remaining)
+2026-03-01 08:45:17 | INFO     |    ⏳ Still on login page... (-1s remaining)
+2026-03-01 08:45:17 | WARNING  | ❌ Login timeout reached (60 seconds)
+2026-03-01 08:45:17 | WARNING  | ❌ Automatic login failed
+2026-03-01 08:45:17 | WARNING  | ⚠️  Falling back to manual login...
+2026-03-01 08:45:22 | INFO     | 
+================================================================================
+2026-03-01 08:45:22 | WARNING  | ⚠️  MANUAL LOGIN REQUIRED
+2026-03-01 08:45:22 | INFO     | ================================================================================
+2026-03-01 08:45:22 | WARNING  | Please log in to Vinted in the browser window.
+2026-03-01 08:45:22 | WARNING  | The script will continue automatically once you're logged in.
+2026-03-01 08:45:22 | INFO     | ================================================================================
+2026-03-01 08:45:48 | INFO     | 
+Cleaning up...

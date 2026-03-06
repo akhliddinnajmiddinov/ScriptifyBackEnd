@@ -5,4 +5,6 @@ urlpatterns = [
     path('', include('apps.scripts.urls')),  # Add scripts API
     path('', include('apps.transactions.urls')),  # Add transactions API
     path('', include('apps.listings.urls')),  # Add listings API
+    path('', include('apps.tasks.urls')),  # Add tasks API
+    path('', include('apps.purchases.urls')),  # Add purchases API
 ]

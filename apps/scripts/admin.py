@@ -5,6 +5,7 @@ from .models import Script, Run
 @admin.register(Script)
 class ScriptAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'celery_task', 'is_active', 'created_at')
+    list_display_links = ('id', 'name', 'celery_task')
     list_filter = ('is_active', 'created_at')
     search_fields = ('name', 'description')
     readonly_fields = ('created_at', 'updated_at')

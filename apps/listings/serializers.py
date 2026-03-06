@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem, InventoryColor, MinPriceTask
 import json
+from apps.purchases.serializers import PurchasesSerializer
 
 
 class ListingSerializer(serializers.ModelSerializer):
@@ -101,12 +102,18 @@ class InventoryVendorSerializer(serializers.ModelSerializer):
 
 
 class ListingAsinSerializer(serializers.ModelSerializer):
-    """Serializer for ListingAsin with nested listing data"""
-    listing = ListingSerializer(read_only=True)
+    """Serializer for ListingAsin with nested data"""
+    listing_data = ListingSerializer(source='listing', read_only=True)
+    purchase_data = PurchasesSerializer(source='purchase', read_only=True)
+    asin_value = serializers.CharField(source='asin.value', read_only=True)
+    asin_name = serializers.CharField(source='asin.name', read_only=True)
+    asin_amount = serializers.DecimalField(source='asin.amount', max_digits=10, decimal_places=2, read_only=True)
+    asin_shelf = serializers.CharField(source='asin.shelf', read_only=True)
     
     class Meta:
         model = ListingAsin
-        fields = ['id', 'listing', 'amount']
+        fields = ['id', 'listing', 'asin', 'purchase', 'amount', 
+                  'listing_data', 'purchase_data', 'asin_value', 'asin_name', 'asin_amount', 'asin_shelf']
 
 
 class BuildComponentSerializer(serializers.ModelSerializer):

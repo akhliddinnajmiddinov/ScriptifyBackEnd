@@ -4,6 +4,7 @@ apps/user/migrations
 apps/scripts/migrations
 apps/listings/migrations
 apps/transactions/migrations
+apps/purchases/migrations
 **/__pycache__/
 __pycache__/
 *.py[cod]

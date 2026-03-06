@@ -29,6 +29,9 @@ RUN touch /app/apps/listings/migrations/__init__.py
 RUN mkdir -p  /app/apps/transactions/migrations
 RUN touch /app/apps/transactions/migrations/__init__.py
 
+RUN mkdir -p  /app/apps/purchases/migrations
+RUN touch /app/apps/purchases/migrations/__init__.py
+
 RUN mkdir -p /app/media
 
 COPY . /app/

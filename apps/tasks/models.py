@@ -71,6 +71,7 @@ class TaskRun(models.Model):
     started_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
+    title = models.CharField(max_length=255, null=True, blank=True) # Added title field
     
     status = models.CharField(
         max_length=20,

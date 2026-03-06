@@ -984,21 +984,33 @@ def scheduled_vinted_scraper(self):
         status='PENDING',
         input_data={},
     )
+    
+    # Set descriptive title with ID
+    task_run.title = f"Scheduled {task.name} task #{task_run.id}"
+    task_run.save(update_fields=['title'])
+    
     logger.info(f"Scheduled scraper: Created TaskRun #{task_run.id}")
 
     # Dispatch the actual scraper task
-    fetch_vinted_conversations_task.delay(task_run_id=task_run.id)
+    result = fetch_vinted_conversations_task.delay(task_run_id=task_run.id)
+    
+    # Save Celery task ID so it can be cancelled
+    task_run.celery_task_id = result.id
+    task_run.save()
 
 
 @shared_task(bind=True)
 def fetch_vinted_conversations_task(self, task_run_id: int):
     """
-    Celery task for fetching Vinted conversations.
-    Wraps the existing Vinted scraper and integrates with TaskRun.
+    Celery task to run the Vinted scraper.
     
     Args:
         task_run_id: ID of the TaskRun instance to track progress
     """
+    from celery.exceptions import SoftTimeLimitExceeded
+    from django.db import transaction
+    
+    task_run = None
     try:
         from .models import TaskRun
         from purchases.models import Purchases
@@ -1079,6 +1091,19 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
     except TaskRun.DoesNotExist:
         logger.error(f"TaskRun #{task_run_id}: TaskRun not found")
         raise
+    except SoftTimeLimitExceeded:
+        error_msg = "Task timed out (Soft Time Limit exceeded)"
+        logger.error(f"TaskRun #{task_run_id}: {error_msg}")
+        try:
+            task_run.refresh_from_db()
+            if task_run.status != 'CANCELLED':
+                task_run.status = 'FAILURE'
+                task_run.error_message = error_msg
+                task_run.finished_at = timezone.now()
+                task_run.save()
+        except Exception:
+            pass
+        raise
     except Exception as e:
         logger.error(f"TaskRun #{task_run_id}: Failed - {e}", exc_info=True)
         try:
@@ -1091,6 +1116,21 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
         except Exception:
             pass
         raise
+    finally:
+        # Final safety check: if task_run is still RUNNING, mark as FAILURE
+        # This handles cases where the task might have crashed or been killed
+        # without updating its status.
+        try:
+            if task_run:
+                task_run.refresh_from_db()
+                if task_run.status == 'RUNNING':
+                    task_run.status = 'FAILURE'
+                    task_run.error_message = "Task stopped unexpectedly"
+                    task_run.finished_at = timezone.now()
+                    task_run.save()
+                    logger.warning(f"TaskRun #{task_run_id}: Status force-updated to FAILURE in finally block")
+        except Exception as e:
+            logger.error(f"TaskRun #{task_run_id}: Error in finally block - {e}")
 
 
 async def _run_vinted_scraper(

@@ -52,6 +52,10 @@ class TaskViewSet(viewsets.ReadOnlyModelViewSet):
             input_data=validated_input_data
         )
         
+        # Set descriptive title with ID
+        task_run.title = f"{task.name} task #{task_run.id}"
+        task_run.save(update_fields=['title'])
+        
         # Dispatch Celery task
         try:
             # Dynamically import and call celery task function

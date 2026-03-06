@@ -2,7 +2,7 @@
 Script to initialize the database with default scripts.
 Run this after migrations: python manage.py shell < scripts/init_scripts.py
 """
-from apps.scripts.models import Script
+from scripts.models import Script
 import json
 
 # Input schema for Kleinanzeigen scraper

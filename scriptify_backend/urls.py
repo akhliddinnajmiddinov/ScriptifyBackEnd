@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny
 from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
-from apps.user.views import TokenObtainAPIView, RevokeTokenAPIView
+from user.views import TokenObtainAPIView, RevokeTokenAPIView
 
 def health_check(request):
     return HttpResponse("OK", status=200)

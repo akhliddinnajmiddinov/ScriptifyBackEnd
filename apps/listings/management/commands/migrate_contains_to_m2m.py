@@ -15,7 +15,7 @@ This command:
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from collections import Counter
-from apps.listings.models import Asin, BuildComponent
+from listings.models import Asin, BuildComponent
 
 
 class Command(BaseCommand):

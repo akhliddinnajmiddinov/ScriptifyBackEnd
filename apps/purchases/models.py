@@ -1,5 +1,5 @@
 from django.db import models
-from apps.listings.models import Listing
+from listings.models import Listing
 
 
 PLATFORM_CHOICES = [

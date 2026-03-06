@@ -79,14 +79,23 @@ INSTALLED_APPS = [
     'drf_spectacular_sidecar',
     'corsheaders',
     'api',
-    'apps.user',
-    'apps.scripts',
-    'apps.transactions',
-    'apps.listings',
-    'apps.purchases',
-    'apps.tasks',
+    'user',
+    'scripts',
+    'transactions',
+    'listings',
+    'purchases',
+    'tasks',
     'django_celery_beat',
 ]
+
+MIGRATION_MODULES = {
+    'user': 'user.migrations',
+    'scripts': 'scripts.migrations',
+    'transactions': 'transactions.migrations',
+    'listings': 'listings.migrations',
+    'purchases': 'purchases.migrations',
+    'tasks': 'tasks.migrations',
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

@@ -16,7 +16,7 @@ from .config import (
 from .retry_with_backoff_async import retry_with_backoff_async
 from .utils import create_browser_args, build_search_url, save_cookies, load_cookies, is_logged_in
 from .scraper import setup_response_handlers, scrape_city
-from apps.scripts.utils import ResultWriter
+from scripts.utils import ResultWriter
 
 
 class FacebookMarketplaceScraper:

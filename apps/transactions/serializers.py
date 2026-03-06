@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from django.db.models import Q
 from .models import Transaction, Vendor
-from apps.listings.models import Listing
-from apps.listings.serializers import ListingSerializer
+from listings.models import Listing
+from listings.serializers import ListingSerializer
 from django.utils import timezone
 from django.conf import settings
 from datetime import datetime, timedelta

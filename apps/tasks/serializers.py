@@ -24,6 +24,7 @@ class TaskSerializer(serializers.ModelSerializer):
 class TaskRunSerializer(serializers.ModelSerializer):
     """Serializer for TaskRun model"""
     task = TaskSerializer(read_only=True)
+    started_by_email = serializers.ReadOnlyField(source='started_by.email')
     
     class Meta:
         model = TaskRun
@@ -31,6 +32,7 @@ class TaskRunSerializer(serializers.ModelSerializer):
             'id',
             'task',
             'started_by',
+            'started_by_email',
             'started_at',
             'finished_at',
             'status',
@@ -38,8 +40,10 @@ class TaskRunSerializer(serializers.ModelSerializer):
             'input_data',
             'progress',
             'error_message',
+            'logs_file',
+            'title',
         ]
-        read_only_fields = ['started_at', 'finished_at', 'celery_task_id']
+        read_only_fields = ['started_at', 'finished_at', 'celery_task_id', 'logs_file']
 
 
 class TaskStartInputSerializer(serializers.Serializer):

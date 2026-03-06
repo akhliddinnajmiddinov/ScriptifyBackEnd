@@ -38,13 +38,14 @@ class PurchasesViewSet(viewsets.ModelViewSet):
         
         # Annotate seller_name for ordering (from JSONField)
         # Use COALESCE to prefer seller_name, fallback to username
-        from django.db.models import F, Value, CharField
+        from django.db.models import Value, CharField
         from django.db.models.functions import Coalesce
+        from django.db.models.fields.json import KeyTextTransform
         
         queryset = queryset.annotate(
             seller_name_sort=Coalesce(
-                F('seller_info__seller_name'),
-                F('seller_info__username'),
+                KeyTextTransform('seller_name', 'seller_info'),
+                KeyTextTransform('username', 'seller_info'),
                 Value(''),
                 output_field=CharField()
             )

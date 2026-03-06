@@ -9,7 +9,7 @@ from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
 from .models import Transaction, Vendor
-from apps.listings.models import Listing
+from listings.models import Listing
 from .serializers import TransactionSerializer, VendorSerializer
 from .filters import StandardPagination, TransactionFilter, VendorFilter, StableOrderingFilter
 

@@ -984,8 +984,8 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
     """
     try:
         from .models import TaskRun
-        from apps.purchases.models import Purchases
-        from apps.purchases.adapters import get_adapter
+        from purchases.models import Purchases
+        from purchases.adapters import get_adapter
         
         # Get TaskRun and Task instances
         task_run = TaskRun.objects.get(id=task_run_id)
@@ -1079,8 +1079,8 @@ async def _run_vinted_scraper(
     5. Checks for cancellation
     """
     from .models import TaskRun
-    from apps.purchases.models import Purchases
-    from apps.purchases.adapters import get_adapter
+    from purchases.models import Purchases
+    from purchases.adapters import get_adapter
     
     # Get TaskRun for progress updates (using async ORM method)
     task_run = await TaskRun.objects.aget(id=task_run_id)

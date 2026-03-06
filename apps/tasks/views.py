@@ -62,7 +62,7 @@ class TaskViewSet(viewsets.ReadOnlyModelViewSet):
             if '.' not in celery_task_path:
                 # If no dot, assume it's just the function name and construct the full path
                 # Default module path for tasks in this app
-                celery_task_path = f'apps.tasks.tasks.{celery_task_path}'
+                celery_task_path = f'tasks.tasks.{celery_task_path}'
             
             split_result = celery_task_path.rsplit('.', 1)
             

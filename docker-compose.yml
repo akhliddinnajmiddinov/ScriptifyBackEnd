@@ -5,8 +5,8 @@ services:
       - /bin/bash
       - -c
       - |
-        # python manage.py makemigrations
-        # python manage.py makemigrations user
+        python manage.py makemigrations
+        python manage.py makemigrations user
         # python manage.py makemigrations scripts
         # python manage.py makemigrations listings
         # python manage.py makemigrations transactions
@@ -18,7 +18,7 @@ services:
         # python manage.py migrate listings
         # python manage.py migrate transactions
         echo "Checking for any issues..."
-        # python manage.py check
+        python manage.py check
         
         exec python manage.py runserver 0.0.0.0:8080
 

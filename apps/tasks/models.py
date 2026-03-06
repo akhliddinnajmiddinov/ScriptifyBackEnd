@@ -31,7 +31,7 @@ class Task(models.Model):
     )
     description = models.TextField(blank=True, null=True)
     
-    # Celery task name - e.g., 'apps.tasks.tasks.fetch_min_prices_task'
+    # Celery task name - e.g., 'tasks.tasks.fetch_min_prices_task'
     celery_task = models.CharField(max_length=255)
     
     # Cookies file for tasks that need it (like vinted scraping)

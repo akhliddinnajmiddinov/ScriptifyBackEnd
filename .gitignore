@@ -1,10 +1,6 @@
 .env
 venv
-apps/user/migrations
-apps/scripts/migrations
-apps/listings/migrations
-apps/transactions/migrations
-apps/purchases/migrations
+# migrations are now tracked
 **/__pycache__/
 __pycache__/
 *.py[cod]

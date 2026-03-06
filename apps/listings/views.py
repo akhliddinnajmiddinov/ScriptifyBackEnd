@@ -17,9 +17,9 @@ from .serializers import (
 from .filters import (
     StandardPagination, ListingFilter, ShelfFilter, InventoryVendorFilter, 
     AsinFilter, InventoryColorFilter, ListingAsinFilter)
-from apps.transactions.filters import StableOrderingFilter
-from apps.transactions.models import Transaction
-from apps.transactions.serializers import TransactionSerializer
+from transactions.filters import StableOrderingFilter
+from transactions.models import Transaction
+from transactions.serializers import TransactionSerializer
 
 
 class ListingViewSet(viewsets.ModelViewSet):

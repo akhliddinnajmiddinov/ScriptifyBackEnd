@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from django.utils import timezone
 from .models import Purchases
-from apps.transactions.models import Vendor
-from apps.listings.models import Listing, ListingAsin, Asin
+from transactions.models import Vendor
+from listings.models import Listing, ListingAsin, Asin
 
 
 class PurchasesSerializer(serializers.ModelSerializer):

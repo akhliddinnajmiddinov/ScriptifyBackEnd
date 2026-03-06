@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem, InventoryColor, MinPriceTask
 import json
-from apps.purchases.serializers import PurchasesSerializer
+from purchases.serializers import PurchasesSerializer
 
 
 class ListingSerializer(serializers.ModelSerializer):

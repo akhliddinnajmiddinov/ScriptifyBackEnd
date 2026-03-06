@@ -6,8 +6,8 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from .models import Purchases
 from .serializers import PurchasesSerializer
 from .filters import PurchasesFilter
-from apps.listings.filters import StandardPagination
-from apps.transactions.filters import StableOrderingFilter
+from listings.filters import StandardPagination
+from transactions.filters import StableOrderingFilter
 
 
 class PurchasesViewSet(viewsets.ModelViewSet):
@@ -63,7 +63,7 @@ class PurchasesViewSet(viewsets.ModelViewSet):
         platforms = queryset.values_list('platform', flat=True).distinct()
         
         if platforms:
-            from apps.transactions.models import Vendor
+            from transactions.models import Vendor
             from django.db.models import Q
             platform_filters = Q()
             for platform in platforms:

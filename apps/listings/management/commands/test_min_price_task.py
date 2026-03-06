@@ -3,8 +3,8 @@ Management command to test the fetch_min_prices_task directly.
 This bypasses Celery and runs the task synchronously for debugging.
 """
 from django.core.management.base import BaseCommand
-from apps.listings.models import Asin, MinPriceTask
-from apps.listings.tasks import fetch_min_prices_task
+from listings.models import Asin, MinPriceTask
+from listings.tasks import fetch_min_prices_task
 from django.utils import timezone
 
 
@@ -12,7 +12,7 @@ class Command(BaseCommand):
     help = 'Test the fetch_min_prices_task directly (bypasses Celery)'
 
     def handle(self, *args, **options):
-        from apps.listings.models import Asin, MinPriceTask
+        from listings.models import Asin, MinPriceTask
         from django.utils import timezone
         
         self.stdout.write("=" * 80)
@@ -50,7 +50,7 @@ class Command(BaseCommand):
             mock_task = MockTask()
             
             # Import and call the function code directly (extract the logic)
-            from apps.listings.sp_api_utils import (
+            from listings.sp_api_utils import (
                 fetch_min_prices_batch,
                 fetch_catalog_data,
                 merge_listing_data,

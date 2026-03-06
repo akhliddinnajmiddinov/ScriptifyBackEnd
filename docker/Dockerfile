@@ -16,22 +16,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 RUN playwright install --with-deps chromium
 
-# Ensure migrations directories exist
-RUN mkdir -p  /app/apps/user/migrations
-RUN touch /app/apps/user/migrations/__init__.py
-
-RUN mkdir -p  /app/apps/scripts/migrations
-RUN touch /app/apps/scripts/migrations/__init__.py
-
-RUN mkdir -p  /app/apps/listings/migrations
-RUN touch /app/apps/listings/migrations/__init__.py
-
-RUN mkdir -p  /app/apps/transactions/migrations
-RUN touch /app/apps/transactions/migrations/__init__.py
-
-RUN mkdir -p  /app/apps/purchases/migrations
-RUN touch /app/apps/purchases/migrations/__init__.py
-
 RUN mkdir -p /app/media
 
 COPY . /app/

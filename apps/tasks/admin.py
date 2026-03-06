@@ -30,11 +30,11 @@ class TaskRunAdmin(admin.ModelAdmin):
     list_display = ('id', 'task', 'status', 'started_by', 'started_at', 'finished_at')
     list_filter = ('status', 'started_at', 'task')
     search_fields = ('task__name', 'task__slug', 'started_by__email', 'celery_task_id')
-    readonly_fields = ('started_at', 'finished_at', 'celery_task_id')
+    readonly_fields = ('started_at', 'finished_at', 'celery_task_id', 'logs_file')
     
     fieldsets = (
         ('Execution Info', {
-            'fields': ('task', 'started_by', 'status', 'celery_task_id')
+            'fields': ('task', 'started_by', 'status', 'celery_task_id', 'logs_file')
         }),
         ('Input Data', {
             'fields': ('input_data',)

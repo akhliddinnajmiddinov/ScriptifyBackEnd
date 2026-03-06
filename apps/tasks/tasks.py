@@ -10,7 +10,7 @@ import json
 import random
 import math
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 from celery import shared_task
 from django.utils import timezone
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page
@@ -157,7 +157,7 @@ async def retry_with_backoff_async(func, max_attempts=MAX_RETRY_ATTEMPTS):
 # ============================================================================
 
 class VintedScraperPlaywright:
-    def __init__(self, base_url: str = "https://www.vinted.de", headless: bool = False, cookies_file_path: Optional[str] = None):
+    def __init__(self, base_url: str = "https://www.vinted.de", headless: bool = False, cookies_file_path: Optional[str] = None, run_logger: Optional[logging.Logger] = None):
         self.base_url = base_url
         self.headless = headless
         self.playwright = None
@@ -167,10 +167,12 @@ class VintedScraperPlaywright:
         self.output_csv = None
         self.output_json = None
         self.cookies_file_path = cookies_file_path  # Store as instance variable (like COOKIES_FILE in original)
+        self.api_session: Optional[aiohttp.ClientSession] = None
+        self.logger = run_logger or logger  # Use per-run logger if provided, else module-level
     
     async def setup_browser(self):
         """Initialize Playwright browser."""
-        logger.info("Setting up browser...")
+        self.logger.info("Setting up browser...")
         self.playwright = await async_playwright().start()
         
         # Launch browser with realistic settings
@@ -199,13 +201,13 @@ class VintedScraperPlaywright:
         """)
         
         self.page = await self.context.new_page()
-        logger.info("✓ Browser ready")
+        self.logger.info("✓ Browser ready")
     
     async def login(self) -> bool:
         """Handle login process - load cookies or wait for manual login."""
-        logger.info("\n" + "=" * 80)
-        logger.info("🔐 LOGIN PROCESS")
-        logger.info("-" * 80)
+        self.logger.info("\n" + "=" * 80)
+        self.logger.info("🔐 LOGIN PROCESS")
+        self.logger.info("-" * 80)
         
         # Try to load existing cookies (only if cookies_file_path is provided)
         cookies_loaded = False
@@ -213,15 +215,15 @@ class VintedScraperPlaywright:
             cookies_loaded = await load_cookies(self.context, self.cookies_file_path)
         
         if cookies_loaded:
-            logger.info("✅ Cookies loaded. Checking session...")
+            self.logger.info("✅ Cookies loaded. Checking session...")
             await self.page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT)
             await asyncio.sleep(5)
             
             if await is_logged_in(self.page):
-                logger.info("✅ Session is valid.")
+                self.logger.info("✅ Session is valid.")
                 return True
             else:
-                logger.warning("⚠️  Session expired.")
+                self.logger.warning("⚠️  Session expired.")
                 # Try automatic login if credentials provided
                 if EMAIL and PASSWORD:
                     if await self.auto_login(EMAIL, PASSWORD):
@@ -229,18 +231,18 @@ class VintedScraperPlaywright:
                             await save_cookies(self.context, self.cookies_file_path)
                         return True
                     else:
-                        logger.warning("⚠️  Falling back to manual login...")
+                        self.logger.warning("⚠️  Falling back to manual login...")
                 
                 # Fall back to manual login
-                logger.warning("⚠️  Session expired. Please log in manually.")
+                self.logger.warning("⚠️  Session expired. Please log in manually.")
                 if not await wait_for_manual_login(self.page, LOGIN_TIMEOUT):
-                    logger.warning("❌ Login failed. Exiting.")
+                    self.logger.warning("❌ Login failed. Exiting.")
                     return False
                 if self.cookies_file_path:
                     await save_cookies(self.context, self.cookies_file_path)
 
                 if not await wait_for_manual_login(self.page, LOGIN_TIMEOUT):
-                    logger.warning("❌ Login failed. Exiting.")
+                    self.logger.warning("❌ Login failed. Exiting.")
                     return False
                 if self.cookies_file_path:
                     await save_cookies(self.context, self.cookies_file_path)
@@ -251,24 +253,24 @@ class VintedScraperPlaywright:
                         await save_cookies(self.context, self.cookies_file_path)
                     return True
                 else:
-                    logger.warning("⚠️  Falling back to manual login...")
+                    self.logger.warning("⚠️  Falling back to manual login...")
             
             # Fall back to manual login
             await self.page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT)
             await asyncio.sleep(5)
             
             if not await wait_for_manual_login(self.page, LOGIN_TIMEOUT):
-                logger.warning("❌ Login failed. Exiting.")
+                self.logger.warning("❌ Login failed. Exiting.")
                 return False
             if self.cookies_file_path:
                 await save_cookies(self.context, self.cookies_file_path)
         
-        logger.info("✅ Login successful!")
+        self.logger.info("✅ Login successful!")
         return True
     
     async def refresh_cookies(self) -> Dict[str, str]:
         """Refresh cookies from browser context."""
-        logger.info("🔄 Refreshing cookies...")
+        self.logger.info("🔄 Refreshing cookies...")
         
         if not self.page:
             # Reopen page if closed
@@ -290,7 +292,7 @@ class VintedScraperPlaywright:
         for cookie in await self.context.cookies():
             cookies[cookie['name']] = cookie.get('value', None)
         
-        logger.info("✓ Cookies refreshed")
+        self.logger.info("✓ Cookies refreshed")
         return cookies
 
     async def get_cookies_dict(self) -> Dict[str, str]:
@@ -301,12 +303,39 @@ class VintedScraperPlaywright:
         
         return cookies
     
-    async def api_request(self, session: aiohttp.ClientSession, url: str, method: str = "GET"):
+    async def _ensure_session(self):
+        """Ensure self.api_session exists and is open. Rebuild from browser cookies if needed."""
+        if self.api_session is not None and not self.api_session.closed:
+            return  # Session is healthy
+        
+        self.logger.warning("⚠️  api_session is None or closed — rebuilding from browser cookies...")
+        try:
+            cookies = await self.get_cookies_dict()
+        except Exception:
+            cookies = {}
+        
+        self.api_session = aiohttp.ClientSession(
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
+                "Referer": f"{self.base_url}/inbox",
+                "Origin": self.base_url,
+            },
+            cookies=cookies
+        )
+        self.logger.info("✓ api_session rebuilt successfully")
+
+    async def api_request(self, url: str, method: str = "GET") -> Any:
         """
-        Returns (data, new_session) tuple.
-        If cookies were refreshed, new_session is a new aiohttp session.
+        Executes an API request using self.api_session.
+        If cookies were refreshed, self.api_session is updated.
+        Always ensures the session is alive before making a request.
         """
-        async with session.request(method, url) as response:
+        # Guard: rebuild session if it was left closed by a previous failed recovery
+        await self._ensure_session()
+
+        async with self.api_session.request(method, url) as response:
             if response.status == 429:
                 try:
                     error_data = await response.json()
@@ -315,12 +344,12 @@ class VintedScraperPlaywright:
                     raise Exception("Rate limit (429)")
 
             if response.status in (400, 401):
-                logger.warning(f"Auth error {response.status} on {url} → refreshing cookies...")
-                await session.close()
+                self.logger.warning(f"Auth error {response.status} on {url} → refreshing cookies...")
 
                 try:
+                    await self.api_session.close()
                     new_cookies = await self.refresh_cookies()
-                    new_session = aiohttp.ClientSession(
+                    self.api_session = aiohttp.ClientSession(
                         headers={
                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                             "Accept": "application/json, text/plain, */*",
@@ -330,48 +359,49 @@ class VintedScraperPlaywright:
                         },
                         cookies=new_cookies
                     )
-                    logger.info("Retrying request with fresh cookies...")
+                    self.logger.info("Retrying request with fresh cookies...")
                     # Retry once with new session
-                    async with new_session.request(method, url) as retry_resp:
+                    async with self.api_session.request(method, url) as retry_resp:
                         retry_resp.raise_for_status()
-                        return await retry_resp.json(), new_session
+                        return await retry_resp.json()
                 except Exception as e:
-                    logger.error(f"Failed even after refresh: {e}")
+                    self.logger.error(f"Failed even after refresh: {e}")
+                    # Session might be closed — _ensure_session will rebuild it on next call
                     raise
 
             # Normal success or other error
             response.raise_for_status()
-            return await response.json(), session  # same session
+            return await response.json()
     
-    async def get_conversation_details(self, conversation_id: int, session: aiohttp.ClientSession) -> Optional[Dict]:
+    async def get_conversation_details(self, conversation_id: int) -> Optional[Dict]:
         """Fetch conversation details to get transaction ID."""
         await asyncio.sleep(1)
         url = f"{self.base_url}/api/v2/conversations/{conversation_id}"
-        return await self.api_request(session, url)
+        return await self.api_request(url)
     
-    async def get_transaction_details(self, transaction_id: int, session: aiohttp.ClientSession) -> Optional[Dict]:
+    async def get_transaction_details(self, transaction_id: int) -> Optional[Dict]:
         """Fetch transaction details."""
         await asyncio.sleep(1)
         url = f"{self.base_url}/api/v2/transactions/{transaction_id}"
-        return await self.api_request(session, url)
+        return await self.api_request(url)
 
-    async def get_refund_details(self, transaction_id: int, session: aiohttp.ClientSession) -> Optional[Dict]:
+    async def get_refund_details(self, transaction_id: int) -> Optional[Dict]:
         """Fetch transaction details."""
         await asyncio.sleep(1)
         url = f"{self.base_url}/api/v2/transactions/{transaction_id}/refund"
-        return await self.api_request(session, url)
+        return await self.api_request(url)
     
-    async def get_escrow_order_details(self, transaction_id: int, session: aiohttp.ClientSession) -> Optional[Dict]:
+    async def get_escrow_order_details(self, transaction_id: int) -> Optional[Dict]:
         """Fetch escrow order details for detailed pricing breakdown."""
         await asyncio.sleep(1)
         url = f"{self.base_url}/api/v2/escrow_orders/{transaction_id}"
-        return await self.api_request(session, url)
+        return await self.api_request(url)
 
-    async def get_tracking_journey(self, transaction_id: int, session: aiohttp.ClientSession) -> Optional[Dict]:
+    async def get_tracking_journey(self, transaction_id: int) -> Optional[Dict]:
         """Fetch tracking journey summary for a transaction."""
         await asyncio.sleep(1)
         url = f"{self.base_url}/api/v2/transactions/{transaction_id}/shipment/journey_summary"
-        return await self.api_request(session, url)
+        return await self.api_request(url)
 
     def extract_tracking_info(self, journey_data: Optional[Dict]) -> Dict[str, str]:
         """Extract tracking information from journey summary."""
@@ -404,7 +434,7 @@ class VintedScraperPlaywright:
     async def auto_login(self, email: str, password: str) -> bool:
         """Automatically log in with credentials."""
         try:
-            logger.warning("🔐 Attempting automatic login...")
+            self.logger.warning("🔐 Attempting automatic login...")
             
             # Navigate to login page
             await self.page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT)
@@ -431,29 +461,29 @@ class VintedScraperPlaywright:
                         locator = self.page.locator(f'text="{option_text}"').first
                     
                     if await locator.is_visible(timeout=10000):
-                        logger.info(f"   Clicking: {option_text}...")
+                        self.logger.info(f"   Clicking: {option_text}...")
                         await locator.click()
                         await asyncio.sleep(1)
             except:
                 pass  # Popups didn't appear or already handled
 
             # Fill in email/username
-            logger.info("   Filling email...")
+            self.logger.info("   Filling email...")
             await self.page.fill('input[name="username"]', email)
             await asyncio.sleep(0.5)
             
             # Fill in password
-            logger.info("   Filling password...")
+            self.logger.info("   Filling password...")
             await self.page.fill('input[name="password"]', password)
             await asyncio.sleep(0.5)
             
             # Click submit button
-            logger.info("   Clicking submit button...")
+            self.logger.info("   Clicking submit button...")
             await self.page.click('button[type="submit"]')
             
             # Wait for potential captcha or login completion
-            logger.info("⏳ Waiting for login to complete...")
-            logger.info("   (If captcha appears, please solve it - 60 seconds available)")
+            self.logger.info("⏳ Waiting for login to complete...")
+            self.logger.info("   (If captcha appears, please solve it - 60 seconds available)")
             
             # Monitor login status for 60 seconds
             start_time = asyncio.get_event_loop().time()
@@ -467,52 +497,46 @@ class VintedScraperPlaywright:
                 
                 # Check if successfully logged in
                 if await is_logged_in(self.page):
-                    logger.info("✅ Automatic login successful!")
+                    self.logger.info("✅ Automatic login successful!")
                     return True
                 
                 # Check if still on login page (waiting for captcha or error)
                 if LOGIN_URL_FRAGMENT in current_url:
                     elapsed = int(asyncio.get_event_loop().time() - start_time)
                     remaining = timeout_seconds - elapsed
-                    logger.info(f"   ⏳ Still on login page... ({remaining}s remaining)")
+                    self.logger.info(f"   ⏳ Still on login page... ({remaining}s remaining)")
                 else:
                     # Navigated somewhere else, check status
-                    logger.info(f"   Current URL: {current_url}")
+                    self.logger.info(f"   Current URL: {current_url}")
             
             # Timeout reached
-            logger.warning("❌ Login timeout reached (60 seconds)")
+            self.logger.warning("❌ Login timeout reached (60 seconds)")
             
             # Final check
             if await is_logged_in(self.page):
-                logger.info("✅ Login successful (completed just in time!)")
+                self.logger.info("✅ Login successful (completed just in time!)")
                 return True
             else:
-                logger.warning("❌ Automatic login failed")
+                self.logger.warning("❌ Automatic login failed")
                 return False
                 
         except Exception as e:
-            logger.warning(f"❌ Auto-login error: {e}")
+            self.logger.warning(f"❌ Auto-login error: {e}")
             import traceback
             traceback.print_exc()
             return False
 
-    async def process_conversation(self, session, conv):
+    async def process_conversation(self, conv):
         conv_id = conv.get('id')
         
         # Step 1: Get conversation details
-        success, conv_resp, error = await retry_with_backoff_async(
-            lambda: self.get_conversation_details(conv_id, session)
+        success, conversation_data, error = await retry_with_backoff_async(
+            lambda: self.get_conversation_details(conv_id)
         )
         
-        if not success:
-            logger.warning(f"⚠️  Skipping conversation {conv_id} - Failed to get conversation details: {error}")
-            return None, session
-        
-        conversation_data, session = conv_resp
-
-        if not conversation_data:
-            logger.warning(f"⚠️  Skipping conversation {conv_id} - Failed to get conversation details: {error}")
-            return None, session
+        if not success or not conversation_data:
+            self.logger.warning(f"⚠️  Skipping conversation {conv_id} - Failed to get conversation details: {error}")
+            return None
         
         conversation_data['purchase_amount'] = conv.get('purchase_amount')
         conversation_data['purchase_currency'] = conv.get('purchase_currency')
@@ -524,69 +548,52 @@ class VintedScraperPlaywright:
         transaction_id = transaction_info.get("id")
         
         if not transaction_id:
-            logger.warning(f"⚠️  No transaction ID found for conversation {conv_id}")
-            return None, session
+            self.logger.warning(f"⚠️  No transaction ID found for conversation {conv_id}")
+            return None
         
-        logger.info(f"   → Transaction ID: {transaction_id}")
+        self.logger.info(f"   → Transaction ID: {transaction_id}")
         
         # Step 3: Get transaction details
-        success, trans_resp, error = await retry_with_backoff_async(
-            lambda: self.get_transaction_details(transaction_id, session)
+        success, transaction_data, error = await retry_with_backoff_async(
+            lambda: self.get_transaction_details(transaction_id)
         )
 
-        if not success:
-            logger.warning(f"⚠️  Skipping conversation {conv_id} - Failed to get transaction details: {error}")
-            return None, session
-        
-        transaction_data, session = trans_resp
-
-        if not transaction_data:
-            logger.warning(f"⚠️  Skipping conversation {conv_id} - Failed to get transaction details: {error}")
-            return None, session
+        if not success or not transaction_data:
+            self.logger.warning(f"⚠️  Skipping conversation {conv_id} - Failed to get transaction details: {error}")
+            return None
 
         status_title = transaction_data.get("transaction", {}).get('status_title', '').strip()
-        logger.info(f"   → Transaction status: {status_title}")
-        # if status_title not in COMPLETED_STATUSES:
-        #     logger.warning(f"⚠️  Skipping conversation (transaction status: {status_title}) - Incomplete purchase")
-        #     return None, session
+        self.logger.info(f"   → Transaction status: {status_title}")
 
         # Step 4: Get tracking journey
-        success, tracking_resp, error = await retry_with_backoff_async(
-            lambda: self.get_tracking_journey(transaction_id, session)
+        success, tracking_data, error = await retry_with_backoff_async(
+            lambda: self.get_tracking_journey(transaction_id)
         )
 
-        tracking_data = None
         if not success:
-            logger.warning(f"⚠️  Could not fetch tracking journey: {error}")
+            self.logger.warning(f"⚠️  Could not fetch tracking journey: {error}")
+            tracking_data = None
 
-        if tracking_resp:
-            tracking_data, session = tracking_resp
-        
 
         refund_data = {}
         if not status_title:
             # fetching refund data
-            success, refund_resp, error = await retry_with_backoff_async(
-                lambda: self.get_refund_details(transaction_id, session)
+            success, refund_data, error = await retry_with_backoff_async(
+                lambda: self.get_refund_details(transaction_id)
             )
             
             if not success:
-                logger.warning(f"⚠️  Failed to get refund details: {error}")
-
-            if refund_resp:
-                refund_data, session = refund_resp
+                self.logger.warning(f"⚠️  Failed to get refund details: {error}")
+                refund_data = None
 
         # Step 5: Get escrow order details for detailed pricing
-        success, escrow_resp, error = await retry_with_backoff_async(
-            lambda: self.get_escrow_order_details(transaction_id, session)
+        success, escrow_data, error = await retry_with_backoff_async(
+            lambda: self.get_escrow_order_details(transaction_id)
         )
         
-        escrow_data = None
         if not success:
-            logger.warning(f"⚠️  Could not fetch escrow order details: {error}")
-        else:
-            if escrow_resp:
-                escrow_data, session = escrow_resp
+            self.logger.warning(f"⚠️  Could not fetch escrow order details: {error}")
+            escrow_data = None
 
         extracted_data = await self.extract_purchase_data(
             conversation_data, transaction_data, tracking_data, refund_data, escrow_data, conv_id
@@ -594,13 +601,13 @@ class VintedScraperPlaywright:
         
         # Print full conversation details with indentation
         if extracted_data:
-            logger.info("\n" + "=" * 80)
-            logger.info(f"📋 FULL CONVERSATION DETAILS (ID: {conv_id})")
-            logger.info("=" * 80)
-            logger.info(json.dumps(extracted_data, indent=2, ensure_ascii=False, default=str))
-            logger.info("=" * 80 + "\n")
+            self.logger.info("\n" + "=" * 80)
+            self.logger.info(f"📋 FULL CONVERSATION DETAILS (ID: {conv_id})")
+            self.logger.info("=" * 80)
+            self.logger.info(json.dumps(extracted_data, indent=2, ensure_ascii=False, default=str))
+            self.logger.info("=" * 80 + "\n")
         
-        return extracted_data, session
+        return extracted_data
 
     async def extract_purchase_data(
         self, 
@@ -791,7 +798,7 @@ class VintedScraperPlaywright:
                 updated_at = last_message.get('created_at_ts')
             
             chat_text = str(messages)
-            logger.info(f"   → Tracking status: {tracking_status}")
+            self.logger.info(f"   → Tracking status: {tracking_status}")
 
             chat_link = conv.get('conversation_url')
             
@@ -857,7 +864,7 @@ class VintedScraperPlaywright:
             }
 
         except Exception as e:
-            logger.warning(f"Error extracting data for conv {conversation_id}: {e}")
+            self.logger.warning(f"Error extracting data for conv {conversation_id}: {e}")
             import traceback
             traceback.print_exc()
             return None
@@ -905,15 +912,25 @@ class VintedScraperPlaywright:
 
     async def cleanup(self):
         """Close browser and cleanup."""
-        logger.info("\nCleaning up browser resources...")
+        self.logger.info("\nCleaning up browser resources...")
         
+        # Close API session if initialized
+        if getattr(self, "api_session", None) and not self.api_session.closed:
+            try:
+                await self.api_session.close()
+                self.logger.info("✓ API session closed")
+            except Exception as e:
+                self.logger.warning(f"⚠️  Error closing api_session: {e}")
+            finally:
+                self.api_session = None
+
         # Close context (closes all pages)
         if self.context:
             try:
                 await self.context.close()
-                logger.info("✓ Browser context closed")
+                self.logger.info("✓ Browser context closed")
             except Exception as e:
-                logger.warning(f"⚠️  Error closing context: {e}")
+                self.logger.warning(f"⚠️  Error closing context: {e}")
             finally:
                 self.context = None
         
@@ -921,9 +938,9 @@ class VintedScraperPlaywright:
         if self.browser:
             try:
                 await self.browser.close()
-                logger.info("✓ Browser closed")
+                self.logger.info("✓ Browser closed")
             except Exception as e:
-                logger.warning(f"⚠️  Error closing browser: {e}")
+                self.logger.warning(f"⚠️  Error closing browser: {e}")
             finally:
                 self.browser = None
         
@@ -931,13 +948,13 @@ class VintedScraperPlaywright:
         if self.playwright:
             try:
                 await self.playwright.stop()
-                logger.info("✓ Playwright stopped")
+                self.logger.info("✓ Playwright stopped")
             except Exception as e:
-                logger.warning(f"⚠️  Error stopping playwright: {e}")
+                self.logger.warning(f"⚠️  Error stopping playwright: {e}")
             finally:
                 self.playwright = None
         
-        logger.info("✓ Cleanup complete")
+        self.logger.info("✓ Cleanup complete")
 
 @shared_task(bind=True)
 def scheduled_vinted_scraper(self):
@@ -998,6 +1015,18 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
         
         logger.info(f"TaskRun #{task_run_id}: Starting Vinted conversation scraper")
         
+        # Setup per-run log file
+        from django.core.files.base import ContentFile
+        from scripts.utils import get_run_logger
+        
+        log_filename = f"taskrun_{task_run_id}.log"
+        task_run.logs_file.save(log_filename, ContentFile(""))
+        task_run.save()
+        
+        log_path = task_run.logs_file.path
+        run_logger = get_run_logger(task_run_id, log_path)
+        run_logger.info(f"TaskRun #{task_run_id}: Starting Vinted conversation scraper")
+        
         # Extract input_data (days_to_fetch, default: None to fetch all)
         input_data = task_run.input_data or {}
         days_to_fetch = input_data.get('days_to_fetch')
@@ -1034,6 +1063,7 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
                 cookies_file_path=cookies_file_path,
                 days_to_fetch=days_to_fetch,
                 max_conversations=max_conversations,
+                run_logger=run_logger,
             )
         )
         
@@ -1043,6 +1073,7 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
             task_run.status = 'SUCCESS'
             task_run.finished_at = timezone.now()
             task_run.save()
+            run_logger.info(f"TaskRun #{task_run_id}: Completed successfully")
             logger.info(f"TaskRun #{task_run_id}: Completed successfully")
         
     except TaskRun.DoesNotExist:
@@ -1067,6 +1098,7 @@ async def _run_vinted_scraper(
     cookies_file_path: Optional[str],
     days_to_fetch: Optional[int],
     max_conversations: Optional[int] = None,
+    run_logger: Optional[logging.Logger] = None,
 ):
     """
     Async wrapper that runs the Vinted scraper and intercepts data to save to Purchases.
@@ -1125,8 +1157,9 @@ async def _run_vinted_scraper(
     class TaskScraperWrapper(VintedScraperPlaywright):
         """Wrapper that intercepts data and saves to Purchases model."""
         
-        def __init__(self, base_url: str = "https://www.vinted.de", headless: bool = False, cookies_file_path: Optional[str] = None):
-            super().__init__(base_url=base_url, headless=headless, cookies_file_path=cookies_file_path)
+        def __init__(self, base_url: str = "https://www.vinted.de", headless: bool = False, cookies_file_path: Optional[str] = None, run_logger: Optional[logging.Logger] = None):
+            super().__init__(base_url=base_url, headless=headless, cookies_file_path=cookies_file_path, run_logger=run_logger)
+            self.api_session: Optional[aiohttp.ClientSession] = None
         
         async def get_conversations_via_api(self, cookies):
             """Override to intercept conversation data and save to Purchases."""
@@ -1144,9 +1177,9 @@ async def _run_vinted_scraper(
                 }
                 # Only add cookies if they are provided (not None/empty)
                 if cookies:
-                    session = aiohttp.ClientSession(headers=session_headers, cookies=cookies)
+                    self.api_session = aiohttp.ClientSession(headers=session_headers, cookies=cookies)
                 else:
-                    session = aiohttp.ClientSession(headers=session_headers)
+                    self.api_session = aiohttp.ClientSession(headers=session_headers)
                 
                 now = datetime.now()
                 today_start = datetime(now.year, now.month, now.day, 0, 0, 0)
@@ -1154,13 +1187,13 @@ async def _run_vinted_scraper(
                 if days_to_fetch is None:
                     # Fetch all conversations - set cutoff_date to a very old date
                     cutoff_date = datetime(1970, 1, 1)
-                    logger.info(f"TaskRun #{task_run_id}: Fetching all orders (no date limit)")
+                    self.logger.info(f"TaskRun #{task_run_id}: Fetching all orders (no date limit)")
                 else:
                     # If days_to_fetch is 1, fetch today only (cutoff = today at 00:00:00)
                     # If days_to_fetch is 2, fetch today and yesterday (cutoff = yesterday at 00:00:00)
                     # So cutoff = today - (days_to_fetch - 1) days at 00:00:00
                     cutoff_date = today_start - timedelta(days=days_to_fetch - 1)
-                    logger.info(f"TaskRun #{task_run_id}: Fetching orders from last {days_to_fetch} days (cutoff: {cutoff_date.strftime('%Y-%m-%d %H:%M:%S')})")
+                    self.logger.info(f"TaskRun #{task_run_id}: Fetching orders from last {days_to_fetch} days (cutoff: {cutoff_date.strftime('%Y-%m-%d %H:%M:%S')})")
                 
                 page = 1
                 PER_PAGE = 50
@@ -1173,28 +1206,28 @@ async def _run_vinted_scraper(
                     # Check for cancellation
                     await task_run.arefresh_from_db()
                     if task_run.status == 'CANCELLED':
-                        logger.info(f"TaskRun #{task_run_id}: Cancelled at page {page}")
-                        await session.close()
+                        self.logger.info(f"TaskRun #{task_run_id}: Cancelled at page {page}")
+                        await self.api_session.close()
                         return
                     
                     try:
                         await asyncio.sleep(1)
                         
                         url = f"{self.base_url}/api/v2/my_orders?type=purchased&status=completed&page={page}&per_page={PER_PAGE}"
-                        data, session = await self.api_request(session, url)
+                        data = await self.api_request(url)
                         
                         if not data:
                             if page == 1:
-                                logger.warning(f"TaskRun #{task_run_id}: Failed to fetch orders. API authentication may have failed.")
+                                self.logger.warning(f"TaskRun #{task_run_id}: Failed to fetch orders. API authentication may have failed.")
                             break
                         
                         conversations = data.get("my_orders", [])
                         
                         if not conversations:
-                            logger.info(f"TaskRun #{task_run_id}: No more orders on page {page}")
+                            self.logger.info(f"TaskRun #{task_run_id}: No more orders on page {page}")
                             break
                         
-                        logger.info(f"TaskRun #{task_run_id}: Page {page}: Found {len(conversations)} conversations")
+                        self.logger.info(f"TaskRun #{task_run_id}: Page {page}: Found {len(conversations)} conversations")
                         
                         # Update progress with current page (before processing conversations)
                         current_page[0] = page
@@ -1210,18 +1243,18 @@ async def _run_vinted_scraper(
                             # Check for cancellation
                             await task_run.arefresh_from_db()
                             if task_run.status == 'CANCELLED':
-                                logger.info(f"TaskRun #{task_run_id}: Cancelled at conversation {ind + 1}")
-                                await session.close()
+                                self.logger.info(f"TaskRun #{task_run_id}: Cancelled at conversation {ind + 1}")
+                                await self.api_session.close()
                                 return
                             
                             ind += 1
                             
                             # Session refreshing (from original code)
                             if ind % REFRESH_COOKIES_AFTER_N_CONV == 0:
-                                await session.close()
+                                await self.api_session.close()
                                 cookies = await self.refresh_cookies()
                                 
-                                session = aiohttp.ClientSession(
+                                self.api_session = aiohttp.ClientSession(
                                     headers={
                                         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                                         "Accept": "application/json, text/plain, */*",
@@ -1247,17 +1280,17 @@ async def _run_vinted_scraper(
                                     "purchase_date": purchase_date
                                 }
                                 
-                                logger.info(f"TaskRun #{task_run_id}: [{ind}] Processing conversation ID {conv_id}")
+                                self.logger.info(f"TaskRun #{task_run_id}: [{ind}] Processing conversation ID {conv_id}")
                                 
                                 # Process conversation (this calls the original method)
-                                extracted_data, session = await self.process_conversation(session, conv_data)
+                                extracted_data = await self.process_conversation(conv_data)
                                 
                                 if extracted_data:
                                     updated_at_str = extracted_data.get("updated_at", "")
                                     if updated_at_str:
                                         try:
                                             conv_updated_at = datetime.strptime(f"{updated_at_str[:19]}", "%Y-%m-%dT%H:%M:%S")
-                                            logger.info(f"TaskRun #{task_run_id}:   → Updated at: {conv_updated_at}")
+                                            self.logger.info(f"TaskRun #{task_run_id}:   → Updated at: {conv_updated_at}")
                                             
                                             # Track oldest conversation date for days progress calculation
                                             if oldest_conv_date is None or conv_updated_at < oldest_conv_date:
@@ -1268,11 +1301,11 @@ async def _run_vinted_scraper(
                                             conv_date_start = datetime(conv_updated_at.year, conv_updated_at.month, conv_updated_at.day, 0, 0, 0)
                                             if days_to_fetch is not None and conv_date_start < cutoff_date:
                                                 ind -= 1
-                                                logger.info(
+                                                self.logger.info(
                                                     f"TaskRun #{task_run_id}: Reached conversations older than "
                                                     f"{days_to_fetch} days (updated_at: {updated_at_str[:19]}). Stopping."
                                                 )
-                                                await session.close()
+                                                await self.api_session.close()
                                                 return
                                         except ValueError:
                                             pass  # Invalid date format, continue
@@ -1289,7 +1322,7 @@ async def _run_vinted_scraper(
                                         )
                                         
                                         action = "Created" if created else "Updated"
-                                        logger.info(
+                                        self.logger.info(
                                             f"TaskRun #{task_run_id}: {action} purchase {purchase.external_id} "
                                             f"({ind}/{len(conversations)} on page {page})"
                                         )
@@ -1307,7 +1340,7 @@ async def _run_vinted_scraper(
                                         await task_run.asave()
                                         
                                     except Exception as e:
-                                        logger.error(
+                                        self.logger.error(
                                             f"TaskRun #{task_run_id}: Failed to save conversation "
                                             f"{conv_id}: {e}",
                                             exc_info=True
@@ -1317,33 +1350,33 @@ async def _run_vinted_scraper(
                                     
                                     # Check max conversations limit
                                     if max_conversations and processed_count[0] >= max_conversations:
-                                        logger.info(
+                                        self.logger.info(
                                             f"TaskRun #{task_run_id}: Reached max conversations limit "
                                             f"({max_conversations}). Stopping."
                                         )
-                                        await session.close()
+                                        await self.api_session.close()
                                         return
                         
                         # Check pagination
                         pagination = data.get("pagination", {})
                         if int(pagination.get("total_pages", 1)) == page:
-                            logger.info(f"TaskRun #{task_run_id}: Reached last page!")
+                            self.logger.info(f"TaskRun #{task_run_id}: Reached last page!")
                             break
                         
                         page += 1
                         continue
                     
                     except Exception as e:
-                        logger.error(f"TaskRun #{task_run_id}: Error fetching orders on page {page}: {e}", exc_info=True)
+                        self.logger.error(f"TaskRun #{task_run_id}: Error fetching orders on page {page}: {e}", exc_info=True)
                         break
                 
                 # Close aiohttp session
-                await session.close()
+                await self.api_session.close()
                 
-                logger.info(f"TaskRun #{task_run_id}: Scraping complete! Total conversations processed: {processed_count[0]}")
+                self.logger.info(f"TaskRun #{task_run_id}: Scraping complete! Total conversations processed: {processed_count[0]}")
                 
             except Exception as e:
-                logger.error(f"TaskRun #{task_run_id}: Error in get_conversations_via_api: {e}", exc_info=True)
+                self.logger.error(f"TaskRun #{task_run_id}: Error in get_conversations_via_api: {e}", exc_info=True)
                 raise
         
         async def save_to_file(self, output_csv_path, output_json_path, all_data):
@@ -1353,15 +1386,15 @@ async def _run_vinted_scraper(
         
         async def scrape_all_data(self, output_csv, output_json):
             """Override scrape_all_data to match original logic exactly."""
-            logger.info("\n" + "=" * 80)
-            logger.info("🚀 VINTED DATA SCRAPER")
-            logger.info("=" * 80)
-            logger.info(f"📋 Configuration:")
-            logger.info(f"   Base URL: {self.base_url}")
-            logger.info(f"   Output CSV: {output_csv}")
-            logger.info(f"   Output JSON: {output_json}")
-            logger.info(f"   Cookies file: {self.cookies_file_path or 'None (not using cookies)'}")
-            logger.info("=" * 80)
+            self.logger.info("\n" + "=" * 80)
+            self.logger.info("🚀 VINTED DATA SCRAPER")
+            self.logger.info("=" * 80)
+            self.logger.info(f"📋 Configuration:")
+            self.logger.info(f"   Base URL: {self.base_url}")
+            self.logger.info(f"   Output CSV: {output_csv}")
+            self.logger.info(f"   Output JSON: {output_json}")
+            self.logger.info(f"   Cookies file: {self.cookies_file_path or 'None (not using cookies)'}")
+            self.logger.info("=" * 80)
             
             await self.setup_browser()
             
@@ -1369,7 +1402,7 @@ async def _run_vinted_scraper(
             self.output_json = output_json
 
             if not await self.login():
-                logger.warning("❌ Failed to login. Exiting.")
+                self.logger.warning("❌ Failed to login. Exiting.")
                 # Don't cleanup here - let the finally block handle it
                 return
 
@@ -1385,7 +1418,7 @@ async def _run_vinted_scraper(
             await self.get_conversations_via_api(cookies)
     
     # Create scraper instance
-    scraper = TaskScraperWrapper(base_url="https://www.vinted.de", headless=True, cookies_file_path=cookies_file_path)
+    scraper = TaskScraperWrapper(base_url="https://www.vinted.de", headless=True, cookies_file_path=cookies_file_path, run_logger=run_logger)
     
     try:
         # Create dummy output paths (we're saving to DB, not files)

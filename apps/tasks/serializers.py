@@ -38,8 +38,9 @@ class TaskRunSerializer(serializers.ModelSerializer):
             'input_data',
             'progress',
             'error_message',
+            'logs_file',
         ]
-        read_only_fields = ['started_at', 'finished_at', 'celery_task_id']
+        read_only_fields = ['started_at', 'finished_at', 'celery_task_id', 'logs_file']
 
 
 class TaskStartInputSerializer(serializers.Serializer):

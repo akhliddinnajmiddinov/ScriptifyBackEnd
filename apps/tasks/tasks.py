@@ -893,6 +893,8 @@ class VintedScraperPlaywright:
                 460: "returned",
                 455: "completed",
                 450: "completed",  # Very common for completed orders
+                230: "waiting",    # Paid, awaiting shipment
+                210: "waiting",    # Paid
                 500: "uncompleted",
                 430: "cancelled",
                 510: "cancelled",
@@ -903,6 +905,10 @@ class VintedScraperPlaywright:
         
         # Map status titles (case-insensitive)
         if status_title:
+            # Check explicit list defined at top of file
+            if any(s.lower() in status_title_lower for s in COMPLETED_STATUSES):
+                return "completed"
+            
             if "completed" in status_title_lower or "payment successful" in status_title_lower:
                 return "completed"
             elif "cancelled" in status_title_lower or "suspended" in status_title_lower:
@@ -919,6 +925,8 @@ class VintedScraperPlaywright:
                 return "shipped"
             elif "delivered" in status_title_lower or "received" in status_title_lower or "pick-up" in status_title_lower:
                 return "delivered"
+            elif "waiting" in status_title_lower or "purchase successful" in status_title_lower:
+                return "waiting"
         
         # FALLBACK: Match status field behavior - if status_title is empty, assume refunded
         if not status_title:

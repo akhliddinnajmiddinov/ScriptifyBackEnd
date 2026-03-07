@@ -125,8 +125,8 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      # backend:
-      #   condition: service_healthy
+      backend:
+        condition: service_healthy
     networks:
       - scriptify_backend_network
     mem_limit: 1100M
@@ -163,6 +163,8 @@ services:
       - VINTED_MAX_CONVERSATIONS=${VINTED_MAX_CONVERSATIONS}
     depends_on:
       redis:
+        condition: service_healthy
+      backend:
         condition: service_healthy
     networks:
       - scriptify_backend_network

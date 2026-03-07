@@ -20,6 +20,7 @@ ORDER_STATUS_CHOICES = [
     ('returned', 'Returned'),
     ('refunded', 'Refunded'),
     ('uncompleted', 'Uncompleted'),
+    ('waiting', 'Waiting'),
 ]
 
 APPROVED_STATUS_CHOICES = [

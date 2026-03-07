@@ -595,6 +595,9 @@ class VintedScraperPlaywright:
             self.logger.warning(f"⚠️  Could not fetch escrow order details: {error}")
             escrow_data = None
 
+        # Add transaction_user_status to conversation_data
+        conversation_data['transaction_user_status'] = conv.get('transaction_user_status')
+
         extracted_data = await self.extract_purchase_data(
             conversation_data, transaction_data, tracking_data, refund_data, escrow_data, conv_id
         )
@@ -678,13 +681,22 @@ class VintedScraperPlaywright:
             refunded_currency = refund.get('currency') if refund else None
 
             status_title = trans.get('status_title', '').strip()
+            user_status = conversation_data.get('transaction_user_status')
             
-            # Normalize status
-            if status_title:
-                if status_title == "Order completed!":
-                    status_title = "Completed"
+            # Use transaction_user_status for accurate classification for finished states
+            status_map = {
+                "completed": "completed",
+                "waiting": "waiting",
+                "failed": "cancelled"
+            }
+            
+            if user_status in status_map:
+                status_title = status_map[user_status]
+            elif status_title:
+                if status_title.lower() == "order completed!":
+                    status_title = "completed"
             else:
-                status_title = "Refunded"
+                status_title = "refunded"
             
             # === TRACKING INFO ===
             tracking_info = self.extract_tracking_info(tracking_data)
@@ -903,6 +915,10 @@ class VintedScraperPlaywright:
                 return "new"
             elif "uncompleted" in status_title_lower:
                 return "uncompleted"
+            elif "shipped" in status_title_lower or "sent" in status_title_lower:
+                return "shipped"
+            elif "delivered" in status_title_lower or "received" in status_title_lower or "pick-up" in status_title_lower:
+                return "delivered"
         
         # FALLBACK: Match status field behavior - if status_title is empty, assume refunded
         if not status_title:
@@ -1253,7 +1269,7 @@ async def _run_vinted_scraper(
                     try:
                         await asyncio.sleep(1)
                         
-                        url = f"{self.base_url}/api/v2/my_orders?type=purchased&status=completed&page={page}&per_page={PER_PAGE}"
+                        url = f"{self.base_url}/api/v2/my_orders?type=purchased&status=all&page={page}&per_page={PER_PAGE}"
                         data = await self.api_request(url)
                         
                         if not data:
@@ -1317,7 +1333,8 @@ async def _run_vinted_scraper(
                                     "id": conv_id,
                                     "purchase_amount": price,
                                     "purchase_currency": currency,
-                                    "purchase_date": purchase_date
+                                    "purchase_date": purchase_date,
+                                    "transaction_user_status": conv.get("transaction_user_status")
                                 }
                                 
                                 self.logger.info(f"TaskRun #{task_run_id}: [{ind}] Processing conversation ID {conv_id}")

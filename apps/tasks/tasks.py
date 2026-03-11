@@ -9,9 +9,14 @@ import sys
 import json
 import random
 import math
+import re
+from html import unescape
+from html.parser import HTMLParser
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Any
+from asgiref.sync import sync_to_async
 from celery import shared_task
+from django.db import close_old_connections
 from django.utils import timezone
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page
 import aiohttp
@@ -39,6 +44,34 @@ RETRY_BACKOFF_MAX_SEC = 30
 # Get credentials from .env
 EMAIL = os.getenv('VINTED_EMAIL')
 PASSWORD = os.getenv('VINTED_PASSWORD')
+
+
+class VintedCompletionPermanentError(Exception):
+    """Non-retryable Vinted completion failure."""
+
+
+class VintedCompletionRetryableError(Exception):
+    """Retryable Vinted completion failure."""
+
+
+class MetaDescriptionParser(HTMLParser):
+    """Small HTML parser to extract the first meta description tag."""
+
+    def __init__(self):
+        super().__init__()
+        self.description: Optional[str] = None
+
+    def handle_starttag(self, tag, attrs):
+        if self.description is not None or tag.lower() != "meta":
+            return
+
+        attrs_dict = {
+            str(key).lower(): value
+            for key, value in attrs
+            if key and value is not None
+        }
+        if attrs_dict.get("name", "").lower() == "description":
+            self.description = attrs_dict.get("content")
 
 # ============================================================================
 # VINTED SCRAPER UTILITY FUNCTIONS
@@ -152,6 +185,29 @@ async def retry_with_backoff_async(func, max_attempts=MAX_RETRY_ATTEMPTS):
     return False, {}, error
 
 
+async def close_old_connections_async():
+    """Close stale Django DB connections from async code before ORM access."""
+    await sync_to_async(close_old_connections, thread_sensitive=True)()
+
+
+def initialize_task_run_logger(task_run, logger_title: str):
+    """Create the per-run log file and return a dedicated logger."""
+    from scripts.utils import get_run_logger
+
+    if not task_run.logs_file:
+        from django.core.files.base import ContentFile
+
+        log_filename = f"taskrun_{task_run.id}.log"
+        task_run.logs_file.save(log_filename, ContentFile(""))
+        close_old_connections()
+        task_run.save(update_fields=['logs_file'])
+
+    log_path = task_run.logs_file.path
+    run_logger = get_run_logger(task_run.id, log_path)
+    run_logger.info(logger_title)
+    return run_logger
+
+
 # ============================================================================
 # VINTED SCRAPER CLASS
 # ============================================================================
@@ -168,6 +224,7 @@ class VintedScraperPlaywright:
         self.output_json = None
         self.cookies_file_path = cookies_file_path  # Store as instance variable (like COOKIES_FILE in original)
         self.api_session: Optional[aiohttp.ClientSession] = None
+        self.item_description_cache: Dict[str, Optional[str]] = {}
         self.logger = run_logger or logger  # Use per-run logger if provided, else module-level
     
     async def setup_browser(self):
@@ -313,7 +370,7 @@ class VintedScraperPlaywright:
             cookies = await self.get_cookies_dict()
         except Exception:
             cookies = {}
-        
+
         self.api_session = aiohttp.ClientSession(
             headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -347,8 +404,9 @@ class VintedScraperPlaywright:
                 self.logger.warning(f"Auth error {response.status} on {url} → refreshing cookies...")
 
                 try:
-                    await self.api_session.close()
                     new_cookies = await self.refresh_cookies()
+                    if self.api_session is not None and not self.api_session.closed:
+                        await self.api_session.close()
                     self.api_session = aiohttp.ClientSession(
                         headers={
                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -403,6 +461,106 @@ class VintedScraperPlaywright:
         url = f"{self.base_url}/api/v2/transactions/{transaction_id}/shipment/journey_summary"
         return await self.api_request(url)
 
+    def extract_item_description_from_html(self, html_text: str, item_title: Optional[str]) -> Optional[str]:
+        """Extract and normalize an item description from a Vinted item page HTML."""
+        if not html_text:
+            return None
+
+        parser = MetaDescriptionParser()
+        parser.feed(html_text)
+        raw_description = parser.description
+        if not raw_description:
+            return None
+
+        description = re.sub(r"\s+", " ", unescape(raw_description)).strip()
+        title = re.sub(r"\s+", " ", unescape(item_title or "")).strip()
+
+        if title:
+            prefix = f"{title} - "
+            if description[: len(prefix)].casefold() == prefix.casefold():
+                description = description[len(prefix):].strip()
+
+        if not description:
+            return None
+
+        if title and description.casefold() == title.casefold():
+            return None
+
+        return description
+
+    async def fetch_item_page_html(self, item_url: str) -> Optional[str]:
+        """Fetch the Vinted item page HTML using the authenticated session."""
+        if not item_url:
+            return None
+
+        await self._ensure_session()
+
+        request_headers = {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Referer": f"{self.base_url}/inbox",
+        }
+
+        async def _request_html() -> str:
+            async with self.api_session.get(item_url, headers=request_headers) as response:
+                if response.status in (400, 401):
+                    self.logger.warning(f"Auth error {response.status} on item page {item_url} → refreshing cookies...")
+                    new_cookies = await self.refresh_cookies()
+                    if self.api_session is not None and not self.api_session.closed:
+                        await self.api_session.close()
+                    self.api_session = aiohttp.ClientSession(
+                        headers={
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                            "Accept": "application/json, text/plain, */*",
+                            "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
+                            "Referer": f"{self.base_url}/inbox",
+                            "Origin": self.base_url,
+                        },
+                        cookies=new_cookies
+                    )
+                    async with self.api_session.get(item_url, headers=request_headers) as retry_response:
+                        retry_response.raise_for_status()
+                        return await retry_response.text()
+
+                response.raise_for_status()
+                return await response.text()
+
+        success, html_text, error = await retry_with_backoff_async(_request_html)
+        if not success:
+            self.logger.warning(f"⚠️  Failed to fetch item page {item_url}: {error}")
+            return None
+
+        return html_text
+
+    async def get_item_description(
+        self,
+        item_url: Optional[str],
+        item_title: Optional[str],
+        purchase_description: Optional[str],
+        raw_item_description: Optional[str] = None,
+    ) -> Optional[str]:
+        """Get an item-specific description from raw payload or the item page, with purchase fallback."""
+        normalized_item_title = re.sub(r"\s+", " ", unescape(item_title or "")).strip()
+        normalized_purchase_description = re.sub(r"\s+", " ", unescape(purchase_description or "")).strip() or None
+        normalized_raw_description = re.sub(r"\s+", " ", unescape(raw_item_description or "")).strip() or None
+
+        if (
+            normalized_raw_description
+            and normalized_item_title
+            and normalized_raw_description.casefold() == normalized_item_title.casefold()
+        ):
+            normalized_raw_description = None
+
+        if normalized_raw_description:
+            return normalized_raw_description
+
+        if not item_url:
+            return normalized_purchase_description
+
+        if item_url not in self.item_description_cache:
+            html_text = await self.fetch_item_page_html(item_url)
+            self.item_description_cache[item_url] = self.extract_item_description_from_html(html_text or "", item_title)
+
+        return self.item_description_cache[item_url] or normalized_purchase_description
     def extract_tracking_info(self, journey_data: Optional[Dict]) -> Dict[str, str]:
         """Extract tracking information from journey summary."""
         tracking_info = {
@@ -784,6 +942,12 @@ class VintedScraperPlaywright:
             for item in order_items:
                 item_title = item.get('title')
                 item_url = item.get('url')
+                item_description = await self.get_item_description(
+                    item_url=item_url,
+                    item_title=item_title,
+                    purchase_description=description,
+                    raw_item_description=item.get('description'),
+                )
                 
                 # fetching item photos
                 photos = []
@@ -796,6 +960,7 @@ class VintedScraperPlaywright:
                 
                 items.append({
                     'title': item_title,
+                    'description': item_description,
                     'price': item_price_val,
                     'currency': item_currency,
                     'url': item_url,
@@ -989,6 +1154,8 @@ def scheduled_vinted_scraper(self):
     """
     from .models import Task, TaskRun
 
+    close_old_connections()
+
     try:
         task = Task.objects.get(slug='vinted-conversation-scraping')
     except Task.DoesNotExist:
@@ -1007,10 +1174,12 @@ def scheduled_vinted_scraper(self):
         started_by=None,  # Scheduled — no user
         status='PENDING',
         input_data={},
+        detail='Queued for scheduled execution.',
     )
     
     # Set descriptive title with ID
     task_run.title = f"Scheduled {task.name} task #{task_run.id}"
+    close_old_connections()
     task_run.save(update_fields=['title'])
     
     logger.info(f"Scheduled scraper: Created TaskRun #{task_run.id}")
@@ -1020,6 +1189,7 @@ def scheduled_vinted_scraper(self):
     
     # Save Celery task ID so it can be cancelled
     task_run.celery_task_id = result.id
+    close_old_connections()
     task_run.save()
 
 
@@ -1032,7 +1202,6 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
         task_run_id: ID of the TaskRun instance to track progress
     """
     from celery.exceptions import SoftTimeLimitExceeded
-    from django.db import transaction
     
     task_run = None
     try:
@@ -1041,27 +1210,23 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
         from purchases.adapters import get_adapter
         
         # Get TaskRun and Task instances
+        close_old_connections()
         task_run = TaskRun.objects.get(id=task_run_id)
         task = task_run.task
         
         # Update status to RUNNING
         task_run.status = 'RUNNING'
         task_run.started_at = timezone.now()
-        task_run.save()
+        task_run.detail = 'Fetching Vinted conversations.'
+        close_old_connections()
+        task_run.save(update_fields=['status', 'started_at', 'detail'])
         
         logger.info(f"TaskRun #{task_run_id}: Starting Vinted conversation scraper")
         
-        # Setup per-run log file
-        from django.core.files.base import ContentFile
-        from scripts.utils import get_run_logger
-        
-        log_filename = f"taskrun_{task_run_id}.log"
-        task_run.logs_file.save(log_filename, ContentFile(""))
-        task_run.save()
-        
-        log_path = task_run.logs_file.path
-        run_logger = get_run_logger(task_run_id, log_path)
-        run_logger.info(f"TaskRun #{task_run_id}: Starting Vinted conversation scraper")
+        run_logger = initialize_task_run_logger(
+            task_run,
+            f"TaskRun #{task_run_id}: Starting Vinted conversation scraper",
+        )
         
         # Extract input_data (days_to_fetch, default: None to fetch all)
         input_data = task_run.input_data or {}
@@ -1090,6 +1255,7 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
             'days_fetched': 0 if days_to_fetch is not None else None,  # Start at 0, will be updated as we process conversations
             'current_page': 1,
         }
+        close_old_connections()
         task_run.save()
         
         # Run async scraper
@@ -1104,11 +1270,14 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
         )
         
         # Update status to SUCCESS
+        close_old_connections()
         task_run.refresh_from_db()
         if task_run.status != 'CANCELLED':
             task_run.status = 'SUCCESS'
             task_run.finished_at = timezone.now()
-            task_run.save()
+            task_run.detail = 'Vinted conversations fetched successfully.'
+            close_old_connections()
+            task_run.save(update_fields=['status', 'finished_at', 'detail'])
             run_logger.info(f"TaskRun #{task_run_id}: Completed successfully")
             logger.info(f"TaskRun #{task_run_id}: Completed successfully")
         
@@ -1119,24 +1288,28 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
         error_msg = "Task timed out (Soft Time Limit exceeded)"
         logger.error(f"TaskRun #{task_run_id}: {error_msg}")
         try:
+            close_old_connections()
             task_run.refresh_from_db()
             if task_run.status != 'CANCELLED':
                 task_run.status = 'FAILURE'
-                task_run.error_message = error_msg
+                task_run.detail = error_msg
                 task_run.finished_at = timezone.now()
-                task_run.save()
+                close_old_connections()
+                task_run.save(update_fields=['status', 'detail', 'finished_at'])
         except Exception:
             pass
         raise
     except Exception as e:
         logger.error(f"TaskRun #{task_run_id}: Failed - {e}", exc_info=True)
         try:
+            close_old_connections()
             task_run.refresh_from_db()
             if task_run.status != 'CANCELLED':
                 task_run.status = 'FAILURE'
-                task_run.error_message = str(e)
+                task_run.detail = str(e)
                 task_run.finished_at = timezone.now()
-                task_run.save()
+                close_old_connections()
+                task_run.save(update_fields=['status', 'detail', 'finished_at'])
         except Exception:
             pass
         raise
@@ -1146,12 +1319,14 @@ def fetch_vinted_conversations_task(self, task_run_id: int):
         # without updating its status.
         try:
             if task_run:
+                close_old_connections()
                 task_run.refresh_from_db()
                 if task_run.status == 'RUNNING':
                     task_run.status = 'FAILURE'
-                    task_run.error_message = "Task stopped unexpectedly"
+                    task_run.detail = "Task stopped unexpectedly"
                     task_run.finished_at = timezone.now()
-                    task_run.save()
+                    close_old_connections()
+                    task_run.save(update_fields=['status', 'detail', 'finished_at'])
                     logger.warning(f"TaskRun #{task_run_id}: Status force-updated to FAILURE in finally block")
         except Exception as e:
             logger.error(f"TaskRun #{task_run_id}: Error in finally block - {e}")
@@ -1179,7 +1354,24 @@ async def _run_vinted_scraper(
     from purchases.adapters import get_adapter
     
     # Get TaskRun for progress updates (using async ORM method)
+    await close_old_connections_async()
     task_run = await TaskRun.objects.aget(id=task_run_id)
+
+    async def refresh_task_run():
+        await close_old_connections_async()
+        await task_run.arefresh_from_db()
+
+    async def save_task_run():
+        await close_old_connections_async()
+        await task_run.asave()
+
+    async def upsert_purchase(normalized):
+        await close_old_connections_async()
+        return await Purchases.objects.aupdate_or_create(
+            platform='vinted',
+            external_id=normalized['external_id'],
+            defaults=normalized
+        )
     
     # Track processed conversations
     processed_count = [0]  # Use list to allow modification in nested function
@@ -1268,7 +1460,7 @@ async def _run_vinted_scraper(
                 
                 while True:
                     # Check for cancellation
-                    await task_run.arefresh_from_db()
+                    await refresh_task_run()
                     if task_run.status == 'CANCELLED':
                         self.logger.info(f"TaskRun #{task_run_id}: Cancelled at page {page}")
                         await self.api_session.close()
@@ -1301,11 +1493,11 @@ async def _run_vinted_scraper(
                             'days_fetched': calculate_days_fetched(oldest_conv_date, days_to_fetch, now),
                             'current_page': page,
                         }
-                        await task_run.asave()
+                        await save_task_run()
                         
                         for conv in conversations:
                             # Check for cancellation
-                            await task_run.arefresh_from_db()
+                            await refresh_task_run()
                             if task_run.status == 'CANCELLED':
                                 self.logger.info(f"TaskRun #{task_run_id}: Cancelled at conversation {ind + 1}")
                                 await self.api_session.close()
@@ -1380,11 +1572,7 @@ async def _run_vinted_scraper(
                                         normalized = adapter.normalize(extracted_data)
                                         
                                         # Create or update Purchases instance
-                                        purchase, created = await Purchases.objects.aupdate_or_create(
-                                            platform='vinted',
-                                            external_id=normalized['external_id'],
-                                            defaults=normalized
-                                        )
+                                        purchase, created = await upsert_purchase(normalized)
                                         
                                         action = "Created" if created else "Updated"
                                         self.logger.info(
@@ -1402,7 +1590,7 @@ async def _run_vinted_scraper(
                                             'days_fetched': calculate_days_fetched(oldest_conv_date, days_to_fetch, now),
                                             'current_page': page,
                                         }
-                                        await task_run.asave()
+                                        await save_task_run()
                                         
                                     except Exception as e:
                                         self.logger.error(
@@ -1494,7 +1682,7 @@ async def _run_vinted_scraper(
         await scraper.scrape_all_data(output_csv, output_json)
         
         # Final progress update
-        await task_run.arefresh_from_db()
+        await refresh_task_run()
         if task_run.status != 'CANCELLED':
             # Use the last calculated days_fetched from progress, or fallback to days_to_fetch
             final_days_fetched = task_run.progress.get('days_fetched') if task_run.progress else days_to_fetch
@@ -1505,14 +1693,14 @@ async def _run_vinted_scraper(
                 'days_fetched': final_days_fetched,
                 'completed': True,
             }
-            await task_run.asave()
+            await save_task_run()
             
     except Exception as e:
         logger.error(f"TaskRun #{task_run_id}: Scraper error - {e}", exc_info=True)
-        await task_run.arefresh_from_db()
+        await refresh_task_run()
         if task_run.status != 'CANCELLED':
-            task_run.error_message = str(e)
-            await task_run.asave()
+            task_run.detail = str(e)
+            await save_task_run()
         raise
     finally:
         # Cleanup browser - ensure it always happens
@@ -1530,3 +1718,417 @@ async def _run_vinted_scraper(
                     await scraper.playwright.stop()
             except Exception as e2:
                 logger.error(f"TaskRun #{task_run_id}: Force cleanup also failed - {e2}", exc_info=True)
+
+
+def _result_indicates_already_completed(result_payload: Any, response_text: str) -> bool:
+    if isinstance(result_payload, dict):
+        message_code = str(result_payload.get("message_code") or "").lower()
+        errors = result_payload.get("errors") or []
+        if message_code == "validation_error":
+            error_text = " ".join(
+                str(error.get("value") if isinstance(error, dict) else error)
+                for error in errors
+            ).lower()
+            if "can't be completed" in error_text and ("status 450" in error_text or "status 455" in error_text):
+                return True
+
+    texts: list[str] = []
+    if isinstance(result_payload, dict):
+        texts.extend(str(value) for value in result_payload.values() if isinstance(value, (str, int, float)))
+    elif result_payload is not None:
+        texts.append(str(result_payload))
+    if response_text:
+        texts.append(response_text)
+
+    haystack = " ".join(texts).lower()
+    return "already" in haystack and "complet" in haystack
+
+
+def _extract_non_completable_status(result_payload: Any) -> Optional[int]:
+    if not isinstance(result_payload, dict):
+        return None
+
+    if str(result_payload.get("message_code") or "").lower() != "validation_error":
+        return None
+
+    errors = result_payload.get("errors") or []
+    for error in errors:
+        value = str(error.get("value") if isinstance(error, dict) else error)
+        match = re.search(r"status\s+(\d+)\s+can't be completed", value, flags=re.IGNORECASE)
+        if match:
+            try:
+                return int(match.group(1))
+            except ValueError:
+                return None
+
+    return None
+
+
+def _build_vinted_completion_detail(result_payload: Dict[str, Any]) -> str:
+    if result_payload.get("already_completed"):
+        return "Vinted transaction was already completed."
+    http_status = result_payload.get("http_status")
+    if http_status:
+        return f"Vinted transaction completed successfully (HTTP {http_status})."
+    return "Vinted transaction completed successfully."
+
+
+async def _run_vinted_purchase_completion(
+    *,
+    task_run_id: int,
+    purchase_id: Any,
+    purchase_external_id: Any,
+    transaction_id: Any,
+    cookies_file_path: Optional[str],
+    run_logger: logging.Logger,
+) -> Dict[str, Any]:
+    from purchases.models import Purchases
+
+    if not purchase_id:
+        raise VintedCompletionPermanentError("Missing purchase_id in task input.")
+    if not purchase_external_id:
+        raise VintedCompletionPermanentError("Missing purchase_external_id in task input.")
+    if not transaction_id:
+        raise VintedCompletionPermanentError("Missing transaction_id in task input.")
+
+    # Validate the purchase exists, but do not short-circuit from local state.
+    await sync_to_async(Purchases.objects.get)(id=purchase_id)
+
+    class CompletionTaskScraperWrapper(VintedScraperPlaywright):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.captured_csrf_token: Optional[str] = None
+            self.captured_anon_id: Optional[str] = None
+
+        async def complete_transaction_via_api(self, cookies: Dict[str, str]) -> Dict[str, Any]:
+            try:
+                result = await self.page.evaluate(
+                    """
+                    async ({ transactionId, csrfToken, anonId }) => {
+                      const metaToken =
+                        document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                        document.querySelector('meta[name="csrf_token"]')?.getAttribute('content') ||
+                        null;
+
+                      const csrfCookieMatch = document.cookie.match(/(?:^|; )[^=;]*(?:csrf|xsrf)[^=;]*=([^;]+)/i);
+                      const csrfCookieToken = csrfCookieMatch ? decodeURIComponent(csrfCookieMatch[1]) : null;
+                      const resolvedCsrfToken = csrfToken || metaToken || csrfCookieToken;
+
+                      const anonMatch = document.cookie.match(/(?:^|; )anon_id=([^;]+)/);
+                      const resolvedAnonId = anonId || (anonMatch ? decodeURIComponent(anonMatch[1]) : null);
+
+                      try {
+                        const response = await fetch(`/api/v2/transactions/${transactionId}/complete`, {
+                          method: 'PUT',
+                          credentials: 'include',
+                          headers: {
+                            'Accept': 'application/json, text/plain, */*,image/webp',
+                            'Locale': 'en-DE',
+                            ...(resolvedAnonId ? { 'X-Anon-Id': resolvedAnonId } : {}),
+                            ...(resolvedCsrfToken ? { 'X-CSRF-Token': resolvedCsrfToken } : {}),
+                          },
+                        });
+
+                        const text = await response.text();
+                        let data = null;
+                        try {
+                          data = JSON.parse(text);
+                        } catch (error) {
+                          data = null;
+                        }
+
+                        return {
+                          ok: response.ok,
+                          status: response.status,
+                          text,
+                          data,
+                          csrfTokenPresent: Boolean(resolvedCsrfToken),
+                          anonIdPresent: Boolean(resolvedAnonId),
+                          pageUrl: window.location.href,
+                        };
+                      } catch (error) {
+                        return {
+                          ok: false,
+                          status: null,
+                          text: '',
+                          data: null,
+                          error: String(error),
+                          csrfTokenPresent: Boolean(resolvedCsrfToken),
+                          anonIdPresent: Boolean(resolvedAnonId),
+                          pageUrl: window.location.href,
+                        };
+                      }
+                    }
+                    """,
+                    {
+                        "transactionId": str(transaction_id),
+                        "csrfToken": self.captured_csrf_token,
+                        "anonId": self.captured_anon_id or cookies.get("anon_id"),
+                    },
+                )
+
+                if self.cookies_file_path:
+                    await save_cookies(self.context, self.cookies_file_path)
+
+                return result
+            except Exception as exc:
+                return {
+                    "ok": False,
+                    "status": None,
+                    "text": "",
+                    "data": None,
+                    "error": str(exc),
+                    "csrfTokenPresent": False,
+                    "anonIdPresent": bool(cookies.get("anon_id")),
+                    "pageUrl": self.page.url if self.page else None,
+                }
+
+        async def scrape_all_data(self, output_csv: str, output_json: str):
+            self.logger.info("\n" + "=" * 80)
+            self.logger.info("🚀 VINTED DATA SCRAPER")
+            self.logger.info("=" * 80)
+            self.logger.info(f"📋 Configuration:")
+            self.logger.info(f"   Base URL: {self.base_url}")
+            self.logger.info(f"   Output CSV: {output_csv}")
+            self.logger.info(f"   Output JSON: {output_json}")
+            self.logger.info(f"   Cookies file: {self.cookies_file_path or 'None (not using cookies)'}")
+            self.logger.info("=" * 80)
+
+            await self.setup_browser()
+
+            self.output_csv = output_csv
+            self.output_json = output_json
+
+            if not await self.login():
+                self.logger.warning("❌ Failed to login. Exiting.")
+                return
+
+            def capture_request_auth_headers(request):
+                headers = request.headers
+                csrf_token = headers.get("x-csrf-token")
+                anon_id = headers.get("x-anon-id")
+
+                if csrf_token and not self.captured_csrf_token:
+                    self.captured_csrf_token = csrf_token
+                if anon_id and not self.captured_anon_id:
+                    self.captured_anon_id = anon_id
+
+            self.page.on("request", capture_request_auth_headers)
+
+            await self.page.goto(
+                f"{self.base_url}/inbox/{purchase_external_id}?source=inbox",
+                wait_until="domcontentloaded",
+                timeout=PAGE_LOAD_TIMEOUT,
+            )
+            await asyncio.sleep(10)
+
+            if self.cookies_file_path:
+                await save_cookies(self.context, self.cookies_file_path)
+
+            cookies = await self.get_cookies_dict()
+            self.logger.info(
+                "TaskRun #%s: Captured inbox auth headers csrf_token=%s anon_id=%s",
+                task_run_id,
+                bool(self.captured_csrf_token),
+                bool(self.captured_anon_id or cookies.get("anon_id")),
+            )
+            return await self.complete_transaction_via_api(cookies)
+
+    scraper = CompletionTaskScraperWrapper(
+        base_url="https://www.vinted.de",
+        headless=True,
+        cookies_file_path=cookies_file_path,
+        run_logger=run_logger,
+    )
+
+    try:
+        output_csv = "/tmp/vinted_completion_dummy.csv"
+        output_json = "/tmp/vinted_completion_dummy.json"
+        result = await scraper.scrape_all_data(output_csv, output_json)
+
+        if not result:
+            raise VintedCompletionPermanentError("Vinted login failed or session expired.")
+
+        if result.get("error"):
+            raise VintedCompletionRetryableError(
+                f"Vinted completion request failed before receiving a response: {result['error']}"
+            )
+
+        response_status = result.get("status")
+        response_data = result.get("data")
+        response_text = result.get("text", "")
+        response_payload = response_data if response_data is not None else response_text
+        response_preview = (
+            json.dumps(response_data, ensure_ascii=False)
+            if response_data is not None
+            else response_text
+        )
+
+        run_logger.info(
+            "TaskRun #%s: Vinted completion raw response status=%s csrf_token_present=%s body=%s",
+            task_run_id,
+            response_status,
+            result.get("csrfTokenPresent"),
+            response_preview[:2000],
+        )
+
+        if response_status and 200 <= response_status < 300:
+            if not response_data or str(response_data.get("code", "0")) == "0":
+                return {
+                    "purchase_id": purchase_id,
+                    "purchase_external_id": str(purchase_external_id),
+                    "transaction_id": str(transaction_id),
+                    "http_status": response_status,
+                    "response": response_data or response_text,
+                    "already_completed": False,
+                }
+
+        if _result_indicates_already_completed(response_data, response_text):
+            return {
+                "purchase_id": purchase_id,
+                "purchase_external_id": str(purchase_external_id),
+                "transaction_id": str(transaction_id),
+                "http_status": response_status,
+                "response": response_data or response_text,
+                "already_completed": True,
+                "completed_via": "remote_response",
+            }
+
+        non_completable_status = _extract_non_completable_status(response_data)
+        if non_completable_status in {210, 230}:
+            raise VintedCompletionPermanentError(
+                f"Vinted transaction is not ready to be completed yet (status {non_completable_status}). "
+                f"Raw response: {response_payload}"
+            )
+
+        if response_status in {429, 500, 502, 503, 504}:
+            raise VintedCompletionRetryableError(
+                f"Vinted completion temporary failure ({response_status}): {response_text[:500]}"
+            )
+
+        if response_status in {401, 403}:
+            raise VintedCompletionPermanentError(
+                f"Vinted completion failed ({response_status}): {response_payload}"
+            )
+
+        raise VintedCompletionPermanentError(
+            f"Vinted completion failed ({response_status}): {response_payload}"
+        )
+    finally:
+        await scraper.cleanup()
+
+
+@shared_task(bind=True, max_retries=3, name="tasks.tasks.complete_vinted_purchase_task")
+def complete_vinted_purchase_task(self, task_run_id: int):
+    """Complete a single Vinted purchase in the background."""
+    from .models import TaskRun
+    from purchases.models import Purchases
+
+    task_run = None
+    try:
+        close_old_connections()
+        task_run = TaskRun.objects.select_related('task').get(id=task_run_id)
+        task = task_run.task
+
+        task_run.status = 'RUNNING'
+        task_run.started_at = task_run.started_at or timezone.now()
+        task_run.detail = 'Completing Vinted purchase.'
+        close_old_connections()
+        task_run.save(update_fields=['status', 'started_at', 'detail'])
+
+        run_logger = initialize_task_run_logger(
+            task_run,
+            f"TaskRun #{task_run_id}: Starting Vinted purchase completion",
+        )
+
+        input_data = task_run.input_data or {}
+        task_run.progress = {
+            'purchase_id': input_data.get('purchase_id'),
+            'purchase_external_id': input_data.get('purchase_external_id'),
+            'transaction_id': input_data.get('transaction_id'),
+            'attempt': self.request.retries + 1,
+        }
+        close_old_connections()
+        task_run.save(update_fields=['progress'])
+
+        cookies_file_path = task.cookies_file.path if task.cookies_file else None
+        result = asyncio.run(
+            _run_vinted_purchase_completion(
+                task_run_id=task_run_id,
+                purchase_id=input_data.get('purchase_id'),
+                purchase_external_id=input_data.get('purchase_external_id'),
+                transaction_id=input_data.get('transaction_id'),
+                cookies_file_path=cookies_file_path,
+                run_logger=run_logger,
+            )
+        )
+
+        close_old_connections()
+        purchase = Purchases.objects.get(id=input_data.get('purchase_id'))
+        platform_data = purchase.platform_data or {}
+        platform_data['transaction_completed'] = True
+        purchase.platform_data = platform_data
+        purchase.save()
+
+        close_old_connections()
+        task_run.refresh_from_db()
+        if task_run.status != 'CANCELLED':
+            task_run.status = 'SUCCESS'
+            task_run.finished_at = timezone.now()
+            task_run.detail = _build_vinted_completion_detail(result)
+            task_run.progress = result
+            close_old_connections()
+            task_run.save(update_fields=['status', 'finished_at', 'detail', 'progress'])
+            run_logger.info("TaskRun #%s: Vinted purchase completion succeeded", task_run_id)
+
+        return result
+
+    except VintedCompletionRetryableError as exc:
+        countdown = min(RETRY_BACKOFF_MAX_SEC, RETRY_BACKOFF_BASE_SEC * (2 ** self.request.retries))
+        if task_run and self.request.retries < self.max_retries:
+            task_run.status = 'PENDING'
+            task_run.detail = f"Retrying: {exc}"
+            close_old_connections()
+            task_run.save(update_fields=['status', 'detail'])
+            raise self.retry(exc=exc, countdown=countdown)
+
+        if task_run:
+            task_run.status = 'FAILURE'
+            task_run.detail = str(exc)
+            task_run.finished_at = timezone.now()
+            close_old_connections()
+            task_run.save(update_fields=['status', 'detail', 'finished_at'])
+        raise
+    except VintedCompletionPermanentError as exc:
+        if task_run:
+            task_run.status = 'FAILURE'
+            task_run.detail = str(exc)
+            task_run.finished_at = timezone.now()
+            close_old_connections()
+            task_run.save(update_fields=['status', 'detail', 'finished_at'])
+        raise
+    except TaskRun.DoesNotExist:
+        logger.error("TaskRun #%s: TaskRun not found", task_run_id)
+        raise
+    except Exception as exc:
+        logger.error("TaskRun #%s: Vinted purchase completion failed - %s", task_run_id, exc, exc_info=True)
+        if task_run:
+            task_run.status = 'FAILURE'
+            task_run.detail = str(exc)
+            task_run.finished_at = timezone.now()
+            close_old_connections()
+            task_run.save(update_fields=['status', 'detail', 'finished_at'])
+        raise
+    finally:
+        try:
+            if task_run:
+                close_old_connections()
+                task_run.refresh_from_db()
+                if task_run.status == 'RUNNING':
+                    task_run.status = 'FAILURE'
+                    task_run.detail = "Task stopped unexpectedly"
+                    task_run.finished_at = timezone.now()
+                    close_old_connections()
+                    task_run.save(update_fields=['status', 'detail', 'finished_at'])
+        except Exception as exc:
+            logger.error("TaskRun #%s: Error in completion finally block - %s", task_run_id, exc)

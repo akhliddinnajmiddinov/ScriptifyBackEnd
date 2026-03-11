@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from django.db.models import Prefetch
 from django_filters import rest_framework as filters
@@ -26,6 +26,7 @@ class PurchasesViewSet(viewsets.ModelViewSet):
     ]
     ordering = ['-updated_at', '-id']
     pagination_class = StandardPagination
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
         """

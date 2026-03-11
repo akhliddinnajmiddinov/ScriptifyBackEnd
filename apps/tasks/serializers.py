@@ -14,6 +14,7 @@ class TaskSerializer(serializers.ModelSerializer):
             'description',
             'celery_task',
             'cookies_file',
+            'allow_concurrent_runs',
             'is_active',
             'created_at',
             'updated_at',
@@ -39,7 +40,7 @@ class TaskRunSerializer(serializers.ModelSerializer):
             'celery_task_id',
             'input_data',
             'progress',
-            'error_message',
+            'detail',
             'logs_file',
             'title',
         ]
@@ -99,6 +100,16 @@ class TaskStartInputSerializer(serializers.Serializer):
                     
                     # Update with validated integer
                     input_data['days_to_fetch'] = days_to_fetch
-        
+        elif task.slug == 'vinted-purchase-completion':
+            if 'purchase_id' in input_data and input_data['purchase_id'] not in [None, ""]:
+                try:
+                    input_data['purchase_id'] = int(input_data['purchase_id'])
+                except (TypeError, ValueError):
+                    raise serializers.ValidationError({
+                        'input_data': {
+                            'purchase_id': 'Must be an integer'
+                        }
+                    })
+
         attrs['input_data'] = input_data
         return attrs

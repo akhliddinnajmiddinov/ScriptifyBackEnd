@@ -1,5 +1,5 @@
 # views.py
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction as db_transaction
@@ -24,6 +24,7 @@ class VendorViewSet(viewsets.ModelViewSet):
     ordering_fields = ['id', 'vendor_name', 'vendor_vat']
     ordering = ['vendor_name', '-id']
     pagination_class = StandardPagination
+    permission_classes = [permissions.IsAuthenticated]
     
     @extend_schema(
         operation_id="vendors_list",
@@ -436,6 +437,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
     ordering_fields = ['id', 'transaction_id', 'status', 'transaction_date', 'amount', 'currency', 'type', 'transaction_from', 'transaction_to']
     ordering = ['-transaction_date', '-id']
     pagination_class = StandardPagination
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
         """

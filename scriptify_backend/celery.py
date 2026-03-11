@@ -10,8 +10,9 @@ app = Celery('scriptify_backend')
 # Load configuration from Django settings with CELERY_ prefix
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
-# Auto-discover tasks from all registered apps
-app.autodiscover_tasks()
+# Auto-discover tasks from installed apps explicitly so task registration
+# stays aligned with Django's app loading.
+app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 @app.task(bind=True)
 def debug_task(self):

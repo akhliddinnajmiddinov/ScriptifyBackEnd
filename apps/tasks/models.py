@@ -36,6 +36,12 @@ class Task(models.Model):
     
     # Cookies file for tasks that need it (like vinted scraping)
     cookies_file = models.FileField(upload_to="task_cookies/", null=True, blank=True)
+
+    # Concurrency control
+    allow_concurrent_runs = models.BooleanField(
+        default=False,
+        help_text="Allow multiple runs of this task to execute at the same time."
+    )
     
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
@@ -102,8 +108,8 @@ class TaskRun(models.Model):
         help_text="Task-specific progress data"
     )
     
-    # Error information
-    error_message = models.TextField(blank=True, default='')
+    # Generic run detail text for any status
+    detail = models.TextField(blank=True, default='')
     
     # Log file for this run
     logs_file = models.FileField(upload_to="taskruns/logs/", blank=True, null=True)

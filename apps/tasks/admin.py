@@ -4,9 +4,9 @@ from .models import Task, TaskRun
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'slug', 'celery_task', 'is_active', 'created_at')
+    list_display = ('id', 'name', 'slug', 'celery_task', 'allow_concurrent_runs', 'is_active', 'created_at')
     list_display_links = ('id', 'name', 'slug', 'celery_task')
-    list_filter = ('is_active', 'created_at')
+    list_filter = ('allow_concurrent_runs', 'is_active', 'created_at')
     search_fields = ('name', 'slug', 'description')
     prepopulated_fields = {'slug': ('name',)}
     readonly_fields = ('created_at', 'updated_at')
@@ -16,7 +16,7 @@ class TaskAdmin(admin.ModelAdmin):
             'fields': ('name', 'slug', 'description', 'is_active')
         }),
         ('Task Configuration', {
-            'fields': ('celery_task', 'cookies_file')
+            'fields': ('celery_task', 'cookies_file', 'allow_concurrent_runs')
         }),
         ('Metadata', {
             'fields': ('created_at', 'updated_at'),
@@ -45,8 +45,8 @@ class TaskRunAdmin(admin.ModelAdmin):
         ('Timing', {
             'fields': ('started_at', 'finished_at')
         }),
-        ('Error Information', {
-            'fields': ('error_message',),
+        ('Run Details', {
+            'fields': ('detail',),
             'classes': ('collapse',)
         }),
     )

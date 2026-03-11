@@ -1,8 +1,11 @@
 from rest_framework import serializers
+from django.db import transaction
 from django.utils import timezone
 from .models import Purchases
 from transactions.models import Vendor
 from listings.models import Listing, ListingAsin, Asin
+from tasks.models import Task
+from tasks.services import create_task_run, enqueue_task_run_safely
 
 
 class PurchasesSerializer(serializers.ModelSerializer):
@@ -70,6 +73,7 @@ class PurchasesSerializer(serializers.ModelSerializer):
                             'price': listing.price,
                             'image_urls': listing.picture_urls,
                             'title': item.get('title', ''), # Preserved in JSON during stripping
+                            'description': item.get('description'),
                             'connected_asins': asins
                         })
                     else:
@@ -128,114 +132,144 @@ class PurchasesSerializer(serializers.ModelSerializer):
         """
         Auto-set approved_rejected_at when approved_status changes.
         """
-        if 'approved_status' in validated_data:
-            new_status = validated_data['approved_status']
-            if instance.approved_status is not None:
-                # If status is already set, it cannot be changed or cleared
-                if new_status != instance.approved_status:
-                    raise serializers.ValidationError({
-                        "approved_status": f"Status has already been set to '{instance.approved_status}' and cannot be changed."
-                    })
-            else:
-                # Status is being set for the first time
-                if new_status and not instance.approved_rejected_at:
-                    validated_data['approved_rejected_at'] = timezone.now()
-                # If new_status is None and old status was None, do nothing
+        with transaction.atomic():
+            should_start_vinted_completion = (
+                instance.platform == 'vinted'
+                and instance.approved_status is None
+                and validated_data.get('approved_status') == 'approved'
+            )
 
-        # Handle ASIN synchronization ONLY if status is approved or rejected
-        # If it's pending (None or 'pending'), we just save the raw JSON without syncing to Listings.
-        items_data = validated_data.get('items')
-        if items_data is not None and isinstance(items_data, list):
-            target_status = validated_data.get('approved_status', instance.approved_status)
-            
-            if target_status == 'approved':
-                # Find listings for these items
-                list_ids = [it.get('listing_id') for it in items_data if it.get('listing_id')]
-                urls = [it.get('url') for it in items_data if it.get('url')]
-                
-                listings_by_id = {l.id: l for l in Listing.objects.filter(id__in=list_ids)} if list_ids else {}
-                listings_by_url = {l.listing_url: l for l in Listing.objects.filter(listing_url__in=urls)} if urls else {}
+            if 'approved_status' in validated_data:
+                new_status = validated_data['approved_status']
+                if instance.approved_status is not None:
+                    # If status is already set, it cannot be changed or cleared
+                    if new_status != instance.approved_status:
+                        raise serializers.ValidationError({
+                            "approved_status": f"Status has already been set to '{instance.approved_status}' and cannot be changed."
+                        })
+                else:
+                    # Status is being set for the first time
+                    if new_status and not instance.approved_rejected_at:
+                        validated_data['approved_rejected_at'] = timezone.now()
 
-                for item_data in items_data:
-                    listing_id = item_data.get('listing_id')
-                    url = item_data.get('url')
-                    connected_asins = item_data.get('connected_asins')
-                    
-                    # 1. Discover listing
-                    listing = listings_by_id.get(listing_id) or listings_by_url.get(url)
+            # Handle ASIN synchronization ONLY if status is approved or rejected
+            # If it's pending (None or 'pending'), we just save the raw JSON without syncing to Listings.
+            items_data = validated_data.get('items')
+            if items_data is not None and isinstance(items_data, list):
+                target_status = validated_data.get('approved_status', instance.approved_status)
 
-                    # 2. Update or Create Listing (and prioritize existing listing data if payload is stripped)
-                    if listing:
-                        # Fallback to listing data if payload is missing info (already stripped)
-                        url = url or listing.listing_url
-                        price_val = item_data.get('price')
-                        price = float(price_val) if price_val is not None else listing.price
-                        image_urls = item_data.get('image_urls') or listing.picture_urls
-                        
-                        # Apply updates
-                        listing.price = price
-                        listing.listing_url = url
-                        if image_urls:
-                            listing.picture_urls = image_urls
-                        if instance.tracking_code:
-                            listing.tracking_number = instance.tracking_code
-                        listing.timestamp = timezone.now()
-                        listing.save()
-                    elif url:
-                        # Create new listing
-                        price = float(item_data.get('price') or 0.0)
-                        image_urls = item_data.get('image_urls', [])
-                        listing = Listing.objects.create(
-                            listing_url=url,
-                            price=price,
-                            timestamp=timezone.now(),
-                            picture_urls=image_urls,
-                            tracking_number=instance.tracking_code or None
-                        )
-                        listings_by_url[url] = listing
+                if target_status == 'approved':
+                    # Find listings for these items
+                    list_ids = [it.get('listing_id') for it in items_data if it.get('listing_id')]
+                    urls = [it.get('url') for it in items_data if it.get('url')]
 
-                    # 3. Handle ASIN synchronization (update amount or create)
-                    if listing and connected_asins is not None:
-                        # Extract ID to local variable to help with type inference/clarity
-                        lid = listing.id
-                        for conn in connected_asins:
-                            asin_id = conn.get('id')
-                            if asin_id:
-                                # Ensure amount is at least 1 for new/updated connections
-                                raw_amount = conn.get('quantity')
-                                amount = int(raw_amount) if raw_amount not in [None, ""] else 1
-                                if amount < 1: amount = 1
-                                
-                                listing_asin, created = ListingAsin.objects.get_or_create(
+                    listings_by_id = {l.id: l for l in Listing.objects.filter(id__in=list_ids)} if list_ids else {}
+                    listings_by_url = {l.listing_url: l for l in Listing.objects.filter(listing_url__in=urls)} if urls else {}
+
+                    for item_data in items_data:
+                        listing_id = item_data.get('listing_id')
+                        url = item_data.get('url')
+                        connected_asins = item_data.get('connected_asins')
+
+                        # 1. Discover listing
+                        listing = listings_by_id.get(listing_id) or listings_by_url.get(url)
+
+                        # 2. Update or Create Listing (and prioritize existing listing data if payload is stripped)
+                        if listing:
+                            # Fallback to listing data if payload is missing info (already stripped)
+                            url = url or listing.listing_url
+                            price_val = item_data.get('price')
+                            price = float(price_val) if price_val is not None else listing.price
+                            image_urls = item_data.get('image_urls') or listing.picture_urls
+
+                            # Apply updates
+                            listing.price = price
+                            listing.listing_url = url
+                            if image_urls:
+                                listing.picture_urls = image_urls
+                            if instance.tracking_code:
+                                listing.tracking_number = instance.tracking_code
+                            listing.timestamp = timezone.now()
+                            listing.save()
+                        elif url:
+                            # Create new listing
+                            price = float(item_data.get('price') or 0.0)
+                            image_urls = item_data.get('image_urls', [])
+                            listing = Listing.objects.create(
+                                listing_url=url,
+                                price=price,
+                                timestamp=timezone.now(),
+                                picture_urls=image_urls,
+                                tracking_number=instance.tracking_code or None
+                            )
+                            listings_by_url[url] = listing
+
+                        # 3. Handle ASIN synchronization (update amount or create)
+                        if listing and connected_asins is not None:
+                            lid = listing.id
+                            for conn in connected_asins:
+                                asin_id = conn.get('id')
+                                if asin_id:
+                                    raw_amount = conn.get('quantity')
+                                    amount = int(raw_amount) if raw_amount not in [None, ""] else 1
+                                    if amount < 1:
+                                        amount = 1
+
+                                    listing_asin, created = ListingAsin.objects.get_or_create(
+                                        purchase=instance,
+                                        listing_id=lid,
+                                        asin_id=asin_id,
+                                        defaults={'amount': amount}
+                                    )
+                                    if not created and listing_asin.amount != amount:
+                                        listing_asin.amount = amount
+                                        listing_asin.save()
+
+                            if len(connected_asins) > 0:
+                                current_asin_ids = [c.get('id') for c in connected_asins if c.get('id')]
+                                ListingAsin.objects.filter(
                                     purchase=instance,
-                                    listing_id=lid,
-                                    asin_id=asin_id,
-                                    defaults={'amount': amount}
-                                )
-                                if not created and listing_asin.amount != amount:
-                                    listing_asin.amount = amount
-                                    listing_asin.save()
-                        
-                        # Handle potential removals
-                        if len(connected_asins) > 0:
-                            current_asin_ids = [c.get('id') for c in connected_asins if c.get('id')]
-                            ListingAsin.objects.filter(
-                                purchase=instance, 
-                                listing_id=lid
-                            ).exclude(asin_id__in=current_asin_ids).delete()
-                        else:
-                            ListingAsin.objects.filter(purchase=instance, listing_id=lid).delete()
+                                    listing_id=lid
+                                ).exclude(asin_id__in=current_asin_ids).delete()
+                            else:
+                                ListingAsin.objects.filter(purchase=instance, listing_id=lid).delete()
 
-                    # 4. Clear JSON data, keeping ONLY listing_id AND title
-                    if listing:
-                        stored_title = item_data.get('title', '')
-                        item_data.clear()
-                        item_data['listing_id'] = listing.id
-                        item_data['title'] = stored_title
-            else:
-                # For pending purchases, just strip the temporary UI fields before saving raw JSON
-                for item_data in items_data:
-                    item_data.pop('connected_asins', None)
-                    item_data.pop('matching_listing_id', None)
+                        # 4. Clear JSON data, keeping ONLY listing_id, title, and description
+                        if listing:
+                            stored_title = item_data.get('title', '')
+                            stored_description = item_data.get('description')
+                            item_data.clear()
+                            item_data['listing_id'] = listing.id
+                            item_data['title'] = stored_title
+                            item_data['description'] = stored_description
+                else:
+                    # For pending purchases, just strip the temporary UI fields before saving raw JSON
+                    for item_data in items_data:
+                        item_data.pop('connected_asins', None)
+                        item_data.pop('matching_listing_id', None)
 
-        return super().update(instance, validated_data)
+            updated_instance = super().update(instance, validated_data)
+
+            if should_start_vinted_completion:
+                try:
+                    task = Task.objects.get(slug='vinted-purchase-completion', is_active=True)
+                except Task.DoesNotExist as exc:
+                    raise serializers.ValidationError({
+                        "approved_status": "Vinted purchase completion task is not configured."
+                    }) from exc
+
+                request = self.context.get('request')
+                started_by = request.user if request and getattr(request.user, 'is_authenticated', False) else None
+                platform_data = updated_instance.platform_data or {}
+                task_run = create_task_run(
+                    task=task,
+                    started_by=started_by,
+                    input_data={
+                        'purchase_id': updated_instance.id,
+                        'purchase_external_id': updated_instance.external_id,
+                        'transaction_id': platform_data.get('transaction_id'),
+                    },
+                )
+                transaction.on_commit(lambda: enqueue_task_run_safely(task_run.id))
+
+            return updated_instance

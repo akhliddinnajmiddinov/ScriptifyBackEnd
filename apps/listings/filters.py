@@ -86,10 +86,12 @@ class AsinFilter(filters.FilterSet):
     
     # Universal search
     search = filters.CharFilter(method='filter_search')
+    # Strict phrase search used by purchase Add ASIN selector
+    strict_search = filters.CharFilter(method='filter_strict_search')
     
     class Meta:
         model = Asin
-        fields = ['value', 'name', 'ean', 'vendor', 'shelf', 'contains', 'component', 'min_amount', 'max_amount', 'search']
+        fields = ['value', 'name', 'ean', 'vendor', 'shelf', 'contains', 'component', 'min_amount', 'max_amount', 'search', 'strict_search']
 
     def _sanitize_and_tokenize(self, value: str) -> list[str]:
         if not value or not value.strip():
@@ -131,6 +133,21 @@ class AsinFilter(filters.FilterSet):
             query &= token_q
         
         return queryset.filter(query).distinct()
+
+    def filter_strict_search(self, queryset, name, value):
+        """
+        Strict phrase search (no tokenization) across Friendly name, EAN, and ASIN value.
+        Example: "16 mag" -> SQL LIKE "%16 mag%" (case-insensitive).
+        """
+        if not value or not value.strip():
+            return queryset
+
+        phrase = re.sub(r"\s+", " ", value.strip())
+        return queryset.filter(
+            Q(value__icontains=phrase) |
+            Q(name__icontains=phrase) |
+            Q(ean__icontains=phrase)
+        ).distinct()
 
     def _build_token_query(self, token):
         """

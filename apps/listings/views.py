@@ -1,5 +1,5 @@
 # views.py
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction as db_transaction
@@ -33,6 +33,7 @@ class ListingViewSet(viewsets.ModelViewSet):
     ordering_fields = ['id', 'listing_url', 'price', 'timestamp', 'tracking_number']
     ordering = ['-timestamp', '-id']
     pagination_class = StandardPagination
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
         """
@@ -416,6 +417,7 @@ class ShelfViewSet(viewsets.ModelViewSet):
     ordering_fields = ['id', 'name']
     ordering = ['id']
     pagination_class = StandardPagination
+    permission_classes = [permissions.IsAuthenticated]
     
     @extend_schema(
         operation_id="shelves_list",
@@ -522,6 +524,7 @@ class InventoryVendorViewSet(viewsets.ModelViewSet):
     ordering_fields = ['id', 'name']
     ordering = ['id']
     pagination_class = StandardPagination
+    permission_classes = [permissions.IsAuthenticated]
     
     @extend_schema(
         operation_id="inventory_vendors_list",
@@ -623,6 +626,7 @@ class AsinViewSet(viewsets.ModelViewSet):
     ordering_fields = ['id', 'value', 'name', 'ean', 'amount', 'vendor', 'shelf', 'contains']
     ordering = ['-id']
     pagination_class = StandardPagination
+    permission_classes = [permissions.IsAuthenticated]
    
     def get_queryset(self):
         """
@@ -1116,6 +1120,7 @@ class BuildLogViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = StandardPagination
     filter_backends = [StableOrderingFilter]
     ordering = ['-timestamp']
+    permission_classes = [permissions.IsAuthenticated]
 
     @extend_schema(
         operation_id="build_log_revert",
@@ -1151,6 +1156,7 @@ class BuildOrderViewSet(viewsets.ViewSet):
     """
     ViewSet for discovering buildable items and executing builds.
     """
+    permission_classes = [permissions.IsAuthenticated]
     
     @extend_schema(
         operation_id="build_orders_status",
@@ -1331,6 +1337,7 @@ class ListingAsinViewSet(viewsets.ModelViewSet):
     ordering_fields = ['id', 'amount']
     ordering = ['-id']
     pagination_class = StandardPagination
+    permission_classes = [permissions.IsAuthenticated]
 
     @extend_schema(
         operation_id="listing_asins_list",
@@ -1376,6 +1383,7 @@ class InventoryColorViewSet(viewsets.ModelViewSet):
     ordering_fields = ['id', 'pattern', 'created_at', 'updated_at']
     ordering = ['pattern']
     pagination_class = StandardPagination
+    permission_classes = [permissions.IsAuthenticated]
     
     @extend_schema(
         operation_id="inventory_colors_list",
@@ -1451,6 +1459,7 @@ class MinPriceTaskViewSet(viewsets.ViewSet):
     ViewSet for managing the min-price fetching background task.
     Provides start, status, and cancel endpoints.
     """
+    permission_classes = [permissions.IsAuthenticated]
 
     @extend_schema(
         operation_id="min_price_task_start",

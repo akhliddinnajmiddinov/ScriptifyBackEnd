@@ -54,6 +54,10 @@ class VintedCompletionRetryableError(Exception):
     """Retryable Vinted completion failure."""
 
 
+class VintedConversationPermanentError(Exception):
+    """Non-retryable Vinted conversation scraping failure."""
+
+
 class MetaDescriptionParser(HTMLParser):
     """Small HTML parser to extract the first meta description tag."""
 
@@ -226,6 +230,57 @@ class VintedScraperPlaywright:
         self.api_session: Optional[aiohttp.ClientSession] = None
         self.item_description_cache: Dict[str, Optional[str]] = {}
         self.logger = run_logger or logger  # Use per-run logger if provided, else module-level
+
+    def _build_api_headers(self) -> Dict[str, str]:
+        return {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Referer": f"{self.base_url}/inbox",
+            "Origin": self.base_url,
+        }
+
+    async def validate_api_session(self, cookies: Optional[Dict[str, str]] = None) -> bool:
+        """Verify that the current browser cookies are accepted by the Vinted API."""
+        cookies = cookies or await self.get_cookies_dict()
+        validation_url = f"{self.base_url}/api/v2/my_orders?type=purchased&status=all&page=1&per_page=1"
+
+        try:
+            async with aiohttp.ClientSession(headers=self._build_api_headers(), cookies=cookies) as session:
+                async with session.get(validation_url) as response:
+                    if response.status == 200:
+                        return True
+
+                    body_preview = (await response.text())[:500]
+                    self.logger.warning(
+                        "⚠️  Vinted API session validation failed with status %s on %s. Body: %s",
+                        response.status,
+                        validation_url,
+                        body_preview,
+                    )
+                    return False
+        except Exception as exc:
+            self.logger.warning(f"⚠️  Vinted API session validation failed: {exc}")
+            return False
+
+    async def finalize_authenticated_session(self) -> bool:
+        """
+        Navigate to the home page, persist current cookies, and ensure the API
+        accepts the browser session before proceeding.
+        """
+        await self.page.goto(f"{self.base_url}/", wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT)
+        await asyncio.sleep(5)
+
+        cookies = await self.get_cookies_dict()
+        if self.cookies_file_path:
+            await save_cookies(self.context, self.cookies_file_path)
+
+        if await self.validate_api_session(cookies):
+            self.logger.info("✅ Session is valid.")
+            return True
+
+        self.logger.warning("⚠️  Browser session looks logged in, but the Vinted API still returns unauthorized.")
+        return False
     
     async def setup_browser(self):
         """Initialize Playwright browser."""
@@ -277,51 +332,35 @@ class VintedScraperPlaywright:
             await asyncio.sleep(5)
             
             if await is_logged_in(self.page):
-                self.logger.info("✅ Session is valid.")
-                return True
+                self.logger.info("✅ Browser session detected. Validating API session...")
+                if await self.finalize_authenticated_session():
+                    return True
+                self.logger.warning("⚠️  Stored cookies are not valid for the Vinted API.")
             else:
                 self.logger.warning("⚠️  Session expired.")
-                # Try automatic login if credentials provided
-                if EMAIL and PASSWORD:
-                    if await self.auto_login(EMAIL, PASSWORD):
-                        if self.cookies_file_path:
-                            await save_cookies(self.context, self.cookies_file_path)
-                        return True
-                    else:
-                        self.logger.warning("⚠️  Falling back to manual login...")
-                
-                # Fall back to manual login
-                self.logger.warning("⚠️  Session expired. Please log in manually.")
-                if not await wait_for_manual_login(self.page, LOGIN_TIMEOUT):
-                    self.logger.warning("❌ Login failed. Exiting.")
-                    return False
-                if self.cookies_file_path:
-                    await save_cookies(self.context, self.cookies_file_path)
 
-                if not await wait_for_manual_login(self.page, LOGIN_TIMEOUT):
-                    self.logger.warning("❌ Login failed. Exiting.")
-                    return False
-                if self.cookies_file_path:
-                    await save_cookies(self.context, self.cookies_file_path)
-        else:
-            if EMAIL and PASSWORD:
-                if await self.auto_login(EMAIL, PASSWORD):
-                    if self.cookies_file_path:
-                        await save_cookies(self.context, self.cookies_file_path)
+        if EMAIL and PASSWORD:
+            if await self.auto_login(EMAIL, PASSWORD):
+                if await self.finalize_authenticated_session():
+                    self.logger.info("✅ Login successful!")
                     return True
-                else:
-                    self.logger.warning("⚠️  Falling back to manual login...")
-            
-            # Fall back to manual login
-            await self.page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT)
-            await asyncio.sleep(5)
-            
-            if not await wait_for_manual_login(self.page, LOGIN_TIMEOUT):
-                self.logger.warning("❌ Login failed. Exiting.")
-                return False
-            if self.cookies_file_path:
-                await save_cookies(self.context, self.cookies_file_path)
-        
+                self.logger.warning("⚠️  Automatic login completed, but API session validation failed.")
+            else:
+                self.logger.warning("⚠️  Falling back to manual login...")
+
+        # Fall back to manual login
+        self.logger.warning("⚠️  Session expired. Please log in manually.")
+        await self.page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT)
+        await asyncio.sleep(5)
+
+        if not await wait_for_manual_login(self.page, LOGIN_TIMEOUT):
+            self.logger.warning("❌ Login failed. Exiting.")
+            return False
+
+        if not await self.finalize_authenticated_session():
+            self.logger.warning("❌ Login succeeded in the browser, but the Vinted API session is still unauthorized.")
+            return False
+
         self.logger.info("✅ Login successful!")
         return True
     
@@ -372,13 +411,7 @@ class VintedScraperPlaywright:
             cookies = {}
 
         self.api_session = aiohttp.ClientSession(
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "application/json, text/plain, */*",
-                "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
-                "Referer": f"{self.base_url}/inbox",
-                "Origin": self.base_url,
-            },
+            headers=self._build_api_headers(),
             cookies=cookies
         )
         self.logger.info("✓ api_session rebuilt successfully")
@@ -408,13 +441,7 @@ class VintedScraperPlaywright:
                     if self.api_session is not None and not self.api_session.closed:
                         await self.api_session.close()
                     self.api_session = aiohttp.ClientSession(
-                        headers={
-                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                            "Accept": "application/json, text/plain, */*",
-                            "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
-                            "Referer": f"{self.base_url}/inbox",
-                            "Origin": self.base_url,
-                        },
+                        headers=self._build_api_headers(),
                         cookies=new_cookies
                     )
                     self.logger.info("Retrying request with fresh cookies...")
@@ -1425,11 +1452,7 @@ async def _run_vinted_scraper(
                 
                 # Create aiohttp session with cookies (only if cookies are provided)
                 session_headers = {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                    "Accept": "application/json, text/plain, */*",
-                    "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
-                    "Referer": f"{self.base_url}/inbox",
-                    "Origin": self.base_url,
+                    **self._build_api_headers(),
                 }
                 # Only add cookies if they are provided (not None/empty)
                 if cookies:
@@ -1474,7 +1497,9 @@ async def _run_vinted_scraper(
                         
                         if not data:
                             if page == 1:
-                                self.logger.warning(f"TaskRun #{task_run_id}: Failed to fetch orders. API authentication may have failed.")
+                                error_message = "Failed to fetch Vinted orders. API authentication may have failed."
+                                self.logger.error(f"TaskRun #{task_run_id}: {error_message}")
+                                raise VintedConversationPermanentError(error_message)
                             break
                         
                         conversations = data.get("my_orders", [])
@@ -1511,13 +1536,7 @@ async def _run_vinted_scraper(
                                 cookies = await self.refresh_cookies()
                                 
                                 self.api_session = aiohttp.ClientSession(
-                                    headers={
-                                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                                        "Accept": "application/json, text/plain, */*",
-                                        "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
-                                        "Referer": f"{self.base_url}/inbox",
-                                        "Origin": self.base_url,
-                                    },
+                                    headers=self._build_api_headers(),
                                     cookies=cookies
                                 )
                             
@@ -1621,16 +1640,18 @@ async def _run_vinted_scraper(
                     
                     except Exception as e:
                         self.logger.error(f"TaskRun #{task_run_id}: Error fetching orders on page {page}: {e}", exc_info=True)
-                        break
-                
-                # Close aiohttp session
-                await self.api_session.close()
+                        raise VintedConversationPermanentError(
+                            f"Error fetching Vinted orders on page {page}: {e}"
+                        ) from e
                 
                 self.logger.info(f"TaskRun #{task_run_id}: Scraping complete! Total conversations processed: {processed_count[0]}")
                 
             except Exception as e:
                 self.logger.error(f"TaskRun #{task_run_id}: Error in get_conversations_via_api: {e}", exc_info=True)
                 raise
+            finally:
+                if self.api_session is not None and not self.api_session.closed:
+                    await self.api_session.close()
         
         async def save_to_file(self, output_csv_path, output_json_path, all_data):
             """Override to prevent file saving - we save to Purchases model instead."""
@@ -1656,16 +1677,8 @@ async def _run_vinted_scraper(
 
             if not await self.login():
                 self.logger.warning("❌ Failed to login. Exiting.")
-                # Don't cleanup here - let the finally block handle it
-                return
+                raise VintedConversationPermanentError("Vinted login failed or session expired.")
 
-            await self.page.goto(f"{self.base_url}/", wait_until="domcontentloaded", timeout=PAGE_LOAD_TIMEOUT)
-            await asyncio.sleep(10)  # Let the page fully load
-
-            # Save cookies and get them (only if cookies_file_path is set, matching original behavior)
-            if self.cookies_file_path:
-                await save_cookies(self.context, self.cookies_file_path)
-            # Get cookies from browser
             cookies = await self.get_cookies_dict()
 
             await self.get_conversations_via_api(cookies)

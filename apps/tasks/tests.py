@@ -12,9 +12,11 @@ from purchases.models import Purchases
 from .models import Task, TaskRun
 from .tasks import (
     VintedCompletionPermanentError,
+    VintedConversationPermanentError,
     VintedScraperPlaywright,
     _run_vinted_purchase_completion,
     complete_vinted_purchase_task,
+    fetch_vinted_conversations_task,
     _extract_non_completable_status,
 )
 
@@ -90,6 +92,60 @@ class VintedScraperPlaywrightDescriptionTests(SimpleTestCase):
         self.assertEqual(first_description, "Printer cartridges for Brother LC 980")
         self.assertEqual(second_description, "Printer cartridges for Brother LC 980")
         self.scraper.fetch_item_page_html.assert_awaited_once()
+
+    def test_login_rejects_cookie_session_when_api_validation_fails(self):
+        self.scraper.cookies_file_path = "/tmp/vinted-cookies.json"
+        self.scraper.context = object()
+        self.scraper.page = SimpleNamespace(goto=AsyncMock())
+        self.scraper.validate_api_session = AsyncMock(return_value=False)
+        self.scraper.auto_login = AsyncMock(return_value=False)
+        self.scraper.get_cookies_dict = AsyncMock(return_value={"session": "cookie"})
+
+        with patch("tasks.tasks.load_cookies", new=AsyncMock(return_value=True)), patch(
+            "tasks.tasks.is_logged_in",
+            new=AsyncMock(return_value=True),
+        ), patch(
+            "tasks.tasks.wait_for_manual_login",
+            new=AsyncMock(return_value=False),
+        ), patch(
+            "tasks.tasks.save_cookies",
+            new=AsyncMock(),
+        ), patch(
+            "tasks.tasks.asyncio.sleep",
+            new=AsyncMock(),
+        ):
+            result = self.run_async(self.scraper.login())
+
+        self.assertFalse(result)
+        self.scraper.validate_api_session.assert_awaited_once()
+        self.scraper.auto_login.assert_awaited_once()
+
+
+class VintedConversationTaskTests(TestCase):
+    def setUp(self):
+        self.task = Task.objects.create(
+            name="Vinted Conversations",
+            slug="vinted-conversations",
+            celery_task="fetch_vinted_conversations_task",
+            allow_concurrent_runs=False,
+        )
+
+    def test_fetch_vinted_conversations_task_marks_failure_for_fatal_scraper_error(self):
+        task_run = TaskRun.objects.create(task=self.task, status="PENDING", input_data={})
+
+        with patch(
+            "tasks.tasks.initialize_task_run_logger",
+            return_value=SimpleNamespace(info=lambda *args, **kwargs: None),
+        ), patch(
+            "tasks.tasks._run_vinted_scraper",
+            side_effect=VintedConversationPermanentError("Vinted login failed or session expired."),
+        ):
+            with self.assertRaises(VintedConversationPermanentError):
+                fetch_vinted_conversations_task.run(task_run_id=task_run.id)
+
+        task_run.refresh_from_db()
+        self.assertEqual(task_run.status, "FAILURE")
+        self.assertIn("login failed", task_run.detail.lower())
 
 
 class TaskViewSetRunHistoryTests(TestCase):

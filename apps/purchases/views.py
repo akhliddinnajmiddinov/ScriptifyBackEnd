@@ -1,5 +1,6 @@
 from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from django.db.models import Prefetch
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
@@ -8,6 +9,7 @@ from .serializers import PurchasesSerializer
 from .filters import PurchasesFilter
 from listings.filters import StandardPagination
 from transactions.filters import StableOrderingFilter
+from transactions.models import Vendor
 
 
 class PurchasesViewSet(viewsets.ModelViewSet):
@@ -177,3 +179,217 @@ class PurchasesViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         """Delete a purchase."""
         return super().destroy(request, *args, **kwargs)
+
+    @action(
+        detail=False,
+        methods=['post'],
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='preview',
+        url_name='preview'
+    )
+    @extend_schema(
+        operation_id="purchases_preview",
+        description="Preview purchases for import without saving. Returns duplicate detection and vendor info.",
+        tags=["Purchases"],
+        request=PurchasesSerializer(many=True),
+        responses={
+            200: {
+                'type': 'object',
+                'properties': {
+                    'purchases': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'platform': {'type': 'string'},
+                                'external_id': {'type': 'string'},
+                                'data': {'type': 'object'},
+                                'is_duplicate': {'type': 'boolean'},
+                                'duplicate_id': {'type': ['integer', 'null']},
+                                'vendor_image': {'type': ['string', 'null']},
+                                'errors': {'type': 'array', 'items': {'type': 'string'}}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    )
+    def preview(self, request):
+        """
+        Preview purchases for import without saving.
+        Checks for duplicates based on (platform, external_id) and retrieves vendor images.
+        """
+        data = request.data
+        if not isinstance(data, list):
+            return Response(
+                {'error': 'Expected list of purchases'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        previews = []
+
+        for item in data:
+            platform = item.get('platform')
+            external_id = item.get('external_id')
+
+            preview_item = {
+                'platform': platform,
+                'external_id': external_id,
+                'data': item,
+                'is_duplicate': False,
+                'duplicate_id': None,
+                'vendor_image': None,
+                'errors': []
+            }
+
+            # Validate required fields
+            if not platform:
+                preview_item['errors'].append('platform is required')
+            if not external_id:
+                preview_item['errors'].append('external_id is required')
+
+            if preview_item['errors']:
+                previews.append(preview_item)
+                continue
+
+            # Check for duplicates
+            existing = Purchases.objects.filter(
+                platform=platform,
+                external_id=external_id
+            ).first()
+
+            if existing:
+                preview_item['is_duplicate'] = True
+                preview_item['duplicate_id'] = existing.id
+
+            # Get vendor image
+            vendor = Vendor.objects.filter(
+                vendor_name__iexact=platform
+            ).first()
+
+            if vendor and vendor.image:
+                image_url = vendor.image.url if hasattr(vendor.image, 'url') else str(vendor.image)
+                preview_item['vendor_image'] = request.build_absolute_uri(image_url)
+
+            previews.append(preview_item)
+
+        return Response(
+            {'purchases': previews},
+            status=status.HTTP_200_OK
+        )
+
+    @action(
+        detail=False,
+        methods=['post'],
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='bulk_upsert',
+        url_name='bulk_upsert'
+    )
+    @extend_schema(
+        operation_id="purchases_bulk_upsert",
+        description="Bulk create or update purchases. Uses (platform, external_id) as unique key. All-or-nothing operation.",
+        tags=["Purchases"],
+        request=PurchasesSerializer(many=True),
+        responses={
+            201: {
+                'type': 'object',
+                'properties': {
+                    'created_count': {'type': 'integer'},
+                    'updated_count': {'type': 'integer'},
+                    'error_count': {'type': 'integer'},
+                    'error': {'type': ['string', 'null']},
+                    'errors': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'index': {'type': 'integer'},
+                                'platform': {'type': 'string'},
+                                'external_id': {'type': 'string'},
+                                'errors': {'type': 'object'}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    )
+    def bulk_upsert(self, request):
+        """
+        Bulk create or update purchases using (platform, external_id) as unique key.
+        All-or-nothing: if any row fails, nothing is committed.
+        """
+        from django.db import transaction
+
+        data = request.data
+        if not isinstance(data, list):
+            return Response({'error': 'Expected list of purchases'}, status=status.HTTP_400_BAD_REQUEST)
+
+        errors_list = []
+        validated = []
+
+        # Build context once — get_serializer_context hits the DB for vendor prefetch
+        # and calling it per-row would cause N redundant queries.
+        serializer_context = self.get_serializer_context()
+
+        for idx, item in enumerate(data):
+            platform = item.get('platform')
+            external_id = item.get('external_id')
+            product_title = item.get('product_title')
+
+            field_errors = {}
+            if not platform:
+                field_errors['platform'] = ['This field is required']
+            if not external_id:
+                field_errors['external_id'] = ['This field is required']
+            if not product_title:
+                field_errors['product_title'] = ['This field is required']
+
+            if field_errors:
+                errors_list.append({'index': idx, 'platform': platform, 'external_id': external_id, 'errors': field_errors})
+                continue
+
+            existing = Purchases.objects.filter(platform=platform, external_id=external_id).first()
+            serializer = PurchasesSerializer(
+                instance=existing,
+                data=item,
+                context=serializer_context,
+            ) if existing else PurchasesSerializer(
+                data=item,
+                context=serializer_context,
+            )
+            if not serializer.is_valid():
+                errors_list.append({'index': idx, 'platform': platform, 'external_id': external_id, 'errors': serializer.errors})
+                continue
+
+            # Store the serializer itself so save() (→ create/update) is called
+            # in the atomic block, not a raw update_or_create that bypasses update().
+            validated.append((idx, platform, external_id, existing, serializer))
+
+        if errors_list:
+            return Response(
+                {'error': f'{len(errors_list)} row(s) failed validation', 'error_count': len(errors_list), 'created_count': 0, 'updated_count': 0, 'errors': errors_list},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            created_count = 0
+            updated_count = 0
+            with transaction.atomic():
+                for idx, platform, external_id, existing, serializer in validated:
+                    serializer.save()
+                    if existing:
+                        updated_count += 1
+                    else:
+                        created_count += 1
+
+            return Response(
+                {'created_count': created_count, 'updated_count': updated_count, 'error_count': 0, 'error': None, 'errors': []},
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response(
+                {'error': str(e), 'error_count': 1, 'created_count': 0, 'updated_count': 0, 'errors': []},
+                status=status.HTTP_400_BAD_REQUEST
+            )

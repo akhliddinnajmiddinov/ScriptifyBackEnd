@@ -96,24 +96,26 @@ class PurchasesSerializer(serializers.ModelSerializer):
     def _get_vendor(self, obj):
         """
         Internal method to find and cache the vendor based on platform name.
-        Uses case-insensitive matching since vendor_name is stored uppercase.
-        Uses prefetched vendors from context to avoid N+1 queries.
+        Uses prefetched vendors from context (populated by the viewset) to avoid
+        N+1 queries. Falls back to a direct DB query when context is unavailable
+        (e.g. when the serializer is used outside a viewset request).
         """
         if not obj.platform:
             return None
-        
-        # Use platform name as cache key so purchases with same platform share cached vendor
-        cache_key = f"_cached_vendor_{obj.platform.upper()}"
 
-        # Check if we've already fetched this vendor for this platform
+        platform_key = obj.platform.upper()
+
+        # 1. Use prefetched vendors from viewset context (fast path, no extra query)
+        prefetched = self.context.get('prefetched_vendors')
+        if prefetched is not None:
+            return prefetched.get(platform_key)
+
+        # 2. Fallback: per-serializer instance cache to avoid repeated queries
+        cache_key = f"_cached_vendor_{platform_key}"
         if hasattr(self, cache_key):
             return getattr(self, cache_key)
-        
-        vendor = Vendor.objects.filter(
-            vendor_name__iexact=obj.platform
-        ).first()
-        
-        # Cache the result for this platform
+
+        vendor = Vendor.objects.filter(vendor_name__iexact=obj.platform).first()
         setattr(self, cache_key, vendor)
         return vendor
     
@@ -122,10 +124,14 @@ class PurchasesSerializer(serializers.ModelSerializer):
         Get vendor image URL from Vendor model based on platform name.
         """
         vendor = self._get_vendor(obj)
-        
+
         if vendor and vendor.image:
-            return vendor.image.url if hasattr(vendor.image, 'url') else str(vendor.image)
-        
+            image_url = vendor.image.url if hasattr(vendor.image, 'url') else str(vendor.image)
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(image_url)
+            return image_url
+
         return None
 
     def update(self, instance, validated_data):

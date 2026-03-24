@@ -11,7 +11,7 @@ from drf_spectacular.types import OpenApiTypes
 from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem, InventoryColor, MinPriceTask
 from .serializers import (
     ListingSerializer, ShelfSerializer, InventoryVendorSerializer, 
-    AsinSerializer, AsinPreviewItemSerializer, AsinBulkAddItemSerializer,
+    AsinSerializer, AsinListSerializer, AsinPreviewItemSerializer, AsinBulkAddItemSerializer,
     BuildLogSerializer, BuildOrderDiscoverySerializer, InventoryColorSerializer,
     MinPriceTaskSerializer, ListingAsinSerializer)
 from .filters import (
@@ -628,17 +628,27 @@ class AsinViewSet(viewsets.ModelViewSet):
     pagination_class = StandardPagination
     permission_classes = [permissions.IsAuthenticated]
    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return AsinListSerializer
+        return AsinSerializer
+
     def get_queryset(self):
         """
-        Optimize queryset by prefetching asins_listings and components to prevent N+1 queries.
+        Optimize queryset by prefetching based on action.
+        List: only component_set (listings not needed).
+        Detail/create/update: both component_set and asins_listings.
         """
         queryset = super().get_queryset()
-        # Prefetch asins_listings to avoid N+1 queries when counting Listings
-        # Prefetch component_set for BuildComponent M2M relationship
-        queryset = queryset.prefetch_related(
-            Prefetch('asins_listings', queryset=ListingAsin.objects.select_related('listing')),
-            Prefetch('component_set', queryset=BuildComponent.objects.select_related('component'))
-        )
+        if self.action == 'list':
+            queryset = queryset.prefetch_related(
+                Prefetch('component_set', queryset=BuildComponent.objects.select_related('component'))
+            )
+        else:
+            queryset = queryset.prefetch_related(
+                Prefetch('asins_listings', queryset=ListingAsin.objects.select_related('listing')),
+                Prefetch('component_set', queryset=BuildComponent.objects.select_related('component'))
+            )
         return queryset
     
     @extend_schema(

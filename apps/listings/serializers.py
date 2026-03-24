@@ -207,6 +207,15 @@ class AsinSerializer(serializers.ModelSerializer):
 
 
 
+class AsinListSerializer(AsinSerializer):
+    """
+    Lightweight serializer for list endpoint — excludes nested listings data.
+    listings are fetched lazily when the detail endpoint is called.
+    """
+    class Meta(AsinSerializer.Meta):
+        fields = [f for f in AsinSerializer.Meta.fields if f != 'listings']
+
+
 class AsinPreviewItemSerializer(serializers.Serializer):
     """Serializer for preview API - validates input data"""
     

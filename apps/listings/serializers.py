@@ -158,9 +158,9 @@ class AsinSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asin
         fields = [
-            'id', 'value', 'name', 'ean', 
+            'id', 'value', 'name', 'ean',
             'vendor', 'amount', 'shelf', 'contains',
-            'min_listing_data',
+            'min_listing_data', 'send_direct',
             'listings', 'components', 'components_input', 'error_status_text'
         ]
         read_only_fields = ['listings', 'components', 'error_status_text', 'min_listing_data']

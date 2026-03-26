@@ -85,6 +85,7 @@ class Asin(models.Model):
     shelf = models.CharField(max_length=255, blank=True, default='')
     contains = models.CharField(max_length=500, blank=True, default='', help_text="Comma-separated ASIN values for child items")
     min_listing_data = models.JSONField(null=True, blank=True, help_text="Cached Amazon min-price listing data (JSON)")
+    send_direct = models.SmallIntegerField(choices=[(0, "Don't send"), (1, "Always send")], default=0)
 
     def __str__(self):
         return f"{self.value} - {self.name}"

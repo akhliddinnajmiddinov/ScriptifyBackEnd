@@ -83,6 +83,9 @@ class AsinFilter(filters.FilterSet):
     # Amount range filtering
     min_amount = filters.NumberFilter(field_name='amount', lookup_expr='gte')
     max_amount = filters.NumberFilter(field_name='amount', lookup_expr='lte')
+
+    # Send direct filter
+    send_direct = filters.ChoiceFilter(field_name='send_direct', choices=[(0, "Don't send"), (1, "Always send")])
     
     # Universal search
     search = filters.CharFilter(method='filter_search')
@@ -91,7 +94,7 @@ class AsinFilter(filters.FilterSet):
     
     class Meta:
         model = Asin
-        fields = ['value', 'name', 'ean', 'vendor', 'shelf', 'contains', 'component', 'min_amount', 'max_amount', 'search', 'strict_search']
+        fields = ['value', 'name', 'ean', 'vendor', 'shelf', 'contains', 'component', 'min_amount', 'max_amount', 'send_direct', 'search', 'strict_search']
 
     def _sanitize_and_tokenize(self, value: str) -> list[str]:
         if not value or not value.strip():

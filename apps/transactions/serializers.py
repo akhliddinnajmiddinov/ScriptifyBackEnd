@@ -128,8 +128,8 @@ class TransactionSerializer(serializers.ModelSerializer):
             return None
         
         transaction_date = obj.transaction_date
-        if timezone.is_naive(transaction_date):
-            transaction_date = timezone.make_aware(transaction_date)
+        if timezone.is_aware(transaction_date):
+            transaction_date = timezone.make_naive(transaction_date)
 
         # Get all listings within reasonable range
         epsilon = 0.005

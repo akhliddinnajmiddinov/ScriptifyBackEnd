@@ -892,7 +892,7 @@ class AsinViewSet(viewsets.ModelViewSet):
         
         try:
             from django.utils.dateparse import parse_datetime
-            from django.utils.timezone import is_aware, make_aware
+            from django.utils.timezone import is_aware, make_naive
             
             start = parse_datetime(start_str)
             end = parse_datetime(end_str)
@@ -902,11 +902,11 @@ class AsinViewSet(viewsets.ModelViewSet):
             if not end:
                 return Response({'error': f'Invalid end datetime format: {end_str}'}, status=status.HTTP_400_BAD_REQUEST)
                 
-            # Ensure they are aware if USE_TZ is True (Standard Django behavior with parse_datetime)
-            if not is_aware(start):
-                start = make_aware(start)
-            if not is_aware(end):
-                end = make_aware(end)
+            # If input is aware (e.g. from a legacy client or UTC string), convert to naive for MySQL compatibility with USE_TZ=False
+            if is_aware(start):
+                start = make_naive(start)
+            if is_aware(end):
+                end = make_naive(end)
         except (ValueError, AttributeError) as e:
             return Response(
                 {'error': f'Invalid datetime format: {str(e)}'},

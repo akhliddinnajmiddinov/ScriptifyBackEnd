@@ -98,8 +98,8 @@ class BasePurchasesAdapter(ABC):
             return None
         
         if isinstance(dt_value, datetime):
-            if timezone.is_naive(dt_value):
-                return timezone.make_aware(dt_value)
+            if timezone.is_aware(dt_value):
+                return timezone.make_naive(dt_value)
             return dt_value
         
         if isinstance(dt_value, str):
@@ -111,26 +111,25 @@ class BasePurchasesAdapter(ABC):
             try:
                 # Handle with timezone
                 if 'T' in dt_value or '+' in dt_value or dt_value.endswith('Z'):
-                    return datetime.fromisoformat(dt_value.replace('Z', '+00:00'))
+                    dt = datetime.fromisoformat(dt_value.replace('Z', '+00:00'))
+                    return timezone.make_naive(dt) if timezone.is_aware(dt) else dt
                 
                 # Handle simple date format (e.g., 2026-02-20 13:57:50)
-                # Parse as naive first, then make aware
-                naive_dt = datetime.strptime(dt_value, '%Y-%m-%d %H:%M:%S')
-                return timezone.make_aware(naive_dt)
+                # Parse as naive
+                return datetime.strptime(dt_value, '%Y-%m-%d %H:%M:%S')
             except (ValueError, AttributeError):
                 pass
                 
             # Try just date format
             try:
-                naive_dt = datetime.strptime(dt_value, '%Y-%m-%d')
-                return timezone.make_aware(naive_dt)
+                return datetime.strptime(dt_value, '%Y-%m-%d')
             except (ValueError, AttributeError):
                 pass
         
-        if isinstance(dt_value, (int, float)):
-            # Unix timestamp - create as aware UTC
+            # Unix timestamp - create as aware UTC then convert to naive Platform Time
             try:
-                return datetime.fromtimestamp(dt_value, tz=timezone.utc)
+                dt = datetime.fromtimestamp(dt_value, tz=timezone.utc)
+                return timezone.make_naive(dt)
             except (ValueError, OSError):
                 pass
         

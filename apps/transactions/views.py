@@ -643,9 +643,13 @@ class TransactionViewSet(viewsets.ModelViewSet):
                 # Parse transaction_date if it's a string
                 transaction_date = trans_data.get('transaction_date')
                 if isinstance(transaction_date, str):
+                    from django.utils.timezone import is_aware, make_naive
                     parsed_date = parse_datetime(transaction_date)
                     if parsed_date is None:
                         raise ValueError(f"Invalid datetime format: {transaction_date}")
+                    
+                    if is_aware(parsed_date):
+                        parsed_date = make_naive(parsed_date)
                     transaction_date = parsed_date
                 
                 # Create temporary transaction instance (not saved, no pk)

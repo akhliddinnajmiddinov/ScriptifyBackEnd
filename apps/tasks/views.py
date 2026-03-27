@@ -120,8 +120,8 @@ class TaskViewSet(viewsets.ReadOnlyModelViewSet):
         if not parsed:
             return None
 
-        if not timezone.is_aware(parsed):
-            parsed = timezone.make_aware(parsed)
+        if timezone.is_aware(parsed):
+            parsed = timezone.make_naive(parsed)
 
         return parsed
 

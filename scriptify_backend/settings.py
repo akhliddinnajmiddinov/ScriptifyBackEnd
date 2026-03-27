@@ -88,15 +88,6 @@ INSTALLED_APPS = [
     'django_celery_beat',
 ]
 
-MIGRATION_MODULES = {
-    'user': 'user.migrations',
-    'scripts': 'scripts.migrations',
-    'transactions': 'transactions.migrations',
-    'listings': 'listings.migrations',
-    'purchases': 'purchases.migrations',
-    'tasks': 'tasks.migrations',
-}
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     "corsheaders.middleware.CorsMiddleware",
@@ -393,7 +384,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Berlin'
 
 USE_I18N = True
 

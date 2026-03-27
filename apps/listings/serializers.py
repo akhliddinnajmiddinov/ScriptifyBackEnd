@@ -109,11 +109,17 @@ class ListingAsinSerializer(serializers.ModelSerializer):
     asin_name = serializers.CharField(source='asin.name', read_only=True)
     asin_amount = serializers.DecimalField(source='asin.amount', max_digits=10, decimal_places=2, read_only=True)
     asin_shelf = serializers.CharField(source='asin.shelf', read_only=True)
-    
+
     class Meta:
         model = ListingAsin
-        fields = ['id', 'listing', 'asin', 'purchase', 'amount', 
+        fields = ['id', 'listing', 'asin', 'purchase', 'amount', 'timestamp',
                   'listing_data', 'purchase_data', 'asin_value', 'asin_name', 'asin_amount', 'asin_shelf']
+        read_only_fields = ['timestamp']
+
+    def create(self, validated_data):
+        from django.utils import timezone
+        validated_data['timestamp'] = timezone.now()
+        return super().create(validated_data)
 
 
 class BuildComponentSerializer(serializers.ModelSerializer):

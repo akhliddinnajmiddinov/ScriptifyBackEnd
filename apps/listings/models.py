@@ -152,7 +152,8 @@ class ListingAsin(models.Model):
     asin = models.ForeignKey(Asin, on_delete=models.CASCADE, related_name='asins_listings', null=True, blank=True)
     purchase = models.ForeignKey('purchases.Purchases', on_delete=models.SET_NULL, related_name='purchases_asins', null=True, blank=True)
     amount = models.IntegerField()
-    
+    timestamp = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return f"{self.listing.id} - {self.asin.value} - {self.amount}"
     

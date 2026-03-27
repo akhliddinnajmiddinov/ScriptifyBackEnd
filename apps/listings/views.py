@@ -923,11 +923,11 @@ class AsinViewSet(viewsets.ModelViewSet):
         from django.db.models.functions import Coalesce
         
         # Get all ListingAsin entries where:
-        # - listing.timestamp is in [start, end)
+        # - listingasin.timestamp is in [start, end)
         # - listing.listing_url does NOT contain 'kleinanzeigen'
         listing_asins = ListingAsin.objects.filter(
-            listing__timestamp__gte=start,
-            listing__timestamp__lt=end,
+            timestamp__gte=start,
+            timestamp__lt=end,
         ).exclude(
             listing__listing_url__icontains='kleinanzeigen'
         ).values('asin_id').annotate(

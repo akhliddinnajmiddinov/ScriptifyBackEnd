@@ -225,7 +225,7 @@ class PurchasesSerializer(serializers.ModelSerializer):
                                         purchase=instance,
                                         listing_id=lid,
                                         asin_id=asin_id,
-                                        defaults={'amount': amount}
+                                        defaults={'amount': amount, 'timestamp': timezone.now()}
                                     )
                                     if not created and listing_asin.amount != amount:
                                         listing_asin.amount = amount

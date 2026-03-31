@@ -25,6 +25,12 @@ class VendorViewSet(viewsets.ModelViewSet):
     ordering = ['vendor_name', '-id']
     pagination_class = StandardPagination
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        from apps.user.perm_utils import HasPerm
+        if self.action == 'transactions':
+            return [permissions.IsAuthenticated(), HasPerm('transactions.view_transaction')]
+        return [permissions.IsAuthenticated(), HasPerm('transactions.can_manage_vendors')]
     
     @extend_schema(
         operation_id="vendors_list",
@@ -438,6 +444,20 @@ class TransactionViewSet(viewsets.ModelViewSet):
     ordering = ['-transaction_date', '-id']
     pagination_class = StandardPagination
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        from apps.user.perm_utils import HasPerm
+        if self.action in ('list', 'retrieve', 'statistics', 'preview'):
+            return [permissions.IsAuthenticated(), HasPerm('transactions.view_transaction')]
+        if self.action == 'create':
+            return [permissions.IsAuthenticated(), HasPerm('transactions.add_transaction')]
+        if self.action in ('update', 'partial_update', 'match_listing'):
+            return [permissions.IsAuthenticated(), HasPerm('transactions.change_transaction')]
+        if self.action in ('destroy', 'bulk_delete'):
+            return [permissions.IsAuthenticated(), HasPerm('transactions.delete_transaction')]
+        if self.action == 'bulk_add':
+            return [permissions.IsAuthenticated(), HasPerm('transactions.add_transaction', 'transactions.can_import_transactions_from_file')]
+        return [permissions.IsAuthenticated()]
     
     def get_queryset(self):
         """

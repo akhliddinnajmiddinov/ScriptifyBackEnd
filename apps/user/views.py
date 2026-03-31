@@ -1,13 +1,18 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from rest_framework.pagination import PageNumberPagination
 from oauth2_provider.settings import oauth2_settings
 from braces.views import CsrfExemptMixin
 from oauth2_provider.views.mixins import OAuthLibMixin
 from django.http import HttpRequest, QueryDict
+from django.contrib.auth.models import Group
 
 import json
-from .serializers import RegisterUserSerializer, UserSerializer
+from .serializers import (
+    RegisterUserSerializer, UserSerializer, ChangePasswordSerializer,
+    StaffUserSerializer, RoleSerializer, RoleWriteSerializer,
+)
 
 from django.utils.decorators import method_decorator
 from django.http import HttpResponse
@@ -24,7 +29,7 @@ from django.utils import timezone
 from django.contrib.auth import authenticate, login
 import random
 from .models import MyUser
-from .serializers import RegisterUserSerializer, ChangePasswordSerializer
+from .permission_tree import PERMISSION_TREE
 
 class TokenObtainAPIView(TokenView, APIView):
     @method_decorator(csrf_exempt)
@@ -247,3 +252,151 @@ class ChangePasswordAPIView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class StaffPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+class StaffListCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        qs = MyUser.objects.all().prefetch_related('groups').order_by('-date_joined')
+        search = request.query_params.get('search')
+        if search:
+            from django.db.models import Q
+            qs = qs.filter(
+                Q(email__icontains=search) |
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search)
+            )
+        is_active = request.query_params.get('is_active')
+        if is_active is not None:
+            qs = qs.filter(is_active=is_active.lower() == 'true')
+        role = request.query_params.get('role')
+        if role:
+            qs = qs.filter(groups__name=role)
+
+        paginator = StaffPagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = StaffUserSerializer(page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
+
+    def post(self, request):
+        serializer = StaffUserSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response(StaffUserSerializer(user, context={'request': request}).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class StaffDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def _get_user(self, pk):
+        try:
+            return MyUser.objects.prefetch_related('groups').get(pk=pk)
+        except MyUser.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        user = self._get_user(pk)
+        if not user:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(StaffUserSerializer(user, context={'request': request}).data)
+
+    def put(self, request, pk):
+        user = self._get_user(pk)
+        if not user:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = StaffUserSerializer(user, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        user = self._get_user(pk)
+        if not user:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class StaffAssignRoleView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            user = MyUser.objects.get(pk=pk)
+        except MyUser.DoesNotExist:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        role_ids = request.data.get('role_ids', [])
+        if not isinstance(role_ids, list):
+            return Response({'detail': 'role_ids must be a list.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        groups = Group.objects.filter(id__in=role_ids)
+        user.groups.set(groups)
+        return Response(StaffUserSerializer(user, context={'request': request}).data)
+
+
+class RoleListCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        groups = Group.objects.prefetch_related('permissions').all().order_by('name')
+        return Response(RoleSerializer(groups, many=True).data)
+
+    def post(self, request):
+        serializer = RoleWriteSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        group = Group.objects.create(name=serializer.validated_data['name'])
+        group.permissions.set(serializer.validated_data['permissions'])
+        return Response(RoleSerializer(group).data, status=status.HTTP_201_CREATED)
+
+
+class RoleDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def _get_group(self, pk):
+        try:
+            return Group.objects.prefetch_related('permissions').get(pk=pk)
+        except Group.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        group = self._get_group(pk)
+        if not group:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(RoleSerializer(group).data)
+
+    def put(self, request, pk):
+        group = self._get_group(pk)
+        if not group:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = RoleWriteSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        group.name = serializer.validated_data['name']
+        group.save()
+        group.permissions.set(serializer.validated_data['permissions'])
+        return Response(RoleSerializer(group).data)
+
+    def delete(self, request, pk):
+        group = self._get_group(pk)
+        if not group:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        group.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PermissionTreeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        return Response(PERMISSION_TREE)

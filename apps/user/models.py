@@ -49,6 +49,9 @@ class MyUser(AbstractUser):
         return self.email
 
     class Meta:
+        permissions = [
+            ("can_assign_roles", "Assign roles to users"),
+        ]
         indexes = [
             models.Index(fields=['email'], name='user_email_idx'),
             models.Index(fields=['first_name'], name='user_first_name_idx'),

@@ -25,6 +25,9 @@ class Listing(models.Model):
         ordering = ['-timestamp', '-id']
         managed = False
         db_table = 'listing'
+        permissions = [
+            ("can_import_listings_from_file", "Import listings from file"),
+        ]
         indexes = [
             models.Index(fields=['listing_url'], name='listing_url_idx'),
             models.Index(fields=['timestamp'], name='listing_timestamp_idx'),
@@ -94,6 +97,12 @@ class Asin(models.Model):
         ordering = ['-id']
         managed = False
         db_table = 'asin'
+        permissions = [
+            ("can_bulk_add_inventory",         "Bulk add inventory items"),
+            ("can_import_inventory_from_file", "Import inventory items from file"),
+            ("can_update_inventories", "Update inventories"),
+            ("can_fetch_min_prices",   "Fetch min prices task"),
+        ]
         indexes = [
             models.Index(fields=['value'], name='asin_value_idx'),
             models.Index(fields=['name'], name='asin_name_idx'),
@@ -161,6 +170,10 @@ class ListingAsin(models.Model):
         ordering = ['-id']
         managed = False
         db_table = 'listing_asin'
+        permissions = [
+            ("can_view_connected_asins",   "View connected ASINs"),
+            ("can_manage_connected_asins", "Manage connected ASINs"),
+        ]
         indexes = [
             models.Index(fields=['listing', 'asin'], name='listing_asin_composite_idx'),
             models.Index(fields=['listing'], name='listing_asin_listing_idx'),
@@ -262,6 +275,9 @@ class InventoryColor(models.Model):
     class Meta:
         db_table = 'inventory_color'
         ordering = ['pattern']
+        permissions = [
+            ("can_manage_colors", "Manage inventory colors"),
+        ]
         indexes = [
             models.Index(fields=['pattern'], name='inventory_color_pattern_idx'),
         ]

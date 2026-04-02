@@ -90,30 +90,40 @@ class ChangePasswordSerializer(serializers.Serializer):
 class StaffUserSerializer(serializers.ModelSerializer):
     full_name = serializers.ReadOnlyField()
     roles = serializers.SerializerMethodField()
+    role_ids = serializers.ListField(child=serializers.IntegerField(), required=False, write_only=True)
     password = serializers.CharField(write_only=True, required=False, min_length=8)
 
     class Meta:
         model = MyUser
-        fields = ['id', 'email', 'first_name', 'last_name', 'full_name', 'photo', 'is_active', 'is_superuser', 'date_joined', 'roles', 'password']
+        fields = ['id', 'email', 'first_name', 'last_name', 'full_name', 'photo', 'is_active', 'is_superuser', 'date_joined', 'roles', 'role_ids', 'password']
         read_only_fields = ['id', 'date_joined']
 
     def get_roles(self, obj):
         return list(obj.groups.values_list('name', flat=True))
 
     def create(self, validated_data):
+        role_ids = validated_data.pop('role_ids', [])
         password = validated_data.pop('password')
         user = MyUser(**validated_data)
         user.set_password(password)
         user.save()
+        if not user.is_superuser and role_ids:
+            from django.contrib.auth.models import Group
+            user.groups.set(Group.objects.filter(id__in=role_ids))
         return user
 
     def update(self, instance, validated_data):
+        role_ids = validated_data.pop('role_ids', None)
         password = validated_data.pop('password', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password:
             instance.set_password(password)
         instance.save()
+        if role_ids is not None:
+            from django.contrib.auth.models import Group
+            groups = [] if instance.is_superuser else Group.objects.filter(id__in=role_ids)
+            instance.groups.set(groups)
         return instance
 
 

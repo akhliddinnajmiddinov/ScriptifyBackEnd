@@ -29,7 +29,6 @@ PERMISSION_TREE = [
         "children": [
             {"label": "View Inventory",        "codename": "listings.view_asin"},
             {"label": "Add Inventory Item",    "codename": "listings.add_asin"},
-            {"label": "Bulk Import",           "codename": "listings.can_bulk_add_inventory"},
             {"label": "Import from file",      "codename": "listings.can_import_inventory_from_file"},
             {"label": "Edit Inventory Item",   "codename": "listings.change_asin"},
             {"label": "Delete Inventory Item", "codename": "listings.delete_asin"},
@@ -40,7 +39,7 @@ PERMISSION_TREE = [
                 "label": "Build Logs",
                 "logic": "AND",
                 "children": [
-                    {"label": "View Build Logs", "codename": "listings.view_buildlog"},
+                    {"label": "View Build Data", "codename": "listings.view_buildlog"},
                     {"label": "Execute Build",   "codename": "listings.add_buildlog"},
                     {"label": "Revert Build",    "codename": "listings.change_buildlog"},
                 ],
@@ -165,7 +164,6 @@ PERMISSION_TREE = [
                     {"label": "Add Staff Member",    "codename": "user.add_myuser"},
                     {"label": "Edit Staff Member",   "codename": "user.change_myuser"},
                     {"label": "Delete Staff Member", "codename": "user.delete_myuser"},
-                    {"label": "Assign Roles",        "codename": "user.can_assign_roles"},
                 ],
             },
             {

@@ -261,7 +261,13 @@ class StaffPagination(PageNumberPagination):
 
 
 class StaffListCreateView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    def get_permissions(self):
+        from apps.user.perm_utils import HasPerm
+        if self.request.method == 'GET':
+            return [permissions.IsAuthenticated(), HasPerm('user.view_myuser')]
+        if self.request.method == 'POST':
+            return [permissions.IsAuthenticated(), HasPerm('user.add_myuser')]
+        return [permissions.IsAuthenticated()]
 
     def get(self, request):
         qs = MyUser.objects.all().prefetch_related('groups').order_by('-date_joined')
@@ -294,7 +300,15 @@ class StaffListCreateView(APIView):
 
 
 class StaffDetailView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    def get_permissions(self):
+        from apps.user.perm_utils import HasPerm
+        if self.request.method == 'GET':
+            return [permissions.IsAuthenticated(), HasPerm('user.view_myuser')]
+        if self.request.method == 'PUT':
+            return [permissions.IsAuthenticated(), HasPerm('user.change_myuser')]
+        if self.request.method == 'DELETE':
+            return [permissions.IsAuthenticated(), HasPerm('user.delete_myuser')]
+        return [permissions.IsAuthenticated()]
 
     def _get_user(self, pk):
         try:
@@ -327,7 +341,9 @@ class StaffDetailView(APIView):
 
 
 class StaffAssignRoleView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    def get_permissions(self):
+        from apps.user.perm_utils import HasPerm
+        return [permissions.IsAuthenticated(), HasPerm('user.change_myuser')]
 
     def post(self, request, pk):
         try:
@@ -345,7 +361,13 @@ class StaffAssignRoleView(APIView):
 
 
 class RoleListCreateView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    def get_permissions(self):
+        from apps.user.perm_utils import HasPerm
+        if self.request.method == 'GET':
+            return [permissions.IsAuthenticated(), HasPerm('auth.view_group')]
+        if self.request.method == 'POST':
+            return [permissions.IsAuthenticated(), HasPerm('auth.add_group')]
+        return [permissions.IsAuthenticated()]
 
     def get(self, request):
         groups = Group.objects.prefetch_related('permissions').all().order_by('name')
@@ -361,7 +383,15 @@ class RoleListCreateView(APIView):
 
 
 class RoleDetailView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    def get_permissions(self):
+        from apps.user.perm_utils import HasPerm
+        if self.request.method == 'GET':
+            return [permissions.IsAuthenticated(), HasPerm('auth.view_group')]
+        if self.request.method == 'PUT':
+            return [permissions.IsAuthenticated(), HasPerm('auth.change_group')]
+        if self.request.method == 'DELETE':
+            return [permissions.IsAuthenticated(), HasPerm('auth.delete_group')]
+        return [permissions.IsAuthenticated()]
 
     def _get_group(self, pk):
         try:

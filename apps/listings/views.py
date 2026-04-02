@@ -653,7 +653,7 @@ class AsinViewSet(viewsets.ModelViewSet):
         if self.action == 'destroy':
             return [permissions.IsAuthenticated(), HasPerm('listings.delete_asin')]
         if self.action == 'bulk_add':
-            return [permissions.IsAuthenticated(), HasPerm('listings.can_bulk_add_inventory', 'listings.can_import_inventory_from_file')]
+            return [permissions.IsAuthenticated(), HasPerm('listings.add_asin', 'listings.can_import_inventory_from_file')]
         if self.action in ('preview_listing_updates', 'apply_listing_updates'):
             return [permissions.IsAuthenticated(), HasPerm('listings.can_update_inventories')]
         return [permissions.IsAuthenticated()]

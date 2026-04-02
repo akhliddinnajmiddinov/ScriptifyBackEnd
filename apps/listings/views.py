@@ -8,12 +8,12 @@ from django.utils import timezone
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
-from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem, InventoryColor, MinPriceTask
+from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem, InventoryColor, MinPriceTask, InventoryUpdateLog
 from .serializers import (
     ListingSerializer, ShelfSerializer, InventoryVendorSerializer, 
     AsinSerializer, AsinListSerializer, AsinPreviewItemSerializer, AsinBulkAddItemSerializer,
     BuildLogSerializer, BuildOrderDiscoverySerializer, InventoryColorSerializer,
-    MinPriceTaskSerializer, ListingAsinSerializer)
+    MinPriceTaskSerializer, ListingAsinSerializer, InventoryUpdateLogSerializer)
 from .filters import (
     StandardPagination, ListingFilter, ShelfFilter, InventoryVendorFilter, 
     AsinFilter, InventoryColorFilter, ListingAsinFilter)
@@ -1123,6 +1123,8 @@ class AsinViewSet(viewsets.ModelViewSet):
             
         # Phase 2: Application
         # Everything validated, now apply in a single transaction.
+        range_start_str = request.data.get('range_start')
+        range_end_str = request.data.get('range_end')
         updated_count = 0
         try:
             with db_transaction.atomic():
@@ -1136,6 +1138,22 @@ class AsinViewSet(viewsets.ModelViewSet):
                     
                     asin.save()
                     updated_count += 1
+
+                # Record history log inside the same transaction
+                from django.utils.dateparse import parse_datetime as _parse_dt
+                from django.utils.timezone import is_aware as _is_aware, make_naive as _make_naive
+                log_start = _parse_dt(range_start_str) if range_start_str else None
+                log_end   = _parse_dt(range_end_str)   if range_end_str   else None
+                if log_start and _is_aware(log_start):
+                    log_start = _make_naive(log_start)
+                if log_end and _is_aware(log_end):
+                    log_end = _make_naive(log_end)
+                InventoryUpdateLog.objects.create(
+                    applied_by=request.user,
+                    range_start=log_start,
+                    range_end=log_end,
+                    updated_count=updated_count,
+                )
         except Exception as e:
             return Response(
                 {'error': f'Database error during apply: {str(e)}'},
@@ -1617,3 +1635,17 @@ class MinPriceTaskViewSet(viewsets.ViewSet):
                 pass  # Best effort
 
         return Response(MinPriceTaskSerializer(task_obj).data)
+
+
+class InventoryUpdateLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only list/retrieve for InventoryUpdateLog records.
+    """
+    queryset = InventoryUpdateLog.objects.select_related('applied_by').all()
+    serializer_class = InventoryUpdateLogSerializer
+    pagination_class = StandardPagination
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        from apps.user.perm_utils import HasPerm
+        return [permissions.IsAuthenticated(), HasPerm('listings.can_view_inventory_update_history')]

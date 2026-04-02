@@ -281,3 +281,29 @@ class InventoryColor(models.Model):
         indexes = [
             models.Index(fields=['pattern'], name='inventory_color_pattern_idx'),
         ]
+
+
+class InventoryUpdateLog(models.Model):
+    """
+    Records each successful 'Update Inventories' operation.
+    """
+    applied_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name='inventory_update_logs'
+    )
+    applied_at = models.DateTimeField(auto_now_add=True)
+    range_start = models.DateTimeField(null=True, blank=True)
+    range_end = models.DateTimeField(null=True, blank=True)
+    updated_count = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['-applied_at']
+        permissions = [
+            ("can_view_inventory_update_history", "View inventory update history"),
+        ]
+        indexes = [
+            models.Index(fields=['applied_at'], name='inv_update_log_at_idx'),
+            models.Index(fields=['applied_by'], name='inv_update_log_by_idx'),
+        ]
+
+    def __str__(self):
+        return f"InventoryUpdateLog #{self.id} by {self.applied_by} at {self.applied_at}"

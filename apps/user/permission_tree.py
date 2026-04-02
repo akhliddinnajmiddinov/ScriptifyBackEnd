@@ -33,6 +33,7 @@ PERMISSION_TREE = [
             {"label": "Edit Inventory Item",   "codename": "listings.change_asin"},
             {"label": "Delete Inventory Item", "codename": "listings.delete_asin"},
             {"label": "Update Inventories",    "codename": "listings.can_update_inventories"},
+            {"label": "View Update History",   "codename": "listings.can_view_inventory_update_history"},
             {"label": "Fetch Min Prices",      "codename": "listings.can_fetch_min_prices"},
             {"label": "Manage Colors",         "codename": "listings.can_manage_colors"},
             {

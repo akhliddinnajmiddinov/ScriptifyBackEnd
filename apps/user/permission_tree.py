@@ -90,32 +90,10 @@ PERMISSION_TREE = [
         "children": [
             {
                 "label": "View Task Runs",
-                "logic": "AND",
+                "logic": "OR",
                 "children": [
-                    {
-                        "label": "Scope",
-                        "logic": "OR",
-                        "children": [
-                            {"label": "View own task runs", "codename": "tasks.can_view_own_task_runs"},
-                            {"label": "View all task runs", "codename": "tasks.can_view_all_task_runs"},
-                        ],
-                    },
-                    {
-                        "label": "Date",
-                        "logic": "OR",
-                        "children": [
-                            {"label": "View within current month", "codename": "tasks.can_view_task_runs_month"},
-                        ],
-                    },
-                    {
-                        "label": "Status",
-                        "logic": "OR",
-                        "children": [
-                            {"label": "Success task runs",           "codename": "tasks.can_view_success_task_runs"},
-                            {"label": "Failed task runs",            "codename": "tasks.can_view_failed_task_runs"},
-                            {"label": "Running / Pending task runs", "codename": "tasks.can_view_active_task_runs"},
-                        ],
-                    },
+                    {"label": "View own task runs", "codename": "tasks.can_view_own_task_runs"},
+                    {"label": "View all task runs", "codename": "tasks.can_view_all_task_runs"},
                 ],
             },
             {"label": "Start Task",          "codename": "tasks.can_start_task"},
@@ -123,9 +101,6 @@ PERMISSION_TREE = [
             {"label": "Cancel any task run", "codename": "tasks.can_cancel_any_task_run"},
             {"label": "Rerun own task run",  "codename": "tasks.can_rerun_own_task_run"},
             {"label": "Rerun any task run",  "codename": "tasks.can_rerun_any_task_run"},
-            {"label": "Delete own task run", "codename": "tasks.can_delete_own_task_run"},
-            {"label": "Delete any task run", "codename": "tasks.can_delete_any_task_run"},
-            {"label": "View Summary",        "codename": "tasks.can_view_task_summary"},
         ],
     },
     {

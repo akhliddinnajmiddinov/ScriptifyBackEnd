@@ -69,32 +69,10 @@ PERMISSION_TREE = [
                 "children": [
                     {
                         "label": "View Runs",
-                        "logic": "AND",
+                        "logic": "OR",
                         "children": [
-                            {
-                                "label": "Scope",
-                                "logic": "OR",
-                                "children": [
-                                    {"label": "View own runs", "codename": "scripts.can_view_own_runs"},
-                                    {"label": "View all runs", "codename": "scripts.can_view_all_runs"},
-                                ],
-                            },
-                            {
-                                "label": "Date",
-                                "logic": "OR",
-                                "children": [
-                                    {"label": "View within current month", "codename": "scripts.can_view_runs_month"},
-                                ],
-                            },
-                            {
-                                "label": "Status",
-                                "logic": "OR",
-                                "children": [
-                                    {"label": "Success runs",           "codename": "scripts.can_view_success_runs"},
-                                    {"label": "Failed runs",            "codename": "scripts.can_view_failed_runs"},
-                                    {"label": "Running / Pending runs", "codename": "scripts.can_view_active_runs"},
-                                ],
-                            },
+                            {"label": "View own runs", "codename": "scripts.can_view_own_runs"},
+                            {"label": "View all runs", "codename": "scripts.can_view_all_runs"},
                         ],
                     },
                     {"label": "Start Run",      "codename": "scripts.add_run"},
@@ -102,8 +80,6 @@ PERMISSION_TREE = [
                     {"label": "Abort any run",  "codename": "scripts.can_abort_any_run"},
                     {"label": "View Logs",      "codename": "scripts.can_view_run_logs"},
                     {"label": "View Results",   "codename": "scripts.can_view_run_results"},
-                    {"label": "Delete own run", "codename": "scripts.can_delete_own_run"},
-                    {"label": "Delete any run", "codename": "scripts.can_delete_any_run"},
                 ],
             },
         ],

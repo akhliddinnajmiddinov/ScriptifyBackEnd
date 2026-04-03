@@ -86,6 +86,20 @@ class Run(models.Model):
     
     class Meta:
         ordering = ['-id']
+        permissions = [
+            ("can_view_own_runs",     "View own script runs"),
+            ("can_view_all_runs",     "View all script runs"),
+            ("can_view_runs_month",   "View script runs within current month"),
+            ("can_view_success_runs", "View success script runs"),
+            ("can_view_failed_runs",  "View failed script runs"),
+            ("can_view_active_runs",  "View running/pending script runs"),
+            ("can_abort_own_run",     "Abort own script run"),
+            ("can_abort_any_run",     "Abort any script run"),
+            ("can_view_run_logs",     "View run logs"),
+            ("can_view_run_results",  "View run results"),
+            ("can_delete_own_run",    "Delete own script run"),
+            ("can_delete_any_run",    "Delete any script run"),
+        ]
         indexes = [
             models.Index(fields=['status'], name='run_status_idx'),
             models.Index(fields=['started_at'], name='run_started_at_idx'),

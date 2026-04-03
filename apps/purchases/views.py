@@ -29,7 +29,22 @@ class PurchasesViewSet(viewsets.ModelViewSet):
     ordering = ['-updated_at', '-id']
     pagination_class = StandardPagination
     permission_classes = [permissions.IsAuthenticated]
-    
+
+    def get_permissions(self):
+        from apps.user.perm_utils import HasPerm
+        if self.action in ('list', 'retrieve'):
+            return [permissions.IsAuthenticated(), HasPerm('purchases.view_purchases')]
+        if self.action == 'create':
+            return [permissions.IsAuthenticated(), HasPerm('purchases.add_purchases')]
+        if self.action in ('update', 'partial_update'):
+            return [permissions.IsAuthenticated(), HasPerm('purchases.change_purchases')]
+        if self.action == 'destroy':
+            return [permissions.IsAuthenticated(), HasPerm('purchases.delete_purchases')]
+        if self.action == 'bulk_upsert':
+            return [permissions.IsAuthenticated(), HasPerm('purchases.can_import_purchases_from_file')]
+        # preview: always allowed for authenticated users
+        return [permissions.IsAuthenticated()]
+
     def get_queryset(self):
         """
         Optimize queryset by prefetching listing relationship to prevent N+1 queries.
@@ -168,6 +183,12 @@ class PurchasesViewSet(viewsets.ModelViewSet):
     )
     def partial_update(self, request, *args, **kwargs):
         """Partially update a purchase."""
+        if 'approved_status' in request.data:
+            from apps.user.perm_utils import HasPerm
+            perm = HasPerm('purchases.can_approve_purchase')
+            if not perm.has_permission(request, self):
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("You do not have permission to approve or reject purchases.")
         return super().partial_update(request, *args, **kwargs)
     
     @extend_schema(

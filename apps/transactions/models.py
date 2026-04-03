@@ -27,6 +27,9 @@ class Vendor(models.Model):
     
     class Meta:
         ordering = ['vendor_name', '-id']
+        permissions = [
+            ("can_manage_vendors", "Manage transaction vendors"),
+        ]
         indexes = [
             models.Index(fields=['vendor_name'], name='vendor_name_idx'),
             models.Index(fields=['vendor_vat'], name='vendor_vat_idx'),
@@ -67,6 +70,9 @@ class Transaction(models.Model):
 
     class Meta:
         ordering = ['-transaction_date', '-id']
+        permissions = [
+            ("can_import_transactions_from_file", "Import transactions from file"),
+        ]
         indexes = [
             models.Index(fields=['transaction_id'], name='transaction_id_idx'),
             models.Index(fields=['transaction_date'], name='transaction_date_idx'),

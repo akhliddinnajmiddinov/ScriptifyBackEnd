@@ -169,6 +169,10 @@ class Purchases(models.Model):
         db_table = 'purchases'
         ordering = ['-updated_at', '-id']
         unique_together = [['platform', 'external_id']]
+        permissions = [
+            ("can_approve_purchase",           "Approve / reject purchase"),
+            ("can_import_purchases_from_file", "Import purchases from file"),
+        ]
         indexes = [
             models.Index(fields=['platform', 'external_id'], name='purchases_platform_id_idx'),
             models.Index(fields=['platform'], name='purchases_platform_idx'),

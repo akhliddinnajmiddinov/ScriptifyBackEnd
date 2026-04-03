@@ -116,6 +116,22 @@ class TaskRun(models.Model):
     
     class Meta:
         ordering = ['-id']
+        permissions = [
+            ("can_view_own_task_runs",     "View own task runs"),
+            ("can_view_all_task_runs",     "View all task runs"),
+            ("can_view_task_runs_month",   "View task runs within current month"),
+            ("can_view_success_task_runs", "View success task runs"),
+            ("can_view_failed_task_runs",  "View failed task runs"),
+            ("can_view_active_task_runs",  "View running/pending task runs"),
+            ("can_start_task",             "Start task"),
+            ("can_cancel_own_task_run",    "Cancel own task run"),
+            ("can_cancel_any_task_run",    "Cancel any task run"),
+            ("can_rerun_own_task_run",     "Rerun own task run"),
+            ("can_rerun_any_task_run",     "Rerun any task run"),
+            ("can_delete_own_task_run",    "Delete own task run"),
+            ("can_delete_any_task_run",    "Delete any task run"),
+            ("can_view_task_summary",      "View task summary"),
+        ]
         indexes = [
             models.Index(fields=['status'], name='taskrun_status_idx'),
             models.Index(fields=['task', 'status'], name='taskrun_task_status_idx'),

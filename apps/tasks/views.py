@@ -20,6 +20,23 @@ class TaskViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = 'slug'
     lookup_url_kwarg = 'slug'
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        from apps.user.perm_utils import HasPerm
+        if self.action == 'start':
+            return [permissions.IsAuthenticated(), HasPerm('tasks.can_start_task')]
+        if self.action in ('summary', 'global_summary'):
+            return [permissions.IsAuthenticated(), HasPerm('tasks.can_view_task_summary')]
+        if self.action in ('runs', 'global_runs', 'status'):
+            return [permissions.IsAuthenticated(), HasPerm('tasks.can_view_own_task_runs', 'tasks.can_view_all_task_runs')]
+        if self.action in ('rerun', 'global_rerun'):
+            return [permissions.IsAuthenticated(), HasPerm('tasks.can_rerun_own_task_run', 'tasks.can_rerun_any_task_run')]
+        if self.action in ('delete_run', 'global_delete_run'):
+            return [permissions.IsAuthenticated(), HasPerm('tasks.can_delete_own_task_run', 'tasks.can_delete_any_task_run')]
+        if self.action in ('cancel_run', 'global_cancel_run', 'cancel'):
+            return [permissions.IsAuthenticated(), HasPerm('tasks.can_cancel_own_task_run', 'tasks.can_cancel_any_task_run')]
+        # list, retrieve — task configs are always visible
+        return [permissions.IsAuthenticated()]
     task_run_pagination_class = StandardPagination
     task_run_ordering_fields = {
         'id': 'id',
@@ -184,15 +201,19 @@ class TaskViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
     def _get_task_run_queryset(self, task: Task):
+        from apps.user.perm_utils import build_task_run_queryset
         queryset = TaskRun.objects.filter(task=task).select_related('task', 'started_by')
+        queryset = build_task_run_queryset(self.request.user, queryset)
         queryset = self._apply_task_run_filters(queryset)
         return queryset.order_by(*self._get_task_run_ordering())
 
     def _get_global_task_run_queryset(self):
+        from apps.user.perm_utils import build_task_run_queryset
         queryset = TaskRun.objects.select_related('task', 'started_by')
         task_slug = self.request.query_params.get('task_slug')
         if task_slug:
             queryset = queryset.filter(task__slug=task_slug)
+        queryset = build_task_run_queryset(self.request.user, queryset)
         queryset = self._apply_task_run_filters(queryset)
         return queryset.order_by(*self._get_task_run_ordering())
 
@@ -298,6 +319,9 @@ class TaskViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        if not request.user.has_perm('tasks.can_rerun_any_task_run') and source_run.started_by != request.user:
+            return Response({'detail': 'You can only rerun your own task runs.'}, status=status.HTTP_403_FORBIDDEN)
+
         rerun_target_error = self._validate_rerun_target(source_run)
         if rerun_target_error is not None:
             return rerun_target_error
@@ -326,6 +350,9 @@ class TaskViewSet(viewsets.ReadOnlyModelViewSet):
                 {'error': 'Task run not found.'},
                 status=status.HTTP_404_NOT_FOUND,
             )
+
+        if not request.user.has_perm('tasks.can_rerun_any_task_run') and source_run.started_by != request.user:
+            return Response({'detail': 'You can only rerun your own task runs.'}, status=status.HTTP_403_FORBIDDEN)
 
         rerun_target_error = self._validate_rerun_target(source_run)
         if rerun_target_error is not None:
@@ -360,6 +387,9 @@ class TaskViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        if not request.user.has_perm('tasks.can_delete_any_task_run') and task_run.started_by != request.user:
+            return Response({'detail': 'You can only delete your own task runs.'}, status=status.HTTP_403_FORBIDDEN)
+
         delete_target_error = self._validate_delete_target(task_run)
         if delete_target_error is not None:
             return delete_target_error
@@ -378,6 +408,9 @@ class TaskViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        if not request.user.has_perm('tasks.can_cancel_any_task_run') and task_run.started_by != request.user:
+            return Response({'detail': 'You can only cancel your own task runs.'}, status=status.HTTP_403_FORBIDDEN)
+
         cancel_target_error = self._validate_cancel_target(task_run)
         if cancel_target_error is not None:
             return cancel_target_error
@@ -393,6 +426,9 @@ class TaskViewSet(viewsets.ReadOnlyModelViewSet):
                 {'error': 'Task run not found.'},
                 status=status.HTTP_404_NOT_FOUND,
             )
+
+        if not request.user.has_perm('tasks.can_delete_any_task_run') and task_run.started_by != request.user:
+            return Response({'detail': 'You can only delete your own task runs.'}, status=status.HTTP_403_FORBIDDEN)
 
         delete_target_error = self._validate_delete_target(task_run)
         if delete_target_error is not None:
@@ -410,6 +446,9 @@ class TaskViewSet(viewsets.ReadOnlyModelViewSet):
                 {'error': 'Task run not found.'},
                 status=status.HTTP_404_NOT_FOUND,
             )
+
+        if not request.user.has_perm('tasks.can_cancel_any_task_run') and task_run.started_by != request.user:
+            return Response({'detail': 'You can only cancel your own task runs.'}, status=status.HTTP_403_FORBIDDEN)
 
         cancel_target_error = self._validate_cancel_target(task_run)
         if cancel_target_error is not None:

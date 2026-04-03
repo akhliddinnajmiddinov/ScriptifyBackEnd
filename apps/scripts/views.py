@@ -34,6 +34,10 @@ class ScriptViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ScriptSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_permissions(self):
+        from apps.user.perm_utils import HasPerm
+        return [permissions.IsAuthenticated(), HasPerm('scripts.view_script')]
+
     @extend_schema(
         operation_id="scripts_list",
         description="List all active scripts with their configurations",
@@ -132,15 +136,33 @@ class RunViewSet(viewsets.ModelViewSet):
     pagination_class = StandardPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = RunFilter
-    
+
+    def get_permissions(self):
+        from apps.user.perm_utils import HasPerm
+        if self.action == 'create':
+            return [permissions.IsAuthenticated(), HasPerm('scripts.add_run')]
+        if self.action == 'destroy':
+            return [permissions.IsAuthenticated(), HasPerm('scripts.can_delete_own_run', 'scripts.can_delete_any_run')]
+        if self.action == 'abort':
+            return [permissions.IsAuthenticated(), HasPerm('scripts.can_abort_own_run', 'scripts.can_abort_any_run')]
+        if self.action in ('logs', 'logs_stream'):
+            return [permissions.IsAuthenticated(), HasPerm('scripts.can_view_run_logs')]
+        if self.action in ('results', 'download_file'):
+            return [permissions.IsAuthenticated(), HasPerm('scripts.can_view_run_results')]
+        # list, retrieve, by_script, update, partial_update — require view scope permission
+        return [permissions.IsAuthenticated(), HasPerm('scripts.can_view_own_runs', 'scripts.can_view_all_runs')]
+
     def get_queryset(self):
         """
         Optimize queryset by using select_related to prevent N+1 queries.
+        Apply run visibility scoping based on user permissions.
         """
+        from apps.user.perm_utils import build_run_queryset
         queryset = super().get_queryset()
-        # Use select_related for ForeignKey relationships
         queryset = queryset.select_related('script', 'started_by')
-        return queryset
+        if not self.request.user.is_authenticated:
+            return queryset.none()
+        return build_run_queryset(self.request.user, queryset)
 
 
     def get_serializer_class(self):
@@ -318,9 +340,17 @@ class RunViewSet(viewsets.ModelViewSet):
             400: OpenApiResponse(description='Cannot abort finished run'),
         },
     )
+    def destroy(self, request, *args, **kwargs):
+        run = self.get_object()
+        if not request.user.has_perm('scripts.can_delete_any_run') and run.started_by != request.user:
+            return Response({'detail': 'You can only delete your own runs.'}, status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
+
     @action(detail=True, methods=['post'])
     def abort(self, request, pk=None):
         run = self.get_object()
+        if not request.user.has_perm('scripts.can_abort_any_run') and run.started_by != request.user:
+            return Response({'detail': 'You can only abort your own runs.'}, status=status.HTTP_403_FORBIDDEN)
         if run.is_finished():
             return Response(
                 {'error': f'Cannot abort a {run.status} run'},

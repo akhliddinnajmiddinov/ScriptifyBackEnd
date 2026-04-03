@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem, InventoryColor, MinPriceTask
+from .models import Listing, Shelf, InventoryVendor, Asin, ListingAsin, BuildComponent, BuildLog, BuildLogItem, InventoryColor, MinPriceTask, InventoryUpdateLog
 import json
 from purchases.serializers import PurchasesSerializer
 
@@ -306,4 +306,16 @@ class InventoryColorSerializer(serializers.ModelSerializer):
         except ValueError:
             raise serializers.ValidationError("Color must be a valid hex code")
         return value.upper()  # Normalize to uppercase
+
+
+class InventoryUpdateLogSerializer(serializers.ModelSerializer):
+    applied_by_email = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InventoryUpdateLog
+        fields = ['id', 'applied_by', 'applied_by_email', 'applied_at', 'range_start', 'range_end', 'updated_count']
+        read_only_fields = ['id', 'applied_by', 'applied_by_email', 'applied_at', 'range_start', 'range_end', 'updated_count']
+
+    def get_applied_by_email(self, obj):
+        return obj.applied_by.email if obj.applied_by else None
 

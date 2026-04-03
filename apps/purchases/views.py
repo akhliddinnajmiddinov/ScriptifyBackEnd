@@ -249,6 +249,7 @@ class PurchasesViewSet(viewsets.ModelViewSet):
             )
 
         previews = []
+        seen_pairs = {}  # (platform, external_id) -> 1-based row number
 
         for item in data:
             platform = item.get('platform')
@@ -274,7 +275,15 @@ class PurchasesViewSet(viewsets.ModelViewSet):
                 previews.append(preview_item)
                 continue
 
-            # Check for duplicates
+            # Check for intra-file duplicates
+            pair_key = (platform, external_id)
+            if pair_key in seen_pairs:
+                preview_item['errors'].append(f'Duplicate in file — same as row {seen_pairs[pair_key]}')
+                previews.append(preview_item)
+                continue
+            seen_pairs[pair_key] = len(previews) + 1  # 1-based row number
+
+            # Check for duplicates in database
             existing = Purchases.objects.filter(
                 platform=platform,
                 external_id=external_id
@@ -349,6 +358,7 @@ class PurchasesViewSet(viewsets.ModelViewSet):
 
         errors_list = []
         validated = []
+        seen_pairs = {}  # (platform, external_id) -> first idx; detects intra-file duplicates
 
         # Build context once — get_serializer_context hits the DB for vendor prefetch
         # and calling it per-row would cause N redundant queries.
@@ -370,6 +380,18 @@ class PurchasesViewSet(viewsets.ModelViewSet):
             if field_errors:
                 errors_list.append({'index': idx, 'platform': platform, 'external_id': external_id, 'errors': field_errors})
                 continue
+
+            # Check for intra-file duplicates
+            pair_key = (platform, external_id)
+            if pair_key in seen_pairs:
+                errors_list.append({
+                    'index': idx,
+                    'platform': platform,
+                    'external_id': external_id,
+                    'errors': {'external_id': [f'Duplicate in file — same as row {seen_pairs[pair_key] + 1}']}
+                })
+                continue
+            seen_pairs[pair_key] = idx
 
             existing = Purchases.objects.filter(platform=platform, external_id=external_id).first()
             serializer = PurchasesSerializer(

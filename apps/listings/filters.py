@@ -64,8 +64,8 @@ class AsinFilter(filters.FilterSet):
     # Item name search
     name = filters.CharFilter(field_name='name', lookup_expr='icontains')
     
-    # EAN search
-    ean = filters.CharFilter(field_name='ean', lookup_expr='icontains')
+    # EAN search (exact match)
+    ean = filters.CharFilter(field_name='ean', lookup_expr='iexact')
     
     # Vendor search (now simple text field)
     vendor = filters.CharFilter(field_name='vendor', lookup_expr='icontains')

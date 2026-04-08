@@ -163,7 +163,7 @@ class AsinFilter(filters.FilterSet):
             Q(ean__iexact=token) |
             Q(vendor__icontains=token) |
             Q(shelf__icontains=token) |
-            Q(contains__icontains=token) |
+            Q(contains__icontains=token)
             # Q(component_set__component__value__icontains=token)
         )
 

@@ -65,7 +65,7 @@ class AsinFilter(filters.FilterSet):
     name = filters.CharFilter(field_name='name', lookup_expr='icontains')
     
     # EAN search (exact match)
-    ean = filters.CharFilter(field_name='ean', lookup_expr='iexact')
+    ean = filters.CharFilter(field_name='ean', lookup_expr='icontains')
     
     # Vendor search (now simple text field)
     vendor = filters.CharFilter(field_name='vendor', lookup_expr='icontains')
@@ -147,9 +147,9 @@ class AsinFilter(filters.FilterSet):
 
         phrase = re.sub(r"\s+", " ", value.strip())
         return queryset.filter(
-            Q(value__icontains=phrase) |
             Q(name__icontains=phrase) |
-            Q(ean__icontains=phrase)
+            Q(value__icontains=phrase) |
+            Q(ean__iexact=phrase)
         ).distinct()
 
     def _build_token_query(self, token):
@@ -158,13 +158,13 @@ class AsinFilter(filters.FilterSet):
         Includes both the legacy 'contains' text field and the new M2M component relationship.
         """
         return (
-            Q(value__icontains=token) |
             Q(name__icontains=token) |
-            Q(ean__icontains=token) |
+            Q(value__icontains=token) |
+            Q(ean__iexact=token) |
             Q(vendor__icontains=token) |
             Q(shelf__icontains=token) |
             Q(contains__icontains=token) |
-            Q(component_set__component__value__icontains=token)
+            # Q(component_set__component__value__icontains=token)
         )
 
 

@@ -139,6 +139,11 @@ class Purchases(models.Model):
         blank=True,
         db_index=True
     )
+    decision_note = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Optional note written by the reviewer when approving or rejecting"
+    )
     
     # Platform-specific data (flexible JSON storage)
     platform_data = models.JSONField(

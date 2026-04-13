@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 from .models import Purchases
 from transactions.models import Vendor
@@ -210,7 +211,7 @@ class PurchasesSerializer(serializers.ModelSerializer):
                             )
                             listings_by_url[url] = listing
 
-                        # 3. Handle ASIN synchronization (update amount or create)
+                        # 3. Handle ASIN synchronization: set applied=True and update inventory
                         if listing and connected_asins is not None:
                             lid = listing.id
                             for conn in connected_asins:
@@ -221,24 +222,45 @@ class PurchasesSerializer(serializers.ModelSerializer):
                                     if amount < 1:
                                         amount = 1
 
-                                    listing_asin, created = ListingAsin.objects.get_or_create(
-                                        purchase=instance,
-                                        listing_id=lid,
-                                        asin_id=asin_id,
-                                        defaults={'amount': amount, 'timestamp': timezone.now()}
+                                    try:
+                                        listing_asin = ListingAsin.objects.get(
+                                            purchase=instance,
+                                            listing_id=lid,
+                                            asin_id=asin_id,
+                                        )
+                                        if listing_asin.amount != amount:
+                                            listing_asin.amount = amount
+                                            listing_asin.save()
+                                    except ListingAsin.DoesNotExist:
+                                        listing_asin = ListingAsin.objects.create(
+                                            purchase=instance,
+                                            listing_id=lid,
+                                            asin_id=asin_id,
+                                            amount=amount,
+                                            applied=False,
+                                            timestamp=timezone.now(),
+                                        )
+
+                                    Asin.objects.filter(id=asin_id).update(
+                                        amount=F('amount') + listing_asin.amount
                                     )
-                                    if not created and listing_asin.amount != amount:
-                                        listing_asin.amount = amount
-                                        listing_asin.save()
+                                    listing_asin.applied = True
+                                    listing_asin.save()
 
                             if len(connected_asins) > 0:
                                 current_asin_ids = [c.get('id') for c in connected_asins if c.get('id')]
+                                # Only delete unapplied orphans — applied records must not be silently removed
                                 ListingAsin.objects.filter(
                                     purchase=instance,
-                                    listing_id=lid
+                                    listing_id=lid,
+                                    applied=False,
                                 ).exclude(asin_id__in=current_asin_ids).delete()
                             else:
-                                ListingAsin.objects.filter(purchase=instance, listing_id=lid).delete()
+                                ListingAsin.objects.filter(
+                                    purchase=instance,
+                                    listing_id=lid,
+                                    applied=False,
+                                ).delete()
 
                         # 4. Clear JSON data, keeping ONLY listing_id, title, and description
                         if listing:
@@ -248,9 +270,77 @@ class PurchasesSerializer(serializers.ModelSerializer):
                             item_data['listing_id'] = listing.id
                             item_data['title'] = stored_title
                             item_data['description'] = stored_description
-                else:
-                    # For pending purchases, just strip the temporary UI fields before saving raw JSON
+                elif target_status == 'rejected':
+                    # For rejected purchases: strip UI-only fields and delete all unapplied ListingAsin records.
+                    ListingAsin.objects.filter(purchase=instance, applied=False).delete()
                     for item_data in items_data:
+                        item_data.pop('connected_asins', None)
+                        item_data.pop('matching_listing_id', None)
+                else:
+                    # For pending (None) purchases: sync ListingAsin(applied=False) so ASINs
+                    # can be pre-assigned before the package arrives / before approval.
+                    list_ids_p = [it.get('listing_id') for it in items_data if it.get('listing_id')]
+                    urls_p = [it.get('url') for it in items_data if it.get('url')]
+                    listings_by_id_p = {l.id: l for l in Listing.objects.filter(id__in=list_ids_p)} if list_ids_p else {}
+                    listings_by_url_p = {l.listing_url: l for l in Listing.objects.filter(listing_url__in=urls_p)} if urls_p else {}
+
+                    for item_data in items_data:
+                        listing_id_p = item_data.get('listing_id')
+                        url_p = item_data.get('url')
+                        connected_asins_p = item_data.get('connected_asins')
+
+                        # Discover listing by stored ID, fall back to URL match
+                        listing_p = listings_by_id_p.get(listing_id_p) or listings_by_url_p.get(url_p)
+
+                        # Create listing if URL is available but no listing exists yet
+                        if not listing_p and url_p:
+                            price_p = float(item_data.get('price') or 0.0)
+                            image_urls_p = item_data.get('image_urls', [])
+                            listing_p = Listing.objects.create(
+                                listing_url=url_p,
+                                price=price_p,
+                                timestamp=timezone.now(),
+                                picture_urls=image_urls_p,
+                                tracking_number=None,
+                            )
+                            listings_by_url_p[url_p] = listing_p
+
+                        # Sync ListingAsin records with applied=False
+                        if listing_p and connected_asins_p is not None:
+                            lid_p = listing_p.id
+                            for conn in connected_asins_p:
+                                asin_id_p = conn.get('id')
+                                if asin_id_p:
+                                    raw_amount_p = conn.get('quantity')
+                                    amount_p = int(raw_amount_p) if raw_amount_p not in [None, ""] else 1
+                                    if amount_p < 1:
+                                        amount_p = 1
+                                    la_p, created_p = ListingAsin.objects.get_or_create(
+                                        purchase=instance,
+                                        listing_id=lid_p,
+                                        asin_id=asin_id_p,
+                                        defaults={'amount': amount_p, 'applied': False, 'timestamp': timezone.now()},
+                                    )
+                                    if not created_p and la_p.amount != amount_p:
+                                        la_p.amount = amount_p
+                                        la_p.save()
+
+                            if len(connected_asins_p) > 0:
+                                current_ids_p = [c.get('id') for c in connected_asins_p if c.get('id')]
+                                # Only delete unapplied orphans — never delete applied records
+                                ListingAsin.objects.filter(
+                                    purchase=instance,
+                                    listing_id=lid_p,
+                                    applied=False,
+                                ).exclude(asin_id__in=current_ids_p).delete()
+                            else:
+                                ListingAsin.objects.filter(
+                                    purchase=instance,
+                                    listing_id=lid_p,
+                                    applied=False,
+                                ).delete()
+
+                        # Strip UI-only fields before persisting JSON
                         item_data.pop('connected_asins', None)
                         item_data.pop('matching_listing_id', None)
 

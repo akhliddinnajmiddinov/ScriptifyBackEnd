@@ -156,13 +156,19 @@ class PurchasesSerializer(serializers.ModelSerializer):
                         })
                 else:
                     # Status is being set for the first time
+                    if new_status == 'rejected':
+                        note = validated_data.get('decision_note', instance.decision_note)
+                        if not note or not str(note).strip():
+                            raise serializers.ValidationError({
+                                "error": "A reason is required when rejecting a purchase."
+                            })
                     if new_status and not instance.approved_rejected_at:
                         validated_data['approved_rejected_at'] = timezone.now()
 
-            # Handle ASIN synchronization ONLY if status is approved or rejected
-            # If it's pending (None or 'pending'), we just save the raw JSON without syncing to Listings.
+            # Handle ASIN synchronization ONLY when transitioning from pending (approved_status is None).
+            # Skip entirely for saves on already-approved/rejected purchases to prevent double-counting.
             items_data = validated_data.get('items')
-            if items_data is not None and isinstance(items_data, list):
+            if items_data is not None and isinstance(items_data, list) and instance.approved_status is None:
                 target_status = validated_data.get('approved_status', instance.approved_status)
 
                 if target_status == 'approved':

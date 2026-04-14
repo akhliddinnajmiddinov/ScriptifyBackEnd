@@ -3,7 +3,7 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction as db_transaction
-from django.db.models import Sum, Count, Avg, Q, Prefetch
+from django.db.models import F, Sum, Count, Avg, Q, Prefetch
 from django.utils import timezone
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
@@ -958,6 +958,8 @@ class AsinViewSet(viewsets.ModelViewSet):
         listing_asins = ListingAsin.objects.filter(
             timestamp__gte=start,
             timestamp__lt=end,
+            purchase__isnull=True,
+            applied=False,
         ).exclude(
             listing__listing_url__icontains='kleinanzeigen'
         ).values('asin_id').annotate(
@@ -1154,6 +1156,16 @@ class AsinViewSet(viewsets.ModelViewSet):
                     range_end=log_end,
                     updated_count=updated_count,
                 )
+
+                if log_start and log_end:
+                    ListingAsin.objects.filter(
+                        timestamp__gte=log_start,
+                        timestamp__lt=log_end,
+                        purchase__isnull=True,
+                        applied=False,
+                    ).exclude(
+                        listing__listing_url__icontains='kleinanzeigen'
+                    ).update(applied=True)
         except Exception as e:
             return Response(
                 {'error': f'Database error during apply: {str(e)}'},
@@ -1426,27 +1438,68 @@ class ListingAsinViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         operation_id="listing_asins_create",
-        description="Create a new connection between a listing and an ASIN.",
+        description="Create a new connection between a listing and an ASIN. "
+                    "For non-purchase-linked records, inventory quantity is updated immediately.",
         tags=["Inventory - Connections"],
     )
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with db_transaction.atomic():
+            instance = serializer.save()
+            if instance.purchase_id is None and instance.asin_id:
+                Asin.objects.filter(id=instance.asin_id).update(amount=F('amount') + instance.amount)
+                instance.applied = True
+                instance.save(update_fields=['applied'])
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @extend_schema(
         operation_id="listing_asins_update",
-        description="Update a connection (e.g., change amount).",
+        description="Update a connection (e.g., change amount). "
+                    "For non-purchase-linked records, inventory quantity is adjusted by the delta immediately.",
         tags=["Inventory - Connections"],
     )
     def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        if instance.purchase_id is not None:
+            return Response(
+                {'error': 'Cannot modify a connection that is linked to a purchase.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        old_amount = instance.amount if instance.applied else 0
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        with db_transaction.atomic():
+            updated = serializer.save()
+            if updated.asin_id:
+                delta = updated.amount - old_amount
+                if delta != 0:
+                    Asin.objects.filter(id=updated.asin_id).update(amount=F('amount') + delta)
+                if not updated.applied:
+                    updated.applied = True
+                    updated.save(update_fields=['applied'])
+        return Response(serializer.data)
 
     @extend_schema(
         operation_id="listing_asins_delete",
-        description="Delete a connection.",
+        description="Delete a connection. "
+                    "For non-purchase-linked applied records, inventory quantity is decremented immediately.",
         tags=["Inventory - Connections"],
     )
     def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
+        instance = self.get_object()
+        if instance.purchase_id is not None:
+            return Response(
+                {'error': 'Cannot delete a connection that is linked to a purchase.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        with db_transaction.atomic():
+            if instance.applied and instance.asin_id:
+                Asin.objects.filter(id=instance.asin_id).update(amount=F('amount') - instance.amount)
+            instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class InventoryColorViewSet(viewsets.ModelViewSet):

@@ -1,13 +1,15 @@
 from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.db.models import Prefetch
+from django.db import transaction
+from django.db.models import F, Prefetch
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from .models import Purchases
 from .serializers import PurchasesSerializer
 from .filters import PurchasesFilter
 from listings.filters import StandardPagination
+from listings.models import ListingAsin, Asin
 from transactions.filters import StableOrderingFilter
 from transactions.models import Vendor
 
@@ -198,8 +200,59 @@ class PurchasesViewSet(viewsets.ModelViewSet):
         responses={204: None},
     )
     def destroy(self, request, *args, **kwargs):
-        """Delete a purchase."""
-        return super().destroy(request, *args, **kwargs)
+        """Delete a purchase. Reverses inventory for any applied ListingAsin records first."""
+        instance = self.get_object()
+        with transaction.atomic():
+            for la in ListingAsin.objects.filter(purchase=instance, applied=True):
+                Asin.objects.filter(id=la.asin_id).update(amount=F('amount') - la.amount)
+            instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @extend_schema(
+        operation_id="purchases_undo_approval",
+        description="Reset an approved or rejected purchase back to pending. "
+                    "For approved purchases, reverses the inventory quantities that were applied. "
+                    "Requires the same permission as approving.",
+        tags=["Purchases"],
+        responses={200: PurchasesSerializer, 400: None},
+    )
+    @action(
+        detail=True,
+        methods=['post'],
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='undo_approval',
+        url_name='undo_approval',
+    )
+    def undo_approval(self, request, pk=None):
+        """Reset an approved or rejected purchase back to pending."""
+        from apps.user.perm_utils import HasPerm
+        perm = HasPerm('purchases.can_approve_purchase')
+        if not perm.has_permission(request, self):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You do not have permission to undo approval.")
+
+        instance = self.get_object()
+
+        if instance.approved_status is None:
+            return Response(
+                {'error': 'Purchase is already pending.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        with transaction.atomic():
+            if instance.approved_status == 'approved':
+                for la in ListingAsin.objects.filter(purchase=instance, applied=True):
+                    Asin.objects.filter(id=la.asin_id).update(amount=F('amount') - la.amount)
+                    la.applied = False
+                    la.save()
+
+            instance.approved_status = None
+            instance.approved_rejected_at = None
+            instance.decision_note = None
+            instance.save()
+
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     @action(
         detail=False,

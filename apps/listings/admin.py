@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Listing, Shelf, InventoryVendor, Asin, BuildComponent, InventoryColor, MinPriceTask
+from .models import Listing, Shelf, InventoryVendor, Asin, BuildComponent, InventoryColor, MinPriceTask, ListingAsin
 
 
 @admin.register(Listing)
@@ -67,3 +67,24 @@ class MinPriceTaskAdmin(admin.ModelAdmin):
     list_display = ['id', 'status', 'total_asins', 'processed_asins', 'started_at', 'finished_at']
     list_filter = ['status']
     ordering = ['-id']
+
+
+@admin.register(ListingAsin)
+class ListingAsinAdmin(admin.ModelAdmin):
+    list_display = ['id', 'listing_id', 'asin_value', 'purchase_id', 'amount', 'applied', 'timestamp']
+    list_filter = ['applied', 'timestamp']
+    search_fields = ['listing__listing_url', 'asin__value', 'asin__name']
+    autocomplete_fields = ['listing', 'asin', 'purchase']
+    list_select_related = ['listing', 'asin', 'purchase']
+
+    def listing_id(self, obj):
+        return obj.listing.id if obj.listing else '-'
+    listing_id.short_description = 'Listing ID'
+
+    def asin_value(self, obj):
+        return obj.asin.value if obj.asin else '-'
+    asin_value.short_description = 'ASIN'
+
+    def purchase_id(self, obj):
+        return obj.purchase.id if obj.purchase else '-'
+    purchase_id.short_description = 'Purchase ID'

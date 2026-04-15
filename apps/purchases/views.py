@@ -248,6 +248,7 @@ class PurchasesViewSet(viewsets.ModelViewSet):
 
             instance.approved_status = None
             instance.approved_rejected_at = None
+            instance.decision_note = None
             instance.save()
 
         serializer = self.get_serializer(instance)

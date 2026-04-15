@@ -50,7 +50,7 @@ def _iso(dt):
 class PreviewListingUpdatesTests(WithUnmanagedTables):
     def setUp(self):
         self.client = APIClient()
-        self.user = make_user(email="preview@test.com")
+        self.user = make_user("preview@test.com", "can_update_inventories")
         self.client.force_authenticate(user=self.user)
 
         self.listing = make_listing(url="https://example.com/preview/1")
@@ -150,7 +150,7 @@ class PreviewListingUpdatesTests(WithUnmanagedTables):
 class ApplyListingUpdatesTests(WithUnmanagedTables):
     def setUp(self):
         self.client = APIClient()
-        self.user = make_user(email="apply@test.com")
+        self.user = make_user("apply@test.com", "can_update_inventories")
         self.client.force_authenticate(user=self.user)
 
         self.listing = make_listing(url="https://example.com/apply/1")

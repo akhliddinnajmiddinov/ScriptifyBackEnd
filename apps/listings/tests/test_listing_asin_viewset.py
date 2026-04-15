@@ -30,7 +30,7 @@ from purchases.tests.conftest_mixin import (
 class ListingAsinCreateTests(WithUnmanagedTables):
     def setUp(self):
         self.client = APIClient()
-        self.user = make_user(email="creator@test.com")
+        self.user = make_user("creator@test.com", "can_manage_connected_asins")
         self.client.force_authenticate(user=self.user)
 
         self.listing = make_listing(url="https://example.com/la-create/1")
@@ -79,7 +79,7 @@ class ListingAsinCreateTests(WithUnmanagedTables):
 class ListingAsinUpdateTests(WithUnmanagedTables):
     def setUp(self):
         self.client = APIClient()
-        self.user = make_user(email="updater@test.com")
+        self.user = make_user("updater@test.com", "can_manage_connected_asins")
         self.client.force_authenticate(user=self.user)
 
         self.listing = make_listing(url="https://example.com/la-update/1")
@@ -135,7 +135,7 @@ class ListingAsinUpdateTests(WithUnmanagedTables):
 class ListingAsinDeleteTests(WithUnmanagedTables):
     def setUp(self):
         self.client = APIClient()
-        self.user = make_user(email="deleter@test.com")
+        self.user = make_user("deleter@test.com", "can_manage_connected_asins")
         self.client.force_authenticate(user=self.user)
 
         self.listing = make_listing(url="https://example.com/la-delete/1")

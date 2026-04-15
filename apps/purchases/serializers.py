@@ -149,11 +149,10 @@ class PurchasesSerializer(serializers.ModelSerializer):
             if 'approved_status' in validated_data:
                 new_status = validated_data['approved_status']
                 if instance.approved_status is not None:
-                    # If status is already set, it cannot be changed or cleared
-                    if new_status != instance.approved_status:
-                        raise serializers.ValidationError({
-                            "approved_status": f"Status has already been set to '{instance.approved_status}' and cannot be changed."
-                        })
+                    # Once a status is set it is immutable — reject even same-value re-submissions
+                    raise serializers.ValidationError({
+                        "approved_status": f"Status has already been set to '{instance.approved_status}' and cannot be changed."
+                    })
                 else:
                     # Status is being set for the first time
                     if new_status == 'rejected':
@@ -167,11 +166,15 @@ class PurchasesSerializer(serializers.ModelSerializer):
 
             # Handle ASIN synchronization ONLY when transitioning from pending (approved_status is None).
             # Skip entirely for saves on already-approved/rejected purchases to prevent double-counting.
-            items_data = validated_data.get('items')
-            if items_data is not None and isinstance(items_data, list) and instance.approved_status is None:
+            if instance.approved_status is None:
                 target_status = validated_data.get('approved_status', instance.approved_status)
 
                 if target_status == 'approved':
+                    # Fall back to stored items if not provided in request body
+                    items_data = validated_data.get('items')
+                    if items_data is None:
+                        items_data = [dict(item) for item in (instance.items or [])]
+                    validated_data['items'] = items_data
                     # Find listings for these items
                     list_ids = [it.get('listing_id') for it in items_data if it.get('listing_id')]
                     urls = [it.get('url') for it in items_data if it.get('url')]
@@ -277,12 +280,19 @@ class PurchasesSerializer(serializers.ModelSerializer):
                             item_data['title'] = stored_title
                             item_data['description'] = stored_description
                 elif target_status == 'rejected':
-                    # For rejected purchases: strip UI-only fields and delete all unapplied ListingAsin records.
+                    # For rejected purchases: delete all unapplied ListingAsin records.
+                    # Runs even if items were not provided in the request body.
                     ListingAsin.objects.filter(purchase=instance, applied=False).delete()
+                    # Fall back to stored items if not provided in request body
+                    items_data = validated_data.get('items')
+                    if items_data is None:
+                        items_data = [dict(item) for item in (instance.items or [])]
+                        validated_data['items'] = items_data
                     for item_data in items_data:
                         item_data.pop('connected_asins', None)
                         item_data.pop('matching_listing_id', None)
-                else:
+                elif 'items' in validated_data:
+                    items_data = validated_data['items'] or []
                     # For pending (None) purchases: sync ListingAsin(applied=False) so ASINs
                     # can be pre-assigned before the package arrives / before approval.
                     list_ids_p = [it.get('listing_id') for it in items_data if it.get('listing_id')]

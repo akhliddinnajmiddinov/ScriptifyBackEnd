@@ -14,14 +14,34 @@ class PurchasesSerializer(serializers.ModelSerializer):
     Serializer for Purchases model.
     chat_link is built dynamically from external_id via model property.
     vendor_image is fetched from Vendor model based on platform name.
+    display_status is a computed status including 'approved', 'rejected', 'saved', or 'pending'.
     """
     chat_link = serializers.ReadOnlyField()
     vendor_image = serializers.SerializerMethodField()
+    display_status = serializers.SerializerMethodField()
     
     class Meta:
         model = Purchases
         fields = '__all__'
-        read_only_fields = ['created_at', 'modified_at', 'chat_link', 'vendor_image']
+        read_only_fields = ['created_at', 'modified_at', 'chat_link', 'vendor_image', 'display_status']
+
+    def get_display_status(self, obj):
+        """
+        Compute display status.
+        'approved'/'rejected' if already set.
+        'saved' if pending but has connected ASINs.
+        'pending' otherwise.
+        """
+        if obj.approved_status:
+            return obj.approved_status
+        
+        # Use annotated field if available (performance optimization in viewset)
+        has_asins = getattr(obj, 'has_asins', None)
+        if has_asins is None:
+            # Fallback for cases where queryset was not annotated
+            has_asins = ListingAsin.objects.filter(purchase=obj).exists()
+        
+        return 'saved' if has_asins else 'pending'
 
     def to_representation(self, instance):
         """

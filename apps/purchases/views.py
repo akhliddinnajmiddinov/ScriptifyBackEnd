@@ -2,7 +2,7 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db import transaction
-from django.db.models import F, Prefetch
+from django.db.models import F, Prefetch, OuterRef, Exists
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from .models import Purchases
@@ -51,6 +51,7 @@ class PurchasesViewSet(viewsets.ModelViewSet):
         """
         Optimize queryset by prefetching listing relationship to prevent N+1 queries.
         Also annotate seller_name for ordering (from JSONField).
+        Annotate has_asins to identify "Saved" status.
         """
         queryset = super().get_queryset()
         # Prefetch listing to avoid N+1 queries
@@ -68,6 +69,9 @@ class PurchasesViewSet(viewsets.ModelViewSet):
                 KeyTextTransform('username', 'seller_info'),
                 Value(''),
                 output_field=CharField()
+            ),
+            has_asins=Exists(
+                ListingAsin.objects.filter(purchase=OuterRef('pk'))
             )
         )
         

@@ -12,7 +12,7 @@ class PurchasesFilter(filters.FilterSet):
     platform = filters.CharFilter(field_name='platform', lookup_expr='exact')
     external_id = filters.CharFilter(field_name='external_id', lookup_expr='icontains')
     order_status = filters.CharFilter(field_name='order_status', lookup_expr='exact')
-    approved_status = filters.CharFilter(field_name='approved_status', lookup_expr='exact')
+    approved_status = filters.CharFilter(method='filter_approved_status')
     product_title = filters.CharFilter(field_name='product_title', lookup_expr='icontains')
     tracking_code = filters.CharFilter(field_name='tracking_code', lookup_expr='icontains')
     start_date = filters.DateTimeFilter(field_name='purchased_at', lookup_expr='gte')
@@ -30,6 +30,19 @@ class PurchasesFilter(filters.FilterSet):
         model = Purchases
         fields = ['id', 'platform', 'external_id', 'order_status', 'approved_status', 'product_title', 'tracking_code', 'start_date', 'end_date', 'updated_start_date', 'updated_end_date', 'approved_start_date', 'approved_end_date', 'seller_name', 'min_total_price', 'max_total_price', 'query']
     
+    def filter_approved_status(self, queryset, name, value):
+        """
+        Filter by approved status.
+        'saved': pending (None) but has connected ASINs.
+        'pending': pending (None) and has NO connected ASINs.
+        'approved'/'rejected': exact match on database field.
+        """
+        if value == 'saved':
+            return queryset.filter(approved_status__isnull=True, has_asins=True)
+        if value == 'pending':
+            return queryset.filter(approved_status__isnull=True, has_asins=False)
+        return queryset.filter(approved_status=value)
+
     def filter_seller_name(self, queryset, name, value):
         """
         Filter by seller name in seller_info JSONField.
